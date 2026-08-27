@@ -151,28 +151,29 @@ export function ResourceLibrary() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white border border-indigo-900/40 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl border border-[#183f35]/20 shadow-sm" style={{ background: "linear-gradient(135deg, #183f35 0%, #0e2820 100%)", color: "white" }}>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Badge className="bg-primary/20 text-primary-foreground border-primary/30 text-xs">
+            <Badge className="bg-white/20 text-white border-white/30 text-xs">
               Complete Programme Pack
             </Badge>
-            <span className="text-xs text-slate-400">· 5 Core Guides & BCS Textbook</span>
+            <span className="text-xs opacity-70">· 5 Core Guides & BCS Textbook</span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight">Programme Library & Course Materials</h2>
-          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+          <p className="text-xs opacity-80 max-w-2xl leading-relaxed">
             All curriculum guides, delivery toolkits, mock examination papers, job playbooks, and the official BCS 4th Edition textbook reading guides are available here for reference.
           </p>
         </div>
 
         <div className="relative w-full md:w-64">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-60" style={{ color: "white" }} />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search guides & chapters..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-slate-950/60 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border focus:outline-none focus:ring-2"
+            style={{ background: "rgba(255,255,255,0.12)", borderColor: "rgba(255,255,255,0.25)", color: "white" }}
           />
         </div>
       </div>

@@ -16,6 +16,11 @@ export interface QuizQuestion {
   options: QuizOption[]
 }
 
+export interface LessonBodySection {
+  heading: string
+  paragraphs: string[]
+}
+
 export interface Lesson {
   id: string
   moduleId: string
@@ -25,6 +30,7 @@ export interface Lesson {
   intro: string
   outcomes: string[]
   concepts: { number: string; title: string; description: string }[]
+  bodyContent?: LessonBodySection[]
   workplaceConnection: {
     title: string
     description: string

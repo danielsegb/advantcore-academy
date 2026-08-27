@@ -54,7 +54,7 @@ export function LearningView({ onSelectView }: LearningViewProps) {
               className="primary-action"
               onClick={() => {
                 setActiveStudioTab("lessons")
-                setSelectedModuleId("mod-03")
+                setSelectedModuleId(firstActiveModuleId)
               }}
             >
               <Play className="w-4 h-4 mr-1.5" /> Resume lesson
@@ -80,7 +80,7 @@ export function LearningView({ onSelectView }: LearningViewProps) {
         <TabsContent value="lessons" className="space-y-6">
           <div className="learning-overview">
             <div className="course-progress-main">
-              <ReadinessRing value={overallComplete || 67} label="Complete" tone="mint" />
+              <ReadinessRing value={overallComplete} label="Complete" tone="mint" />
               <div>
                 <Badge className="status-badge">
                   <Target className="w-3.5 h-3.5 mr-1" /> Target: 90% mastery threshold
@@ -188,6 +188,22 @@ export function LearningView({ onSelectView }: LearningViewProps) {
                   </div>
                 ))}
               </div>
+
+              {/* Lesson Body Content — Structured Reading Material */}
+              {currentLesson.bodyContent && currentLesson.bodyContent.length > 0 && (
+                <div className="lesson-body-content space-y-6">
+                  {currentLesson.bodyContent.map((section, idx) => (
+                    <div key={idx} className="p-5 rounded-xl border bg-card">
+                      <h3 className="font-semibold text-base mb-3 text-foreground">{section.heading}</h3>
+                      <div className="space-y-3">
+                        {section.paragraphs.map((para, pIdx) => (
+                          <p key={pIdx} className="text-sm text-muted-foreground leading-relaxed">{para}</p>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Workplace Connection */}
               <div className="lesson-example">

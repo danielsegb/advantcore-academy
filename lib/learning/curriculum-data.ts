@@ -31,6 +31,36 @@ export const fullCurriculum: CourseModule[] = [
           description: "Clarify whether Advantcore needs process re-engineering or simply new tooling before committing resources.",
           actionText: "Open project charter",
         },
+        bodyContent: [
+          {
+            heading: "What is a Business Analyst?",
+            paragraphs: [
+              "A Business Analyst (BA) is an internal change agent who investigates business situations, identifies improvements, and defines requirements for new systems or processes. Unlike project managers — who focus on delivery timelines and resources — or solution architects — who design technical systems — the BA bridges the gap between business problems and viable solutions.",
+              "According to the BCS definition, business analysis is \"the practice of enabling change in an organisational context, by defining needs and recommending solutions that deliver value to stakeholders.\" This definition contains three core activities: enabling change, defining needs, and recommending solutions.",
+            ],
+          },
+          {
+            heading: "The BA Competency Framework",
+            paragraphs: [
+              "The BCS competency model groups BA skills into three categories: Behavioural (interpersonal, leadership, communication), Business Knowledge (domain understanding, commercial awareness), and Professional (analytical thinking, attention to detail, ethical conduct).",
+              "In practice, a BA must be equally comfortable facilitating a boardroom workshop, reviewing financial spreadsheets, and writing clear, testable requirements. This breadth is what makes the role challenging and commercially valuable.",
+            ],
+          },
+          {
+            heading: "The BA Lifecycle — Investigate, Evaluate, Specify",
+            paragraphs: [
+              "Investigate: Before proposing any solution, the BA investigates the current business situation. This involves interviewing stakeholders, observing operations, and reviewing documents to understand root causes rather than surface symptoms. A common mistake is accepting a pre-defined solution (\"we need a new CRM\") without first questioning whether the problem diagnosis is correct.",
+              "Evaluate: The BA then evaluates options — including the \"do nothing\" baseline — against business objectives, assessing feasibility, risk, and expected return. This stage produces the Options Appraisal.",
+              "Specify: Finally, the BA specifies requirements in a format that solution designers and developers can implement and test. Requirements must be unambiguous, testable, and traceable to business objectives.",
+            ],
+          },
+          {
+            heading: "BCS Textbook Reference",
+            paragraphs: [
+              "For authoritative detail, refer to Chapter 1 (What is Business Analysis?) and Chapter 2 (The Competencies of a Business Analyst) of the BCS Official Textbook: Business Analysis, 4th Edition by Debra Paul, James Cadle, Malcolm Eva, Craig Rollason and Jonathan Hunsley.",
+            ],
+          },
+        ],
         questions: [
           {
             id: "q-1-1",
@@ -77,6 +107,29 @@ export const fullCurriculum: CourseModule[] = [
           description: "Analyze how regulatory changes and enterprise SaaS competitors impact Advantcore's service offerings.",
           actionText: "Review market report",
         },
+        bodyContent: [
+          {
+            heading: "PESTLE Analysis — Scanning the External Environment",
+            paragraphs: [
+              "PESTLE stands for Political, Economic, Socio-cultural, Technological, Legal, and Environmental. BAs use it to map the macro-level forces that a business cannot control but must respond to. For example, a change in data privacy law (Legal) may require Advantcore to redesign its client intake forms and CRM processes — creating a genuine project need that a BA must define.",
+              "The key discipline is separating observable facts from interpretations. A PESTLE entry should state a trend (e.g., \"UK inflation at 4.2%, reducing client discretionary spend\"), not a generic concern (e.g., \"economic uncertainty\").",
+            ],
+          },
+          {
+            heading: "Porter's Five Forces — Industry Competitive Pressure",
+            paragraphs: [
+              "Porter's model analyses five structural forces that determine industry profitability: (1) Threat of New Entrants — how easily can competitors enter the market? (2) Bargaining Power of Buyers — can clients easily switch to a competitor? (3) Bargaining Power of Suppliers — how much leverage do technology or talent providers hold? (4) Threat of Substitutes — could clients solve the problem without engaging Advantcore at all? (5) Competitive Rivalry — how intense is direct competition?",
+              "For a digital agency like Advantcore, Buyer Power is typically high because many competing agencies exist. This makes service differentiation and relationship management strategically critical — themes a BA would surface during a strategic context investigation.",
+            ],
+          },
+          {
+            heading: "Synthesising into SWOT",
+            paragraphs: [
+              "Once PESTLE and Five Forces are complete, the BA synthesises findings into a SWOT (Strengths, Weaknesses, Opportunities, Threats). External findings (PESTLE, Five Forces) inform Opportunities and Threats. Internal findings (resource audit, value chain) inform Strengths and Weaknesses.",
+              "BCS Textbook Reference: Chapter 3 — Strategy Analysis, Business Analysis 4th Edition.",
+            ],
+          },
+        ],
         questions: [
           {
             id: "q-2-1",
@@ -123,6 +176,28 @@ export const fullCurriculum: CourseModule[] = [
           description: "Classify Sarah Mitchell, Marcus Cole, Priya Shah, and Helen Grant, then justify how you will engage each person during discovery.",
           actionText: "Open project task",
         },
+        bodyContent: [
+          {
+            heading: "Identifying Stakeholders",
+            paragraphs: [
+              "A stakeholder is any individual, group, or organisation with an interest in the outcome of a project — whether they support it, are affected by it, or have decision-making authority over it. For the Advantcore BA programme, your key stakeholders are: Sarah Mitchell (Project Sponsor, high power/high interest), Marcus Cole (BA Supervisor, high power/high interest), Priya Shah (Operations Lead, high power/moderate interest), and Helen Grant (Independent Reviewer, low power/high interest).",
+            ],
+          },
+          {
+            heading: "The Power-Interest Grid",
+            paragraphs: [
+              "The Power-Interest Grid (Mendelow's Matrix) positions each stakeholder across two axes: their power to influence the project outcome and their interest in its progress. This creates four quadrants: (1) Key Players (high power, high interest) — manage closely; (2) Meet Their Needs (high power, low interest) — keep satisfied; (3) Show Consideration (low power, high interest) — keep informed; (4) Minimal Effort (low power, low interest) — monitor only.",
+              "The grid is not a static ranking. Stakeholder positions evolve as the project progresses. A regulator who starts as \"minimal effort\" may become a \"key player\" the moment a compliance question arises.",
+            ],
+          },
+          {
+            heading: "RACI Matrix — Clarifying Decision Rights",
+            paragraphs: [
+              "The RACI matrix (Responsible, Accountable, Consulted, Informed) defines who does what for each project deliverable. Responsible: the person doing the work. Accountable: the single decision-maker (only one per deliverable). Consulted: those whose input is sought before decisions. Informed: those notified of outcomes.",
+              "A well-constructed RACI prevents scope creep and stakeholder conflict by making decision rights explicit upfront. BCS Textbook Reference: Chapter 6 — Stakeholder Analysis and Management.",
+            ],
+          },
+        ],
         questions: [
           {
             id: "q-3-1",
@@ -191,6 +266,22 @@ export const fullCurriculum: CourseModule[] = [
           description: "Model the hand-off between qualification and project mobilization using POPIT to uncover information leakage.",
           actionText: "Open process modeler",
         },
+        bodyContent: [
+          {
+            heading: "Why Holistic Thinking Matters",
+            paragraphs: [
+              "Most failed change projects fail not because of bad technology, but because they addressed technology while ignoring people, process, or organisational culture. The POPIT model — People, Organisation, Process, Information/Technology — prevents this by forcing analysts to consider all four dimensions before recommending solutions.",
+              "In the Advantcore project, the root cause of the 14-day enquiry-to-delivery delay was not a missing CRM system. Investigation revealed manual spreadsheet re-entry across three departments (Process), unclear handoff ownership between qualification and mobilisation teams (Organisation), and a lack of shared client record standards (Information). Technology was a factor, but not the primary one.",
+            ],
+          },
+          {
+            heading: "The POPIT Model in Practice",
+            paragraphs: [
+              "People: Assess skills, capacity, motivation, and training needs. Are staff equipped to execute the new process? Organisation: Examine reporting lines, governance structures, culture, and decision rights. Process: Map As-Is (current state) processes using swimlane diagrams to expose hand-offs, bottlenecks, duplication, and rework loops. Then define the To-Be target state.",
+              "Information/Technology: Evaluate whether data is available when needed, accurate, and in the correct format. Assess whether existing systems support the new process or require replacement. BCS Textbook Reference: Chapter 7 — Modelling Business Processes.",
+            ],
+          },
+        ],
         questions: [
           {
             id: "q-4-1",
@@ -237,6 +328,29 @@ export const fullCurriculum: CourseModule[] = [
           description: "Author user stories for the enquiry intake workflow and submit them for Marcus Cole's supervisory review.",
           actionText: "Open requirements log",
         },
+        bodyContent: [
+          {
+            heading: "Requirements Elicitation Techniques",
+            paragraphs: [
+              "Elicitation is the process of drawing out requirements from stakeholders. Key techniques include: Interviews (structured, semi-structured, or unstructured — best for individual expert knowledge), Workshops (group sessions that surface conflicting requirements and build shared understanding), Observation (shadowing users in their actual work environment to discover tacit knowledge not stated in interviews), and Document Analysis (reviewing existing reports, forms, and procedures).",
+              "Technique selection depends on stakeholder availability, domain complexity, and whether requirements are stable or volatile. For the Advantcore enquiry-to-delivery process, interviews with Priya Shah and a workshop with the qualification team were used to surface the manual re-entry bottleneck.",
+            ],
+          },
+          {
+            heading: "Categorising Requirements",
+            paragraphs: [
+              "Functional requirements define what the system must do (e.g., \"The system shall allow a project manager to assign a delivery team within 30 minutes of client approval\"). Non-functional requirements (NFRs) define quality attributes (e.g., performance, security, usability). General constraints are external limits such as legal compliance or budget. Technical constraints are imposed by the existing technology environment.",
+              "MoSCoW Prioritisation: Must Have (legally or operationally critical — the project fails without it), Should Have (high value but not critical for launch), Could Have (desirable if budget and time allow), Won’t Have (explicitly out of scope for this release).",
+            ],
+          },
+          {
+            heading: "User Stories in Given-When-Then Format",
+            paragraphs: [
+              "A user story describes a requirement from the user’s perspective: \"As a [role], I want [capability] so that [benefit].\" Acceptance criteria are written in Given-When-Then (GWT) format: Given [initial state], When [user action], Then [expected outcome]. GWT makes requirements directly testable and unambiguous.",
+              "BCS Textbook Reference: Chapters 10 and 11 — Establishing, Documenting and Modelling Requirements.",
+            ],
+          },
+        ],
         questions: [
           {
             id: "q-5-1",
@@ -283,6 +397,28 @@ export const fullCurriculum: CourseModule[] = [
           description: "Present your business case options appraisal to Sarah Mitchell (Project Sponsor) in the simulated boardroom.",
           actionText: "Prepare business case",
         },
+        bodyContent: [
+          {
+            heading: "Structure of a Business Case",
+            paragraphs: [
+              "A formal business case includes: (1) Executive Summary — a concise statement of the problem, recommended option, and financial justification. (2) Problem Statement — the quantified business problem. For Advantcore, this is a 14-day enquiry-to-delivery cycle causing an estimated £120,000 annual revenue leakage through lost repeat business. (3) Options Appraisal — evaluation of at least three options including Do Nothing as the baseline. (4) Cost-Benefit Analysis — comparing CapEx and OpEx investment against projected financial and strategic returns. (5) Risk Assessment — key risks, likelihood, impact, and mitigations. (6) Recommendation — the preferred option with clear justification.",
+            ],
+          },
+          {
+            heading: "Options Appraisal — Always Start with Do Nothing",
+            paragraphs: [
+              "Every credible business case evaluates the 'Do Nothing' (Business as Usual) baseline first. This establishes what happens if no action is taken and creates the benchmark against which other options are measured. Skipping Do Nothing is a common BA mistake that weakens the case for change.",
+              "For Advantcore: Do Nothing (BAU) — revenue leakage continues. Do Minimum — add a shared spreadsheet tracker (low cost, partial improvement). Do Something — implement a lightweight project management workflow with a digital handoff tool (recommended: 12-month payback, eliminates manual re-entry).",
+            ],
+          },
+          {
+            heading: "Financial Metrics — Payback, NPV, ROI",
+            paragraphs: [
+              "Payback Period: The time taken for cumulative financial benefits to equal the cost of investment. For the Advantcore recommendation, the £18,500 implementation cost is recovered within 12 months through efficiency savings and recovered revenue. Net Present Value (NPV): Adjusts future cash flows to today's value to account for the time value of money. A positive NPV confirms the investment creates value. Return on Investment (ROI) = (Net Benefit / Investment Cost) × 100.",
+              "Intangible benefits (brand trust, staff morale, client satisfaction) are real but cannot be directly quantified. They must be articulated clearly alongside financial metrics. BCS Textbook Reference: Chapter 9 — Making a Business Case.",
+            ],
+          },
+        ],
         questions: [
           {
             id: "q-6-1",
