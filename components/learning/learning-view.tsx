@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
-  LibraryBig, Play, Target, Check, ChevronRight, Gauge,
-  Sparkles, ArrowRight, BookOpen, Clock, Layers,
+  LibraryBig, Play, Pause, Square,
+  Target, Check, ChevronRight, Gauge, Sparkles, ArrowRight,
+  BookOpen, Clock, Layers, Headphones
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,8 +26,117 @@ export function LearningView({ onSelectView }: LearningViewProps) {
   const firstActiveModuleId = fullCurriculum.find(m => m.status === "active" || m.status === "done")?.id ?? "mod-01"
   const [selectedModuleId, setSelectedModuleId] = useState<string>(firstActiveModuleId)
 
+  // Audio Reader state
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false)
+  const [isPausedAudio, setIsPausedAudio] = useState(false)
+  const [playbackRate, setPlaybackRate] = useState<number>(1.0)
+  const synthRef = useRef<SpeechSynthesis | null>(null)
+
   const currentModule = fullCurriculum.find(m => m.id === selectedModuleId) ?? fullCurriculum[0]
   const currentLesson = currentModule.lessons[0]
+
+  // Setup speech synthesis
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      synthRef.current = window.speechSynthesis
+    }
+    return () => {
+      if (synthRef.current) {
+        synthRef.current.cancel()
+      }
+    }
+  }, [])
+
+  // Stop audio whenever user changes lesson or module
+  useEffect(() => {
+    if (synthRef.current) {
+      synthRef.current.cancel()
+      setIsPlayingAudio(false)
+      setIsPausedAudio(false)
+    }
+  }, [selectedModuleId, activeStudioTab])
+
+  function handlePlayAudio() {
+    if (!synthRef.current) return
+
+    if (isPausedAudio) {
+      synthRef.current.resume()
+      setIsPausedAudio(false)
+      setIsPlayingAudio(true)
+      return
+    }
+
+    synthRef.current.cancel()
+
+    // Build comprehensive narration script from lesson content
+    const scriptParts: string[] = [
+      `Module ${currentModule.moduleNumber}, Lesson ${currentLesson.lessonNumber}: ${currentLesson.title}.`,
+      currentLesson.intro,
+      "Key Learning Outcomes:",
+      ...currentLesson.outcomes,
+      "Core Concepts:",
+      ...currentLesson.concepts.map(c => `${c.title}: ${c.description}`),
+    ]
+
+    if (currentLesson.bodyContent) {
+      currentLesson.bodyContent.forEach(sec => {
+        scriptParts.push(sec.heading)
+        scriptParts.push(...sec.paragraphs)
+      })
+    }
+
+    const fullScript = scriptParts.join(" ")
+    const utterance = new SpeechSynthesisUtterance(fullScript)
+    utterance.rate = playbackRate
+
+    // Try finding UK English voice
+    const voices = synthRef.current.getVoices()
+    const ukVoice = voices.find(v => v.lang === "en-GB" || v.name.includes("UK") || v.name.includes("British"))
+    if (ukVoice) {
+      utterance.voice = ukVoice
+    }
+
+    utterance.onstart = () => {
+      setIsPlayingAudio(true)
+      setIsPausedAudio(false)
+    }
+
+    utterance.onend = () => {
+      setIsPlayingAudio(false)
+      setIsPausedAudio(false)
+    }
+
+    utterance.onerror = () => {
+      setIsPlayingAudio(false)
+      setIsPausedAudio(false)
+    }
+
+    synthRef.current.speak(utterance)
+  }
+
+  function handlePauseAudio() {
+    if (!synthRef.current) return
+    synthRef.current.pause()
+    setIsPausedAudio(true)
+  }
+
+  function handleStopAudio() {
+    if (!synthRef.current) return
+    synthRef.current.cancel()
+    setIsPlayingAudio(false)
+    setIsPausedAudio(false)
+  }
+
+  function handleRateChange(rate: number) {
+    setPlaybackRate(rate)
+    if (isPlayingAudio && !isPausedAudio) {
+      handleStopAudio()
+      setTimeout(() => {
+        setPlaybackRate(rate)
+        handlePlayAudio()
+      }, 50)
+    }
+  }
 
   // Calculate overall course stats from actual data
   const totalModules = fullCurriculum.length
@@ -34,14 +144,14 @@ export function LearningView({ onSelectView }: LearningViewProps) {
   const overallComplete = Math.round((completedModules / totalModules) * 100)
   const currentWeek = completedModules > 0 ? Math.min(completedModules * 2 + 1, 12) : 1
   const lessonsCompleted = fullCurriculum.filter(m => m.status === "done").reduce((acc, m) => acc + m.lessons.length, 0)
-  const quizzesPassed = lessonsCompleted // 1 quiz per lesson
+  const quizzesPassed = lessonsCompleted
 
   return (
     <div className="page-stack">
       <SectionTitle
         eyebrow="Learning studio"
         title="BCS Foundation Certificate in Business Analysis"
-        copy="A mastery-based pathway aligned with the accredited 40-question, 60-minute examination format and 90% Academy mastery standards."
+        copy="A mastery-based pathway aligned with the accredited 40-question, 60-minute examination format and 80% Academy mastery standards."
         actions={
           <>
             <Button
@@ -83,7 +193,7 @@ export function LearningView({ onSelectView }: LearningViewProps) {
               <ReadinessRing value={overallComplete} label="Complete" tone="mint" />
               <div>
                 <Badge className="status-badge">
-                  <Target className="w-3.5 h-3.5 mr-1" /> Target: 90% mastery threshold
+                  <Target className="w-3.5 h-3.5 mr-1" /> Target: 80% mastery threshold
                 </Badge>
                 <h2>Week {currentWeek} of 12</h2>
                 <p>{lessonsCompleted > 0 ? `${lessonsCompleted} lesson${lessonsCompleted > 1 ? "s" : ""} completed · ${quizzesPassed} quiz${quizzesPassed !== 1 ? "zes" : ""} passed` : "No lessons completed yet — start Module 1"}</p>
@@ -103,7 +213,7 @@ export function LearningView({ onSelectView }: LearningViewProps) {
                 <span>Official pass mark</span>
               </div>
               <div>
-                <strong>90%</strong>
+                <strong>80%</strong>
                 <span>Academy target</span>
               </div>
             </div>
@@ -156,8 +266,86 @@ export function LearningView({ onSelectView }: LearningViewProps) {
                   <Clock className="w-3 h-3" /> {currentLesson.estimatedMinutes} min
                 </Badge>
               </div>
+
               <h1>{currentLesson.title}</h1>
               <p className="lesson-intro">{currentLesson.intro}</p>
+
+              {/* Lesson Audio Reader Card */}
+              <div className="p-4 rounded-xl border bg-card/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isPlayingAudio && !isPausedAudio ? "bg-primary text-white ring-4 ring-primary/20 animate-pulse" : "bg-primary/10 text-primary"}`}>
+                    <Headphones className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <strong className="text-sm font-semibold text-foreground">Lesson Audio Reader</strong>
+                      {isPlayingAudio && !isPausedAudio && (
+                        <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] py-0 px-1.5 border-emerald-500/30 animate-pulse">
+                          Speaking...
+                        </Badge>
+                      )}
+                      {isPausedAudio && (
+                        <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-amber-500 border-amber-500/30">
+                          Paused
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Listen to the full lesson body, outcomes, and core concept breakdowns.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  {/* Play / Pause / Stop Buttons */}
+                  {!isPlayingAudio || isPausedAudio ? (
+                    <Button
+                      size="sm"
+                      className="primary-action text-xs h-8 gap-1.5"
+                      onClick={handlePlayAudio}
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      {isPausedAudio ? "Resume" : "Listen to Lesson"}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs h-8 gap-1.5 text-amber-500 border-amber-500/30"
+                      onClick={handlePauseAudio}
+                    >
+                      <Pause className="w-3.5 h-3.5" />
+                      Pause
+                    </Button>
+                  )}
+
+                  {isPlayingAudio && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-xs h-8 px-2 text-muted-foreground hover:text-red-500"
+                      onClick={handleStopAudio}
+                      title="Stop audio playback"
+                    >
+                      <Square className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+
+                  {/* Playback Speed selector */}
+                  <div className="flex bg-muted p-0.5 rounded-lg border text-[11px] font-medium">
+                    {[1.0, 1.25, 1.5].map(rate => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => handleRateChange(rate)}
+                        className={`px-2 py-1 rounded transition-all ${playbackRate === rate ? "bg-background text-foreground font-bold shadow-xs" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        {rate}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
               {/* Objectives and Learning Outcomes rendered BEFORE content */}
               <section className="objectives-card">
