@@ -224,7 +224,7 @@ export function LearningView({ onSelectView }: LearningViewProps) {
               <div className="lesson-footer">
                 <div>
                   <strong>Lesson mastery check</strong>
-                  <span>{currentLesson.questions.length} questions · 90% required · Retakes allowed</span>
+                  <span>{currentLesson.questions.length} questions · 80% pass threshold · Retakes allowed</span>
                 </div>
                 <QuizDialog lesson={currentLesson} />
               </div>

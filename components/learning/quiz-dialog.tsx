@@ -79,7 +79,7 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
         score,
         totalQuestions: lesson.questions.length,
         correctCount: correct,
-        masteryAchieved: score >= 90,
+        masteryAchieved: score >= 80,
         explanations,
       }
       setResult(res)

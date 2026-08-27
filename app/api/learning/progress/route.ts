@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     })
 
     const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0
-    const masteryAchieved = score >= 90
+    const masteryAchieved = score >= 80
 
     const supabase = getSupabaseAdminClient()
     if (supabase && userId) {

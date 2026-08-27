@@ -8,27 +8,30 @@ describe("Learning Management & Curriculum Engine", () => {
     expect(moduleNumbers).toEqual(["01", "02", "03", "04", "05", "06"])
   })
 
-  it("ensures every lesson has explicit learning outcomes and questions", () => {
+  it("ensures every lesson has explicit learning outcomes and 5 mastery questions", () => {
+    let totalQuestions = 0
     fullCurriculum.forEach(mod => {
       expect(mod.lessons.length).toBeGreaterThan(0)
       mod.lessons.forEach(les => {
         expect(les.outcomes.length).toBeGreaterThan(0)
         expect(les.concepts.length).toBeGreaterThan(0)
-        expect(les.questions.length).toBeGreaterThan(0)
+        expect(les.questions.length).toBe(5)
+        totalQuestions += les.questions.length
         expect(les.workplaceConnection.title).toBeDefined()
       })
     })
+    expect(totalQuestions).toBe(30)
   })
 
-  it("calculates mastery correctly based on 90% threshold", () => {
+  it("calculates mastery correctly based on 80% threshold", () => {
     function isMastered(correct: number, total: number): boolean {
       const score = Math.round((correct / total) * 100)
-      return score >= 90
+      return score >= 80
     }
 
-    expect(isMastered(3, 3)).toBe(true) // 100%
-    expect(isMastered(9, 10)).toBe(true) // 90%
-    expect(isMastered(2, 3)).toBe(false) // 67%
-    expect(isMastered(8, 10)).toBe(false) // 80%
+    expect(isMastered(5, 5)).toBe(true) // 100%
+    expect(isMastered(4, 5)).toBe(true) // 80% (4/5 passes)
+    expect(isMastered(3, 5)).toBe(false) // 60%
+    expect(isMastered(2, 5)).toBe(false) // 40%
   })
 })
