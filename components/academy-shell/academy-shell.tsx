@@ -18,6 +18,8 @@ import { GuidedTourDialog } from "./guided-tour-dialog"
 import { LoginDialog } from "@/components/auth/login-dialog"
 import { useAuth } from "@/lib/auth/auth-context"
 
+import { PrivacyCenterDialog } from "@/components/compliance/privacy-center-dialog"
+
 export const navItems = [
   { id: "dashboard" as View, label: "Home", icon: LayoutDashboard },
   { id: "learning" as View, label: "Learning studio", icon: GraduationCap },
@@ -115,6 +117,9 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
         </SidebarContent>
 
         <SidebarFooter>
+          <div className="px-2 py-1 border-b border-border/40 mb-1">
+            <PrivacyCenterDialog />
+          </div>
           {user ? (
             <div className="sidebar-user flex items-center justify-between">
               <div className="flex items-center gap-2 overflow-hidden">
