@@ -15,7 +15,7 @@ export const fullCurriculum: CourseModule[] = [
         lessonNumber: "1.1",
         title: "The role and competencies of a Business Analyst",
         estimatedMinutes: 20,
-        intro: "Understand the core responsibilities of a BA, advisory boundaries, and the distinction between business analysts, project managers, and solution architects.",
+        intro: "Master the definition of business analysis, the 5-stage change lifecycle, the 6 core professional principles, and the T-shaped competency model.",
         outcomes: [
           "Explain the primary purpose of business analysis in organizational change",
           "Distinguish business advisory responsibilities from technical solution design",
@@ -26,41 +26,57 @@ export const fullCurriculum: CourseModule[] = [
           { number: "02", title: "Evaluate", description: "Assess organizational feasibility, impacts, options, and business cases." },
           { number: "03", title: "Specify", description: "Define clear, unambiguous requirements and business rules to guide change." },
         ],
+        bodyContent: [
+          {
+            heading: "What is Business Analysis? (BCS Syllabus Module 1)",
+            paragraphs: [
+              "Business analysis is a specialised professional practice that enables business change by defining needs, investigating problem situations holistically, and recommending viable options that deliver value to stakeholders.",
+              "A business analyst acts as an internal advisor who bridges the gap between business leadership, operational users, and technical delivery teams. The BA does not write low-level software code or make executive commercial decisions; instead, the BA investigates the root causes of business friction and designs the target operating requirements to resolve them.",
+            ],
+          },
+          {
+            heading: "The 5-Stage Business Change Lifecycle",
+            paragraphs: [
+              "1. Alignment: Ensuring that any change initiative directly supports the organisation's strategic goals, vision, and key performance indicators (KPIs).",
+              "2. Definition: Investigating the current situation, identifying pain points, evaluating solution options, and building the formal business case.",
+              "3. Design: Specifying detailed functional, non-functional, data, and process requirements, and collaborating with architects and designers.",
+              "4. Implementation: Supporting development, facilitating user acceptance testing (UAT), and managing operational change readiness.",
+              "5. Realisation: Tracking post-implementation performance metrics against original business case baselines to confirm genuine value creation.",
+            ],
+          },
+          {
+            heading: "The 6 Core Principles of Business Analysis (Must Know)",
+            paragraphs: [
+              "Principle 1: Root causes not symptoms — Never accept a surface symptom (e.g. 'leads are slow') at face value; investigate the underlying structural cause using the 5 Whys and POPIT model.",
+              "Principle 2: Business improvement not IT change — A technology purchase is not always the answer. Many business problems are solved through process re-engineering, training, or policy clarification.",
+              "Principle 3: Options not predetermined solutions — Challenge the immediate assumption that a specific vendor tool is required. Always evaluate multiple feasible options, including the mandatory 'Do Nothing' baseline.",
+              "Principle 4: Feasible, contributing requirements, not meeting all requests — A BA must protect project feasibility by challenging unfeasible requests and establishing clear, defensible MoSCoW priorities.",
+              "Principle 5: The entire business change lifecycle not just requirements — The BA's responsibility begins before requirements elicitation (during strategy and problem analysis) and continues through UAT, change deployment, and benefits realisation.",
+              "Principle 6: Negotiation not avoidance — Conflicting stakeholder priorities must be surfaced and resolved collaboratively using objective evidence rather than passive avoidance.",
+            ],
+          },
+          {
+            heading: "The T-Shaped Competency Framework (BCS Syllabus Module 2)",
+            paragraphs: [
+              "A modern business analyst requires a T-shaped profile: broad collaborative breadth across multiple disciplines plus deep technical capability in core analysis techniques.",
+              "The 3 Core Competency Domains are:",
+              "• Personal Qualities: Critical thinking, communication, active listening, relationship management, curiosity, and ethical conduct.",
+              "• Business Knowledge: Commercial awareness, organizational structure, customer journeys, financial metrics (CapEx, OpEx, ROI), and regulation.",
+              "• Professional Techniques: Elicitation (interviews, workshops, observation), process modelling (BPMN swimlanes), gap analysis, requirements engineering (user stories, GWT), and business case appraisal.",
+            ],
+          },
+          {
+            heading: "Advantcore Workplace Application",
+            paragraphs: [
+              "On the Advantcore enquiry-to-delivery transformation project (ADV-BA-001), inbound leads currently suffer a 4.8-day response lag. Rather than prematurely buying expensive CRM plugins, the BA applies these principles to investigate the manual spreadsheet hand-offs between Sales and Mobilisation, producing an evidenced Problem Statement and Project Charter.",
+            ],
+          },
+        ],
         workplaceConnection: {
           title: "Advantcore Engagement Scoping",
           description: "Clarify whether Advantcore needs process re-engineering or simply new tooling before committing resources.",
           actionText: "Open project charter",
         },
-        bodyContent: [
-          {
-            heading: "What is a Business Analyst?",
-            paragraphs: [
-              "A Business Analyst (BA) is an internal change agent who investigates business situations, identifies improvements, and defines requirements for new systems or processes. Unlike project managers — who focus on delivery timelines and resources — or solution architects — who design technical systems — the BA bridges the gap between business problems and viable solutions.",
-              "According to the BCS definition, business analysis is \"the practice of enabling change in an organisational context, by defining needs and recommending solutions that deliver value to stakeholders.\" This definition contains three core activities: enabling change, defining needs, and recommending solutions.",
-            ],
-          },
-          {
-            heading: "The BA Competency Framework",
-            paragraphs: [
-              "The BCS competency model groups BA skills into three categories: Behavioural (interpersonal, leadership, communication), Business Knowledge (domain understanding, commercial awareness), and Professional (analytical thinking, attention to detail, ethical conduct).",
-              "In practice, a BA must be equally comfortable facilitating a boardroom workshop, reviewing financial spreadsheets, and writing clear, testable requirements. This breadth is what makes the role challenging and commercially valuable.",
-            ],
-          },
-          {
-            heading: "The BA Lifecycle — Investigate, Evaluate, Specify",
-            paragraphs: [
-              "Investigate: Before proposing any solution, the BA investigates the current business situation. This involves interviewing stakeholders, observing operations, and reviewing documents to understand root causes rather than surface symptoms. A common mistake is accepting a pre-defined solution (\"we need a new CRM\") without first questioning whether the problem diagnosis is correct.",
-              "Evaluate: The BA then evaluates options — including the \"do nothing\" baseline — against business objectives, assessing feasibility, risk, and expected return. This stage produces the Options Appraisal.",
-              "Specify: Finally, the BA specifies requirements in a format that solution designers and developers can implement and test. Requirements must be unambiguous, testable, and traceable to business objectives.",
-            ],
-          },
-          {
-            heading: "BCS Textbook Reference",
-            paragraphs: [
-              "For authoritative detail, refer to Chapter 1 (What is Business Analysis?) and Chapter 2 (The Competencies of a Business Analyst) of the BCS Official Textbook: Business Analysis, 4th Edition by Debra Paul, James Cadle, Malcolm Eva, Craig Rollason and Jonathan Hunsley.",
-            ],
-          },
-        ],
         questions: [
           {
             id: "q-1-1",
@@ -102,34 +118,59 @@ export const fullCurriculum: CourseModule[] = [
           { number: "02", title: "Analyze", description: "Evaluate competitive rivalry, buyer power, supplier power, and threat of substitutes." },
           { number: "03", title: "Synthesize", description: "Translate external findings into clear SWOT opportunities and threats." },
         ],
+        bodyContent: [
+          {
+            heading: "Strategic Context for Business Analysis (BCS Syllabus Module 3)",
+            paragraphs: [
+              "Strategy connects the organization's high-level purpose with operational execution. A project that is technically perfect but strategically misaligned will fail to deliver commercial value. Strategy analysis consists of external macro scanning (PESTLE), competitive industry analysis (Porter's Five Forces), internal alignment (VMOST), and evidence synthesis (SWOT).",
+            ],
+          },
+          {
+            heading: "PESTLE Macro-Environmental Analysis",
+            paragraphs: [
+              "PESTLE scans the external macro environment across six dimensions. Every entry must be stated as an observable fact with specific business implications, not unsupported personal opinion:",
+              "• Political: Government initiatives, regional policy shifts, tax incentives, trade agreements.",
+              "• Economic: Inflation rates, interest rates, disposable income, currency volatility, resource costs.",
+              "• Socio-cultural: Demographic shifts, changing consumer preferences, remote working trends.",
+              "• Technological: Emerging automation, AI, mobile platforms, cloud adoption, cybersecurity standards.",
+              "• Legal: Employment law, UK GDPR / Data Protection Act 2018, consumer rights, industry regulations.",
+              "• Environmental: Carbon reduction targets, energy consumption, waste management, sustainability policies.",
+            ],
+          },
+          {
+            heading: "Porter's Five Forces Framework",
+            paragraphs: [
+              "Michael Porter's Five Forces assesses the competitive intensity and profitability of an industry sector:",
+              "1. Threat of New Entrants: How easily new competitors can enter the market (barriers to entry, capital requirements, economies of scale).",
+              "2. Threat of Substitutes: Alternative products or services that satisfy the same customer need (e.g. self-service portals replacing agency calls).",
+              "3. Bargaining Power of Buyers: The leverage customers hold (buyer concentration, low switching costs, price sensitivity).",
+              "4. Bargaining Power of Suppliers: The leverage suppliers hold (supplier uniqueness, high switching costs, lack of substitutes).",
+              "5. Industry Rivalry: The intensity of competition among existing firms (market growth rate, brand loyalty, exit barriers).",
+            ],
+          },
+          {
+            heading: "Internal Alignment: VMOST & Performance Measurement",
+            paragraphs: [
+              "• Vision: The inspirational long-term desired future state of the organization.",
+              "• Mission: The core fundamental purpose — who we serve and what value we provide today.",
+              "• Objectives: SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound) translating vision into concrete targets.",
+              "• Strategy: The overarching long-term plan of action to achieve the objectives.",
+              "• Tactics: Specific short-term operational activities and project tasks.",
+              "Critical Success Factors (CSFs) state what must go well for the organization to succeed. Key Performance Indicators (KPIs) provide the measurable threshold to verify whether performance is on target.",
+            ],
+          },
+          {
+            heading: "Advantcore Strategic Context Example",
+            paragraphs: [
+              "Advantcore's strategic objective is to achieve a 12-month commercial payback while scaling client delivery capacity by 40%. The PESTLE scan highlights UK GDPR compliance requirements for storing client enquiry data, while the VMOST alignment links the enquiry intake automation directly to Sarah Mitchell's target of reducing cycle time from 14 to 4 days.",
+            ],
+          },
+        ],
         workplaceConnection: {
           title: "Advantcore Market Context",
           description: "Analyze how regulatory changes and enterprise SaaS competitors impact Advantcore's service offerings.",
           actionText: "Review market report",
         },
-        bodyContent: [
-          {
-            heading: "PESTLE Analysis — Scanning the External Environment",
-            paragraphs: [
-              "PESTLE stands for Political, Economic, Socio-cultural, Technological, Legal, and Environmental. BAs use it to map the macro-level forces that a business cannot control but must respond to. For example, a change in data privacy law (Legal) may require Advantcore to redesign its client intake forms and CRM processes — creating a genuine project need that a BA must define.",
-              "The key discipline is separating observable facts from interpretations. A PESTLE entry should state a trend (e.g., \"UK inflation at 4.2%, reducing client discretionary spend\"), not a generic concern (e.g., \"economic uncertainty\").",
-            ],
-          },
-          {
-            heading: "Porter's Five Forces — Industry Competitive Pressure",
-            paragraphs: [
-              "Porter's model analyses five structural forces that determine industry profitability: (1) Threat of New Entrants — how easily can competitors enter the market? (2) Bargaining Power of Buyers — can clients easily switch to a competitor? (3) Bargaining Power of Suppliers — how much leverage do technology or talent providers hold? (4) Threat of Substitutes — could clients solve the problem without engaging Advantcore at all? (5) Competitive Rivalry — how intense is direct competition?",
-              "For a digital agency like Advantcore, Buyer Power is typically high because many competing agencies exist. This makes service differentiation and relationship management strategically critical — themes a BA would surface during a strategic context investigation.",
-            ],
-          },
-          {
-            heading: "Synthesising into SWOT",
-            paragraphs: [
-              "Once PESTLE and Five Forces are complete, the BA synthesises findings into a SWOT (Strengths, Weaknesses, Opportunities, Threats). External findings (PESTLE, Five Forces) inform Opportunities and Threats. Internal findings (resource audit, value chain) inform Strengths and Weaknesses.",
-              "BCS Textbook Reference: Chapter 3 — Strategy Analysis, Business Analysis 4th Edition.",
-            ],
-          },
-        ],
         questions: [
           {
             id: "q-2-1",
@@ -171,33 +212,50 @@ export const fullCurriculum: CourseModule[] = [
           { number: "02", title: "Position", description: "Map each stakeholder while recognising that positions and attitudes evolve over time." },
           { number: "03", title: "Engage", description: "Choose communication channels and frequency that fit the stakeholder's decision rights." },
         ],
+        bodyContent: [
+          {
+            heading: "Stakeholder Analysis & Engagement (BCS Syllabus Module 6)",
+            paragraphs: [
+              "A stakeholder is any individual, group, or organization who is affected by, can affect, or possesses knowledge about a proposed change initiative.",
+              "The BA must identify all stakeholder categories early using a stakeholder wheel (managers, staff, customers, suppliers, regulators, partners) to avoid critical omissions.",
+            ],
+          },
+          {
+            heading: "Mendelow's Power-Interest Grid (The 9 Strategy Positions)",
+            paragraphs: [
+              "Stakeholders are mapped across Power (the ability to exert influence or block change) and Interest (the extent to which their daily work or concerns are affected):",
+              "1. High Power / High Interest (Key Players): Must be managed closely. Involve them actively in governance, decision gates, and steering committees (e.g. Sarah Mitchell, Project Sponsor).",
+              "2. High Power / Low Interest: Keep satisfied. Provide concise executive updates, ensure no regulatory or commercial red lines are breached (e.g. Helen Grant, Independent Reviewer).",
+              "3. Low Power / High Interest: Keep informed & show consideration. These operational users are heavily impacted but lack formal authority. Consult them through workshops to prevent passive resistance (e.g. Priya Shah & operational staff).",
+              "4. Low Power / Low Interest: Minimal effort. Monitor periodically via general project newsletters.",
+            ],
+          },
+          {
+            heading: "RACI & RASCI Decision Rights Governance",
+            paragraphs: [
+              "A RACI matrix clarifies exact responsibilities across deliverables to prevent confusion:",
+              "• Responsible (R): The role who actually does the work to produce the deliverable (e.g. BA writes the Problem Statement).",
+              "• Accountable (A): The single individual who owns the final outcome and has ultimate approval authority. Exactly ONE person must be Accountable per deliverable.",
+              "• Consulted (C): Subject matter experts who provide two-way information and feedback before work is finalized.",
+              "• Informed (I): Stakeholders who receive one-way notifications upon deliverable completion.",
+            ],
+          },
+          {
+            heading: "Investigation & Elicitation Triangulation (BCS Syllabus Module 5)",
+            paragraphs: [
+              "To obtain a reliable, unbiased view of the business situation, the BA applies investigation triangulation (checking findings across multiple sources):",
+              "• Interviews: One-on-one sessions to uncover tacit knowledge, individual concerns, and process details.",
+              "• Facilitated Workshops: Multi-stakeholder sessions to resolve conflicting priorities and build consensus.",
+              "• Observation: Shadowing staff to observe actual working behaviour vs written policy.",
+              "• Scenarios & Prototyping: Testing user situations to surface hidden assumptions and edge cases.",
+            ],
+          },
+        ],
         workplaceConnection: {
           title: "Apply this to the Advantcore project",
           description: "Classify Sarah Mitchell, Marcus Cole, Priya Shah, and Helen Grant, then justify how you will engage each person during discovery.",
           actionText: "Open project task",
         },
-        bodyContent: [
-          {
-            heading: "Identifying Stakeholders",
-            paragraphs: [
-              "A stakeholder is any individual, group, or organisation with an interest in the outcome of a project — whether they support it, are affected by it, or have decision-making authority over it. For the Advantcore BA programme, your key stakeholders are: Sarah Mitchell (Project Sponsor, high power/high interest), Marcus Cole (BA Supervisor, high power/high interest), Priya Shah (Operations Lead, high power/moderate interest), and Helen Grant (Independent Reviewer, low power/high interest).",
-            ],
-          },
-          {
-            heading: "The Power-Interest Grid",
-            paragraphs: [
-              "The Power-Interest Grid (Mendelow's Matrix) positions each stakeholder across two axes: their power to influence the project outcome and their interest in its progress. This creates four quadrants: (1) Key Players (high power, high interest) — manage closely; (2) Meet Their Needs (high power, low interest) — keep satisfied; (3) Show Consideration (low power, high interest) — keep informed; (4) Minimal Effort (low power, low interest) — monitor only.",
-              "The grid is not a static ranking. Stakeholder positions evolve as the project progresses. A regulator who starts as \"minimal effort\" may become a \"key player\" the moment a compliance question arises.",
-            ],
-          },
-          {
-            heading: "RACI Matrix — Clarifying Decision Rights",
-            paragraphs: [
-              "The RACI matrix (Responsible, Accountable, Consulted, Informed) defines who does what for each project deliverable. Responsible: the person doing the work. Accountable: the single decision-maker (only one per deliverable). Consulted: those whose input is sought before decisions. Informed: those notified of outcomes.",
-              "A well-constructed RACI prevents scope creep and stakeholder conflict by making decision rights explicit upfront. BCS Textbook Reference: Chapter 6 — Stakeholder Analysis and Management.",
-            ],
-          },
-        ],
         questions: [
           {
             id: "q-3-1",
@@ -208,28 +266,6 @@ export const fullCurriculum: CourseModule[] = [
               { key: "manage", text: "To determine an appropriate engagement and communication approach", isCorrect: true },
               { key: "rank", text: "To rank stakeholders strictly by hierarchical seniority", isCorrect: false },
               { key: "replace", text: "To replace the need for stakeholder discovery interviews", isCorrect: false },
-            ],
-          },
-          {
-            id: "q-3-2",
-            prompt: "How should a stakeholder with high power and high interest (Key Player) be managed?",
-            explanation: "High power, high interest stakeholders must be managed closely with regular collaboration and partnership.",
-            options: [
-              { key: "a", text: "Keep informed with occasional mass email newsletters", isCorrect: false },
-              { key: "b", text: "Manage closely and partner actively on key decisions", isCorrect: true },
-              { key: "c", text: "Ignore until final user acceptance testing", isCorrect: false },
-              { key: "d", text: "Provide minimal contact to avoid overwhelming them", isCorrect: false },
-            ],
-          },
-          {
-            id: "q-3-3",
-            prompt: "Which matrix is used to define Responsible, Accountable, Consulted, and Informed roles?",
-            explanation: "RACI matrix clarifies the specific responsibilities across project deliverables.",
-            options: [
-              { key: "a", text: "RACI matrix", isCorrect: true },
-              { key: "b", text: "SWOT matrix", isCorrect: false },
-              { key: "c", text: "Ansoff matrix", isCorrect: false },
-              { key: "d", text: "McKinsey 7S framework", isCorrect: false },
             ],
           },
         ],
@@ -261,27 +297,50 @@ export const fullCurriculum: CourseModule[] = [
           { number: "02", title: "Process", description: "Map end-to-end value streams, hand-offs, bottlenecks, and rework loops." },
           { number: "03", title: "Info & Tech", description: "Verify information availability, data integrity, and supporting software systems." },
         ],
+        bodyContent: [
+          {
+            heading: "Holistic Systems Thinking & POPIT (BCS Syllabus Module 7 & 8)",
+            paragraphs: [
+              "A business system is more than just software. The POPIT model provides a holistic 5-dimension lens for investigating problems, structuring gap analysis, and designing solutions:",
+              "1. Processes: Are workflows efficient, clearly defined, and measurable? Are there bottlenecks, duplicate data entry, or excessive hand-offs?",
+              "2. People: Do staff have the required skills, training, and motivation? Do they understand their performance targets?",
+              "3. Organisation: Are roles, management structures, policies, and culture aligned to support collaboration?",
+              "4. Information: Do decision-makers and operational staff have accurate, timely, and secure data when needed?",
+              "5. Technology: Do software applications, infrastructure, and tools support the operational process without creating cumbersome workarounds?",
+            ],
+          },
+          {
+            heading: "Process Modelling with Swimlane Diagrams",
+            paragraphs: [
+              "Process models represent how work flows across roles and departments:",
+              "• Process Boundary: Clear trigger event (start) and verified outcome (end).",
+              "• Swimlanes: Horizontal or vertical lanes representing distinct actors, roles, or departments.",
+              "• Activity Boxes: Action verbs indicating specific tasks (e.g. 'Validate Lead Budget').",
+              "• Decision Diamonds: Expressed as closed questions (e.g. 'Is budget > £10k?').",
+              "• Hand-offs & Rework Loops: Transitions between swimlanes where delays and information loss frequently occur.",
+            ],
+          },
+          {
+            heading: "Gap Analysis: As-Is vs To-Be",
+            paragraphs: [
+              "Gap analysis compares the current baseline ('As-Is') with the target future state ('To-Be'):",
+              "• As-Is Model: Captures actual observed practice, including informal workarounds, manual spreadsheets, and delay queues.",
+              "• Pain Point Identification: Classifies friction using the 5 Whys to isolate root causes.",
+              "• To-Be Model: Streamlines value streams, eliminates non-value-adding steps, embeds automated triggers, and establishes quality controls.",
+            ],
+          },
+          {
+            heading: "Advantcore Process Redesign",
+            paragraphs: [
+              "Advantcore's As-Is map exposes that enquiries sit in general inboxes for 1.5 days before being manually re-typed into 'Leads_2026.xlsx' (taking 3.3 days). The future-state To-Be design replaces manual spreadsheet transfers with structured web intake and automated webhook triage, reducing total cycle time from 14 days down to 4 days.",
+            ],
+          },
+        ],
         workplaceConnection: {
           title: "Advantcore Hand-off Analysis",
           description: "Model the hand-off between qualification and project mobilization using POPIT to uncover information leakage.",
           actionText: "Open process modeler",
         },
-        bodyContent: [
-          {
-            heading: "Why Holistic Thinking Matters",
-            paragraphs: [
-              "Most failed change projects fail not because of bad technology, but because they addressed technology while ignoring people, process, or organisational culture. The POPIT model — People, Organisation, Process, Information/Technology — prevents this by forcing analysts to consider all four dimensions before recommending solutions.",
-              "In the Advantcore project, the root cause of the 14-day enquiry-to-delivery delay was not a missing CRM system. Investigation revealed manual spreadsheet re-entry across three departments (Process), unclear handoff ownership between qualification and mobilisation teams (Organisation), and a lack of shared client record standards (Information). Technology was a factor, but not the primary one.",
-            ],
-          },
-          {
-            heading: "The POPIT Model in Practice",
-            paragraphs: [
-              "People: Assess skills, capacity, motivation, and training needs. Are staff equipped to execute the new process? Organisation: Examine reporting lines, governance structures, culture, and decision rights. Process: Map As-Is (current state) processes using swimlane diagrams to expose hand-offs, bottlenecks, duplication, and rework loops. Then define the To-Be target state.",
-              "Information/Technology: Evaluate whether data is available when needed, accurate, and in the correct format. Assess whether existing systems support the new process or require replacement. BCS Textbook Reference: Chapter 7 — Modelling Business Processes.",
-            ],
-          },
-        ],
         questions: [
           {
             id: "q-4-1",
@@ -312,7 +371,7 @@ export const fullCurriculum: CourseModule[] = [
         lessonNumber: "5.1",
         title: "Requirements elicitation, categories and user stories",
         estimatedMinutes: 35,
-        intro: "Master elicitation techniques (interviews, workshops, observation) and specify clear functional, non-functional, and constraint requirements.",
+        intro: "Master elicitation techniques, functional vs non-functional requirements taxonomy, MoSCoW prioritisation, and Given-When-Then user stories.",
         outcomes: [
           "Select optimal elicitation techniques based on stakeholder availability and domain uncertainty",
           "Categorize requirements into Functional, Non-functional, General, and Technical constraints",
@@ -323,34 +382,55 @@ export const fullCurriculum: CourseModule[] = [
           { number: "02", title: "Specify", description: "Format requirements with unambiguous test criteria and MoSCoW priorities." },
           { number: "03", title: "Validate", description: "Ensure traceability from business objectives through to verified solution deliverables." },
         ],
+        bodyContent: [
+          {
+            heading: "Requirements Engineering Framework (BCS Syllabus Modules 10, 11 & 12)",
+            paragraphs: [
+              "Requirements express a needed capability or quality that delivers business value. The RE framework encompasses five stages: Elicitation -> Analysis -> Documentation / Modelling -> Validation -> Management (Traceability & Change Control).",
+            ],
+          },
+          {
+            heading: "Requirements Taxonomy: Types of Requirements",
+            paragraphs: [
+              "1. General Requirements: High-level business policies, legal constraints (UK GDPR), brand standards, sustainability guidelines.",
+              "2. Technical Requirements: Infrastructure constraints, supported browsers, hardware specifications, data retention limits.",
+              "3. Functional Requirements: Specific system behaviours, actions, data input, calculations, workflows, and reporting.",
+              "4. Non-Functional Requirements (NFRs / Quality Attributes): Performance (response times), Security (authentication, role-based access), Availability (99.9% uptime), Usability (accessibility, WCAG compliance), Backup/Recovery, Scalability.",
+            ],
+          },
+          {
+            heading: "MoSCoW Prioritisation Rules (Must Know)",
+            paragraphs: [
+              "• Must Have: Critical core capability. The project CANNOT go live without it; there is no viable workaround. Every Must requirement MUST have a documented, defensible consequence if omitted.",
+              "• Should Have: Highly important capability with significant business value, but a temporary workaround exists for initial go-live.",
+              "• Could Have: Desirable capability that will be delivered only if excess time and budget permit.",
+              "• Won't Have (This Time): Explicitly agreed to be out of scope for the current release, protecting scope boundaries.",
+            ],
+          },
+          {
+            heading: "Agile User Stories & Given-When-Then Acceptance Criteria",
+            paragraphs: [
+              "User Story 3Cs Principle: Card (concise statement), Conversation (ongoing stakeholder refinement), Confirmation (testable acceptance criteria).",
+              "Standard User Story Format: As a [User Role], I want [Capability / Feature], So that [Measurable Business Value].",
+              "Given-When-Then (GWT / Gherkin) Acceptance Criteria:",
+              "• Given [Initial precondition or system state]",
+              "• When [Action or trigger event occurs]",
+              "• Then [Expected verifiable outcome]",
+              "Example: Given an inbound enquiry with missing contact email, When the consultant clicks Submit, Then submission is blocked and the missing field is highlighted in red.",
+            ],
+          },
+          {
+            heading: "End-to-End Traceability",
+            paragraphs: [
+              "A Requirements Traceability Matrix connects every Business Objective -> Requirement ID -> User Story -> Process Model -> Test Case -> Realised Benefit. Traceability prevents scope creep and ensures no orphan requirements exist.",
+            ],
+          },
+        ],
         workplaceConnection: {
           title: "Advantcore Requirements Catalogue",
           description: "Author user stories for the enquiry intake workflow and submit them for Marcus Cole's supervisory review.",
           actionText: "Open requirements log",
         },
-        bodyContent: [
-          {
-            heading: "Requirements Elicitation Techniques",
-            paragraphs: [
-              "Elicitation is the process of drawing out requirements from stakeholders. Key techniques include: Interviews (structured, semi-structured, or unstructured — best for individual expert knowledge), Workshops (group sessions that surface conflicting requirements and build shared understanding), Observation (shadowing users in their actual work environment to discover tacit knowledge not stated in interviews), and Document Analysis (reviewing existing reports, forms, and procedures).",
-              "Technique selection depends on stakeholder availability, domain complexity, and whether requirements are stable or volatile. For the Advantcore enquiry-to-delivery process, interviews with Priya Shah and a workshop with the qualification team were used to surface the manual re-entry bottleneck.",
-            ],
-          },
-          {
-            heading: "Categorising Requirements",
-            paragraphs: [
-              "Functional requirements define what the system must do (e.g., \"The system shall allow a project manager to assign a delivery team within 30 minutes of client approval\"). Non-functional requirements (NFRs) define quality attributes (e.g., performance, security, usability). General constraints are external limits such as legal compliance or budget. Technical constraints are imposed by the existing technology environment.",
-              "MoSCoW Prioritisation: Must Have (legally or operationally critical — the project fails without it), Should Have (high value but not critical for launch), Could Have (desirable if budget and time allow), Won’t Have (explicitly out of scope for this release).",
-            ],
-          },
-          {
-            heading: "User Stories in Given-When-Then Format",
-            paragraphs: [
-              "A user story describes a requirement from the user’s perspective: \"As a [role], I want [capability] so that [benefit].\" Acceptance criteria are written in Given-When-Then (GWT) format: Given [initial state], When [user action], Then [expected outcome]. GWT makes requirements directly testable and unambiguous.",
-              "BCS Textbook Reference: Chapters 10 and 11 — Establishing, Documenting and Modelling Requirements.",
-            ],
-          },
-        ],
         questions: [
           {
             id: "q-5-1",
@@ -392,33 +472,52 @@ export const fullCurriculum: CourseModule[] = [
           { number: "02", title: "Appraisal", description: "Compare capital expenditure (CapEx) and operational costs (OpEx) against quantifiable ROI." },
           { number: "03", title: "Risk", description: "Identify risks, likelihood, impact, and proactive mitigation plans." },
         ],
+        bodyContent: [
+          {
+            heading: "Making the Business Case (BCS Syllabus Module 9)",
+            paragraphs: [
+              "A business case is a decision-support document that justifies investment in business change. It establishes whether an initiative is strategically aligned, commercially viable, and operationally achievable.",
+              "Core Business Case Structure: 1. Executive Summary. 2. Current Business Situation & Problem Diagnosis. 3. Options Appraisal. 4. Cost-Benefit Analysis. 5. Risk Assessment (RAID log). 6. Recommendations & Implementation Milestones.",
+            ],
+          },
+          {
+            heading: "Options Appraisal: The Mandatory 'Do Nothing' Baseline",
+            paragraphs: [
+              "An options appraisal must compare at least three credible options:",
+              "• Option 1: Do Nothing (Business as Usual - BAU). This is the mandatory baseline that calculates the cost, lost revenue, and operational degradation if no investment is made.",
+              "• Option 2: Do Minimum. The lowest-cost intervention that addresses only critical compliance or failure points (e.g. standard operating checklists).",
+              "• Option 3: Do Something (Target Solution). The proposed optimal solution providing full automation and strategic value.",
+            ],
+          },
+          {
+            heading: "Cost-Benefit & Investment Appraisal Metrics",
+            paragraphs: [
+              "Costs and Benefits are categorized across two dimensions: Immediate vs Longer-term, and Tangible (monetary/numerical) vs Intangible (qualitative reputation/morale):",
+              "• Simple ROI Formula: ROI = ((Total Benefits - Total Costs) / Total Costs) x 100%.",
+              "  Example: If a solution costs £10,000 and generates £15,000 in net benefit over Year 1, ROI = ((15,000 - 10,000) / 10,000) x 100 = 50%.",
+              "• Payback Period: The exact time required for cumulative cash inflows from benefits to equal the initial capital expenditure (CapEx).",
+              "• Intangible Benefits Rule: Every intangible benefit (e.g. 'improved client experience') must still have an associated evidence measurement plan and assigned owner.",
+            ],
+          },
+          {
+            heading: "UAT Acceptance & Benefits Realisation (BCS Syllabus Modules 13 & 14)",
+            paragraphs: [
+              "• Business Acceptance Testing (UAT): Operational business users execute realistic test scenarios to verify business fitness. Defects are triaged and formally resolved before go-live sign-off.",
+              "• Benefits Realisation: Benefits do not automatically appear at go-live; they require sustained adoption. A Benefits Register defines each benefit metric, baseline value, target threshold, review frequency, and designated Operational Benefit Owner.",
+            ],
+          },
+          {
+            heading: "Advantcore Business Case Recommendation",
+            paragraphs: [
+              "For Advantcore Ltd, Option 2 (CRM Workflow Automation) costs £12,500 CapEx with £2,400/yr OpEx. It recovers £28,000 in saved consultant time and recovered lead revenue annually, delivering an estimated 145% ROI and a payback period of 7.4 months, fully satisfying Sarah Mitchell's 12-month commercial hurdle.",
+            ],
+          },
+        ],
         workplaceConnection: {
           title: "Advantcore Recommendation Pitch",
           description: "Present your business case options appraisal to Sarah Mitchell (Project Sponsor) in the simulated boardroom.",
           actionText: "Prepare business case",
         },
-        bodyContent: [
-          {
-            heading: "Structure of a Business Case",
-            paragraphs: [
-              "A formal business case includes: (1) Executive Summary — a concise statement of the problem, recommended option, and financial justification. (2) Problem Statement — the quantified business problem. For Advantcore, this is a 14-day enquiry-to-delivery cycle causing an estimated £120,000 annual revenue leakage through lost repeat business. (3) Options Appraisal — evaluation of at least three options including Do Nothing as the baseline. (4) Cost-Benefit Analysis — comparing CapEx and OpEx investment against projected financial and strategic returns. (5) Risk Assessment — key risks, likelihood, impact, and mitigations. (6) Recommendation — the preferred option with clear justification.",
-            ],
-          },
-          {
-            heading: "Options Appraisal — Always Start with Do Nothing",
-            paragraphs: [
-              "Every credible business case evaluates the 'Do Nothing' (Business as Usual) baseline first. This establishes what happens if no action is taken and creates the benchmark against which other options are measured. Skipping Do Nothing is a common BA mistake that weakens the case for change.",
-              "For Advantcore: Do Nothing (BAU) — revenue leakage continues. Do Minimum — add a shared spreadsheet tracker (low cost, partial improvement). Do Something — implement a lightweight project management workflow with a digital handoff tool (recommended: 12-month payback, eliminates manual re-entry).",
-            ],
-          },
-          {
-            heading: "Financial Metrics — Payback, NPV, ROI",
-            paragraphs: [
-              "Payback Period: The time taken for cumulative financial benefits to equal the cost of investment. For the Advantcore recommendation, the £18,500 implementation cost is recovered within 12 months through efficiency savings and recovered revenue. Net Present Value (NPV): Adjusts future cash flows to today's value to account for the time value of money. A positive NPV confirms the investment creates value. Return on Investment (ROI) = (Net Benefit / Investment Cost) × 100.",
-              "Intangible benefits (brand trust, staff morale, client satisfaction) are real but cannot be directly quantified. They must be articulated clearly alongside financial metrics. BCS Textbook Reference: Chapter 9 — Making a Business Case.",
-            ],
-          },
-        ],
         questions: [
           {
             id: "q-6-1",

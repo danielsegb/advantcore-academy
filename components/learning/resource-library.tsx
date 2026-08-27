@@ -2,196 +2,82 @@
 
 import React, { useState } from "react"
 import {
-  CheckCircle2, Bookmark, Award, Search,
+  CheckCircle2, Bookmark, Award, Search, BookOpen,
+  FileText, ChevronRight
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-
-interface ResourceDoc {
-  id: string
-  title: string
-  subtitle: string
-  documentType: "Handbook" | "Study Guide" | "Toolkit" | "Playbook" | "Textbook"
-  version: string
-  description: string
-  tableOfContents: string[]
-  keyHighlights: string[]
-  textbookChapters?: string[]
-}
-
-const programmeResources: ResourceDoc[] = [
-  {
-    id: "doc-01",
-    title: "01. Advantcore BA Programme Handbook",
-    subtitle: "The 12-Week Business Analyst Programme (Learn, Deliver, Prove, Land)",
-    documentType: "Handbook",
-    version: "Version 1.0 | Advantcore Ltd Manchester",
-    description: "Converts learning into verifiable evidence of business analysis capability. Governs the 12-week schedule, weekly study allocations (10-15 hrs/wk), project governance, and factual reference criteria.",
-    tableOfContents: [
-      "1. Programme Promise and Boundaries (Learn, Deliver, Prove, Land)",
-      "2. 12-Week Master Pathway Milestones & Review Gates",
-      "3. Client Context: Advantcore Client Enquiry-to-Delivery Transformation",
-      "4. Stakeholder Team: Sarah Mitchell, Marcus Cole, Priya Shah, Helen Grant",
-      "5. Portfolio Standards & Non-Employment Compliance",
-    ],
-    keyHighlights: [
-      "BCS Foundation Certificate in Business Analysis primary syllabus target",
-      "Rigorous quality gates: Knowledge, Project, Conduct, and Portfolio gates",
-      "Advantcore digital agency and bespoke software delivery operational model",
-    ],
-  },
-  {
-    id: "doc-02",
-    title: "02. BCS Foundation Study Guide & Timed Mocks",
-    subtitle: "14-Module Syllabus Revision Notes, Practice Scenarios & Timed Mocks",
-    documentType: "Study Guide",
-    version: "Version 1.0 | BCS 4th Edition Aligned",
-    description: "Structured revision guide matching the official BCS syllabus. Includes closed-book recall guidelines, 8-week certification plan, and two 40-question mock exams (Mock A and Mock B).",
-    tableOfContents: [
-      "1. 8-Week Certification Schedule & Syllabus Mapping",
-      "2. Modules 1-3: Lifecycle, Competencies & Strategy Analysis",
-      "3. Modules 4-6: Investigation Techniques & Stakeholder Management",
-      "4. Modules 7-8: Process Modelling (BPMN Swimlanes) & Options Appraisal",
-      "5. Modules 9-10: Business Case Development & Requirements Engineering",
-      "6. Modules 11-14: Requirements Validation, Traceability, UAT & Benefits",
-      "7. Mock Exam A & B Answer Keys with Rationale",
-    ],
-    keyHighlights: [
-      "Official BCS Examination: 40 questions, 60 minutes, 65% pass mark (26/40)",
-      "Topic recall logs and scenario decision frameworks",
-      "Strict distinction between business problems and technical solution assumptions",
-    ],
-  },
-  {
-    id: "doc-03",
-    title: "03. Advantcore BA Work Experience & Portfolio Toolkit",
-    subtitle: "Editable Delivery Templates & Verified Project Deliverables",
-    documentType: "Toolkit",
-    version: "Version 1.0 | Advantcore Delivery Workspace",
-    description: "Standard delivery pack containing 10 verified templates used on Advantcore's Enquiry-to-Delivery Transformation project. Prepares learners for independent supervisor reviews.",
-    tableOfContents: [
-      "Template 1: Executive Problem Statement & Context Analysis",
-      "Template 2: Advantcore Project Charter & Scope Boundaries",
-      "Template 3: Stakeholder Identification & RACI Governance Matrix",
-      "Template 4: As-Is Process Swimlane Diagram & Pain Points",
-      "Template 5: Gap Analysis & Options Appraisal Matrix",
-      "Template 6: Formal Requirements Catalogue (Functional, NFR, Business)",
-      "Template 7: To-Be Target Operating Process Model",
-      "Template 8: Executive Business Case & Cost-Benefit Analysis",
-      "Template 9: User Acceptance Testing (UAT) & Traceability Matrix",
-      "Template 10: Change Impact & Transition Assessment",
-    ],
-    keyHighlights: [
-      "10 real deliverable templates with clear acceptance criteria",
-      "Direct integration with Sarah Mitchell (Sponsor) and Helen Grant (Reviewer)",
-      "Factual case study building for post-programme interviews",
-    ],
-  },
-  {
-    id: "doc-04",
-    title: "04. Business Analyst Job Landing Playbook",
-    subtitle: "Position Verified Experience, Target BA Lanes & Ace Technical Interviews",
-    documentType: "Playbook",
-    version: "Version 1.0 | Career Execution Guide",
-    description: "Strategic career guide mapping verified project experience to the UK job market. Details 4 target BA lanes, CV bullet formulas, STAR interview scenarios, and recruiter positioning.",
-    tableOfContents: [
-      "1. Choosing Your Target Lane (Digital/IT BA, Process BA, Change BA, Product BA)",
-      "2. Translating Advantcore Evidence into CV & LinkedIn Bullets",
-      "3. The 10 Essential BA Interview Scenarios & STAR Responses",
-      "4. Whiteboard & Process Mapping Technical Assessment Prep",
-      "5. Weekly Campaign Execution & Recruiter Outreach Scripts",
-    ],
-    keyHighlights: [
-      "4 distinct career lane positioning strategies",
-      "Truth in simulation guidelines (ethical representation of simulated projects)",
-      "Conversion tracking metrics (applications -> screening -> interviews -> offers)",
-    ],
-  },
-  {
-    id: "doc-05",
-    title: "05. Official BCS Textbook Guide (Debra Paul & James Cadle)",
-    subtitle: "Business Analysis (4th Edition, BCS The Chartered Institute for IT)",
-    documentType: "Textbook",
-    version: "4th Edition · Official Core Reference",
-    description: "The definitive textbook for business analysis certification and practice. Cross-referenced throughout the Academy's 6 curriculum modules and AI tutoring responses.",
-    tableOfContents: [
-      "Chapter 1: What is Business Analysis?",
-      "Chapter 2: The Competencies of a Business Analyst",
-      "Chapter 3: Strategy Analysis",
-      "Chapter 4: The Business Analysis Process Model",
-      "Chapter 5: Investigation Techniques",
-      "Chapter 6: Stakeholder Analysis and Management",
-      "Chapter 7: Modelling Business Processes",
-      "Chapter 8: Defining the Solution",
-      "Chapter 9: Making a Business Case",
-      "Chapter 10: Establishing the Requirements",
-      "Chapter 11: Documenting and Modelling Requirements",
-      "Chapter 12: Validating and Managing Requirements",
-      "Chapter 13: Delivering the Requirements",
-      "Chapter 14: Delivering the Business Solution",
-    ],
-    keyHighlights: [
-      "Debra Paul, James Cadle, Malcolm Eva, Craig Rollason, Jonathan Hunsley",
-      "The authoritative reference standard for BCS Foundation exams",
-      "Integrated into Academy quiz explanations and module deep-dives",
-    ],
-  },
-]
+import { Button } from "@/components/ui/button"
+import { fullResourceDocuments, type ResourceDocumentDetail } from "@/lib/learning/resource-documents"
 
 export function ResourceLibrary() {
-  const [selectedDoc, setSelectedDoc] = useState<ResourceDoc>(programmeResources[0])
+  const [selectedDoc, setSelectedDoc] = useState<ResourceDocumentDetail>(fullResourceDocuments[0])
   const [searchQuery, setSearchQuery] = useState("")
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<"overview" | "reader">("reader")
 
-  const filteredDocs = programmeResources.filter(doc =>
+  const filteredDocs = fullResourceDocuments.filter(doc =>
     doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doc.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doc.documentType.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const activeSection = activeSectionId
+    ? selectedDoc.sections.find(s => s.id === activeSectionId) || selectedDoc.sections[0]
+    : selectedDoc.sections[0]
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl border border-[#183f35]/20 shadow-sm" style={{ background: "linear-gradient(135deg, #183f35 0%, #0e2820 100%)", color: "white" }}>
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl border border-[#183f35]/20 shadow-sm text-white"
+        style={{ background: "linear-gradient(135deg, #183f35 0%, #0e2820 100%)" }}
+      >
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge className="bg-white/20 text-white border-white/30 text-xs">
-              Complete Programme Pack
+              Complete Knowledge & Reference Hub
             </Badge>
-            <span className="text-xs opacity-70">· 5 Core Guides & BCS Textbook</span>
+            <span className="text-xs opacity-70">· 5 Full Text Guides & BCS Textbook Study Packs</span>
           </div>
-          <h2 className="text-2xl font-bold tracking-tight">Programme Library & Course Materials</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Programme Library & Source Materials</h2>
           <p className="text-xs opacity-80 max-w-2xl leading-relaxed">
-            All curriculum guides, delivery toolkits, mock examination papers, job playbooks, and the official BCS 4th Edition textbook reading guides are available here for reference.
+            Access the complete syllabus study guides, official BCS 4th Edition textbook notes, delivery toolkits, mock examination keys, and job landing playbooks directly on the platform.
           </p>
         </div>
 
         <div className="relative w-full md:w-64">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-60" style={{ color: "white" }} />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/60" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search guides & chapters..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border focus:outline-none focus:ring-2"
-            style={{ background: "rgba(255,255,255,0.12)", borderColor: "rgba(255,255,255,0.25)", color: "white" }}
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border focus:outline-none focus:ring-2 bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
       </div>
 
-      {/* Grid: Master List on Left, Detail Viewer on Right */}
+      {/* Grid: Master List on Left, Interactive Viewer on Right */}
       <div className="grid lg:grid-cols-12 gap-6">
         {/* Left Column: Document Cards */}
-        <div className="lg:col-span-5 space-y-3">
+        <div className="lg:col-span-4 space-y-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+            Available Resource Packs ({filteredDocs.length})
+          </div>
           {filteredDocs.map(doc => {
             const isSelected = selectedDoc.id === doc.id
             return (
               <button
                 type="button"
                 key={doc.id}
-                onClick={() => setSelectedDoc(doc)}
+                onClick={() => {
+                  setSelectedDoc(doc)
+                  setActiveSectionId(doc.sections[0]?.id || null)
+                }}
                 className={`w-full p-4 rounded-xl border text-left transition-all cursor-pointer ${
                   isSelected
-                    ? "bg-card border-primary ring-1 ring-primary/40 shadow-sm"
+                    ? "bg-card border-primary ring-2 ring-primary/40 shadow-sm"
                     : "bg-card/50 border-border hover:bg-card hover:border-border/80"
                 }`}
               >
@@ -199,85 +85,195 @@ export function ResourceLibrary() {
                   <Badge variant="outline" className="text-[10px] font-semibold uppercase">
                     {doc.documentType}
                   </Badge>
-                  <span className="text-[11px] text-muted-foreground">{doc.version}</span>
+                  <span className="text-[11px] text-muted-foreground">{doc.version.split("|")[0].trim()}</span>
                 </div>
                 <div className="font-semibold text-sm text-foreground line-clamp-1">{doc.title}</div>
                 <div className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
                   {doc.description}
+                </div>
+                <div className="flex items-center gap-1 mt-2.5 text-[11px] text-primary font-medium">
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>{doc.sections.length} readable chapters / sections</span>
                 </div>
               </button>
             )
           })}
         </div>
 
-        {/* Right Column: Active Document Viewer */}
-        <div className="lg:col-span-7">
-          <Card className="border shadow-xs">
-            <CardHeader className="space-y-2 border-b pb-4">
+        {/* Right Column: Active Document Viewer / Reader */}
+        <div className="lg:col-span-8">
+          <Card className="border shadow-xs flex flex-col h-full">
+            <CardHeader className="space-y-3 border-b pb-4 bg-muted/10">
               <div className="flex items-center justify-between">
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                  {selectedDoc.documentType} Document
-                </Badge>
-                <span className="text-xs text-muted-foreground">{selectedDoc.version}</span>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                    {selectedDoc.documentType} Pack
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">{selectedDoc.version}</span>
+                </div>
+                {/* View Mode Toggle */}
+                <div className="flex gap-1 bg-muted p-1 rounded-lg border text-xs">
+                  <button
+                    type="button"
+                    className={`px-2.5 py-1 rounded font-medium transition-all ${viewMode === "reader" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setViewMode("reader")}
+                  >
+                    <BookOpen className="w-3.5 h-3.5 inline mr-1" /> Full Reader
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-2.5 py-1 rounded font-medium transition-all ${viewMode === "overview" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setViewMode("overview")}
+                  >
+                    <FileText className="w-3.5 h-3.5 inline mr-1" /> Overview
+                  </button>
+                </div>
               </div>
-              <CardTitle className="text-xl font-bold">{selectedDoc.title}</CardTitle>
-              <CardDescription className="text-xs leading-relaxed text-muted-foreground">
-                {selectedDoc.subtitle}
-              </CardDescription>
+
+              <div>
+                <CardTitle className="text-xl font-bold text-foreground">{selectedDoc.title}</CardTitle>
+                <CardDescription className="text-xs leading-relaxed text-muted-foreground mt-1">
+                  {selectedDoc.subtitle}
+                </CardDescription>
+              </div>
+
+              {/* Section Tabs inside Reader */}
+              {viewMode === "reader" && selectedDoc.sections.length > 0 && (
+                <div className="flex gap-1.5 overflow-x-auto pt-2 pb-1 border-t">
+                  {selectedDoc.sections.map((section, idx) => {
+                    const isActive = (activeSectionId || selectedDoc.sections[0].id) === section.id
+                    return (
+                      <button
+                        type="button"
+                        key={section.id}
+                        onClick={() => setActiveSectionId(section.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        <span className="opacity-80">#{idx + 1}</span>
+                        <span>{section.title.split(":")[0].replace(/^\d+\.\s*/, "")}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </CardHeader>
 
-            <CardContent className="p-6 space-y-6">
-              {/* Document Overview */}
-              <div className="space-y-2">
-                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Overview & Purpose
-                </div>
-                <p className="text-xs text-foreground leading-relaxed">
-                  {selectedDoc.description}
-                </p>
-              </div>
-
-              {/* Key Highlights */}
-              <div className="p-4 rounded-xl bg-muted/40 border space-y-2.5">
-                <div className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                  <Award className="w-4 h-4" />
-                  Key Standards & Principles
-                </div>
-                <ul className="space-y-1.5">
-                  {selectedDoc.keyHighlights.map((highlight, idx) => (
-                    <li key={idx} className="text-xs flex items-start gap-2 text-muted-foreground">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>{highlight}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Table of Contents / Syllabus Structure */}
-              <div className="space-y-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Bookmark className="w-4 h-4" />
-                  Structure & Syllabus Sections
-                </div>
-                <div className="space-y-2">
-                  {selectedDoc.tableOfContents.map((section, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2.5 rounded-lg border bg-background text-xs font-medium flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
-                          {idx + 1}
-                        </span>
-                        <span>{section}</span>
-                      </div>
-                      <Badge variant="outline" className="text-[10px] text-muted-foreground">
-                        Verified
-                      </Badge>
+            <CardContent className="p-6 flex-1 flex flex-col">
+              {viewMode === "overview" ? (
+                <div className="space-y-6">
+                  {/* Document Overview */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Overview & Scope
                     </div>
-                  ))}
+                    <p className="text-xs text-foreground leading-relaxed bg-muted/20 p-4 rounded-xl border">
+                      {selectedDoc.description}
+                    </p>
+                  </div>
+
+                  {/* Key Highlights */}
+                  <div className="p-4 rounded-xl bg-muted/40 border space-y-2.5">
+                    <div className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                      <Award className="w-4 h-4" />
+                      Key Standards & Syllabus References
+                    </div>
+                    <ul className="space-y-1.5">
+                      {selectedDoc.keyHighlights.map((highlight, idx) => (
+                        <li key={idx} className="text-xs flex items-start gap-2 text-muted-foreground">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                          <span className="text-foreground">{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Table of Contents */}
+                  <div className="space-y-3">
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <Bookmark className="w-4 h-4" />
+                      Document Contents & Sections ({selectedDoc.sections.length})
+                    </div>
+                    <div className="space-y-2">
+                      {selectedDoc.sections.map((section, idx) => (
+                        <div
+                          key={section.id}
+                          onClick={() => {
+                            setActiveSectionId(section.id)
+                            setViewMode("reader")
+                          }}
+                          className="p-3 rounded-lg border bg-background hover:border-primary/50 transition-all text-xs font-medium flex items-center justify-between cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
+                              {idx + 1}
+                            </span>
+                            <span className="font-semibold text-foreground">{section.title}</span>
+                          </div>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary">
+                            Read <ChevronRight className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* Full Text Reader View */
+                <div className="flex-1 flex flex-col space-y-4">
+                  <div className="flex items-center justify-between border-b pb-3">
+                    <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-primary" />
+                      {activeSection?.title}
+                    </h3>
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                      Full Study Text
+                    </Badge>
+                  </div>
+
+                  <div className="flex-1 min-h-[350px] max-h-[500px] overflow-y-auto pr-2 space-y-3 text-xs leading-relaxed text-foreground font-sans bg-background p-4 rounded-xl border">
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-xs space-y-2 whitespace-pre-wrap">
+                      {activeSection?.content}
+                    </div>
+                  </div>
+
+                  {/* Section Navigator Footer */}
+                  <div className="flex items-center justify-between pt-3 border-t text-xs">
+                    <span className="text-muted-foreground">
+                      Section {selectedDoc.sections.findIndex(s => s.id === activeSection?.id) + 1} of {selectedDoc.sections.length}
+                    </span>
+                    <div className="flex gap-2">
+                      {selectedDoc.sections.findIndex(s => s.id === activeSection?.id) > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const currentIdx = selectedDoc.sections.findIndex(s => s.id === activeSection?.id)
+                            setActiveSectionId(selectedDoc.sections[currentIdx - 1].id)
+                          }}
+                        >
+                          Previous Section
+                        </Button>
+                      )}
+                      {selectedDoc.sections.findIndex(s => s.id === activeSection?.id) < selectedDoc.sections.length - 1 && (
+                        <Button
+                          size="sm"
+                          className="primary-action"
+                          onClick={() => {
+                            const currentIdx = selectedDoc.sections.findIndex(s => s.id === activeSection?.id)
+                            setActiveSectionId(selectedDoc.sections[currentIdx + 1].id)
+                          }}
+                        >
+                          Next Section
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
