@@ -131,7 +131,7 @@ export function GuidedBuilder() {
     { num: 1, label: "Career pathway", icon: CircleDot },
     { num: 2, label: "Certification", icon: Award },
     { num: 3, label: "Workplace project", icon: Briefcase },
-    { num: 4, label: "AI colleagues", icon: Users },
+    { num: 4, label: "Stakeholder roles", icon: Users },
     { num: 5, label: "Review & publish", icon: Eye },
   ]
 
@@ -353,8 +353,8 @@ export function GuidedBuilder() {
                 <div className="form-heading">
                   <div>
                     <p className="eyebrow">Step 4 of 5</p>
-                    <h2>Stakeholder team & AI characters</h2>
-                    <p>Define the virtual colleagues, prompt behaviors, coaching styles, and knowledge scopes.</p>
+                    <h2>Stakeholder team & supervisory roles</h2>
+                    <p>Define the project stakeholders, supervisory responsibilities, coaching styles, and knowledge scopes.</p>
                   </div>
                 </div>
 
@@ -422,7 +422,7 @@ export function GuidedBuilder() {
                     </div>
                     <div>
                       <span className="text-muted-foreground text-xs block">Virtual Team</span>
-                      <strong>{characters.length} Stakeholder Characters</strong> (Grounded in {projectCode})
+                      <strong>{characters.length} Stakeholder Roles</strong> (Grounded in {projectCode})
                     </div>
                   </div>
                 </div>
@@ -437,7 +437,7 @@ export function GuidedBuilder() {
                   <div className="text-sm">
                     <strong>Administrator Publication Approval</strong>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      I confirm that all syllabus rules, questions, project stages, and AI character guardrails meet Advantcore Academy governance standards.
+                      I confirm that all syllabus rules, questions, project stages, and stakeholder guardrails meet Advantcore Academy governance standards.
                     </p>
                   </div>
                 </label>

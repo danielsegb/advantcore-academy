@@ -162,9 +162,9 @@ export function MeetingRoomView() {
   return (
     <div className="page-stack meeting-page">
       <SectionTitle
-        eyebrow="AI meeting room"
+        eyebrow="Meeting room"
         title="Project scoping meeting"
-        copy="A context-aware simulation with spoken responses, live transcript, recording controls, and document-grounded AI characters."
+        copy="A context-aware simulation with spoken responses, live transcript, recording controls, and document-grounded project stakeholders."
         actions={
           <>
             <Badge className={live ? "live-badge" : "scheduled-badge"}>

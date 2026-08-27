@@ -102,7 +102,7 @@ export function KnowledgeSourcesTab() {
               <DialogHeader>
                 <DialogTitle>Register approved knowledge source</DialogTitle>
                 <DialogDescription>
-                  Enter the verified source metadata. AI characters will ground their knowledge exclusively in approved materials.
+                  Enter the verified source metadata. Stakeholder personas will ground their responses exclusively in approved materials.
                 </DialogDescription>
               </DialogHeader>
 

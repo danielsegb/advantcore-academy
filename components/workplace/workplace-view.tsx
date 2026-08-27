@@ -209,7 +209,7 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
             <h2>Your Advantcore team</h2>
           </div>
           <span className="ai-label">
-            <Sparkles /> Context-aware AI characters
+            <Sparkles /> Context-aware project stakeholders
           </span>
         </div>
         <div className="people-grid">

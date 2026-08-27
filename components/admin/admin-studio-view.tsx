@@ -28,7 +28,7 @@ export function AdminStudioView() {
       <SectionTitle
         eyebrow="Admin studio"
         title="Build and govern career experiences"
-        copy="Create pathways, companies, projects, AI colleagues and approved knowledge sources without hard-coding the platform."
+        copy="Create pathways, companies, projects, stakeholder roles and approved knowledge sources without hard-coding the platform."
         actions={
           <>
             <Button variant="outline" onClick={() => setActiveTab("users")}>
@@ -44,7 +44,7 @@ export function AdminStudioView() {
       <section className="admin-stat-grid">
         <StatCard icon={GraduationCap} value="1" label="Live pathway" detail="Business Analysis" tone="mint" />
         <StatCard icon={BriefcaseBusiness} value="1" label="Active project" detail="Advantcore Ltd" tone="navy" />
-        <StatCard icon={UserCheck} value="4" label="AI colleagues" detail="All approved" tone="gold" />
+        <StatCard icon={UserCheck} value="4" label="Project roles" detail="All approved" tone="gold" />
         <StatCard icon={ShieldCheck} value="3" label="Managed users" detail="1 pending, 1 active, 1 suspended" tone="coral" />
       </section>
 

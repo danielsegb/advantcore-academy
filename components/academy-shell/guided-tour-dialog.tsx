@@ -35,7 +35,7 @@ export function GuidedTourDialog({ open, onOpenChange, onStartLearning }: Guided
             <span>2</span>
             <BriefcaseBusiness />
             <strong>Apply it at work</strong>
-            <p>Projects, AI stakeholders and assessed evidence.</p>
+            <p>Projects, project stakeholders and assessed evidence.</p>
           </div>
           <div>
             <span>3</span>
