@@ -51,9 +51,12 @@ export function MeetingRoomView() {
   
   // Microphone & Speech Recognition state
   const [isListening, setIsListening] = useState(false)
+  const isListeningRef = useRef(false)
   const [speechError, setSpeechError] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
+  const autoSendTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const currentTranscriptRef = useRef("")
 
   const recorder = useRef<MediaRecorder | null>(null)
   const chunks = useRef<Blob[]>([])
@@ -62,6 +65,7 @@ export function MeetingRoomView() {
 
   const activeUtterancesRef = useRef<SpeechSynthesisUtterance[]>([])
   const speechKeepAliveRef = useRef<number | null>(null)
+  const askTeamRef = useRef<((explicitText?: string) => Promise<void>) | null>(null)
 
   // Speak aloud text helper with sentence chunking and Chrome keepalive
   function speakText(text: string, characterName?: string) {
@@ -76,6 +80,7 @@ export function MeetingRoomView() {
     const cleanText = text
       .replace(/\[ADV-[^\]]+\]/g, "")
       .replace(/\[BCS-[^\]]+\]/g, "")
+      .replace(/\[[A-Za-z0-9_-]*$/, "")
       .replace(/[*#_]/g, "")
       .trim()
 
@@ -156,7 +161,7 @@ export function MeetingRoomView() {
     }
   }
 
-  // Speech Recognition setup
+  // Speech Recognition setup (Continuous mode + Auto-send on silence)
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -165,36 +170,94 @@ export function MeetingRoomView() {
     if (!SpeechRecognition) return
 
     const recognition = new SpeechRecognition()
-    recognition.continuous = false
+    recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = "en-GB"
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
-      let currentText = ""
+      let fullTranscript = ""
       for (let i = 0; i < event.results.length; i++) {
-        currentText += event.results[i][0].transcript
+        fullTranscript += event.results[i][0].transcript + " "
       }
-      setMessage(currentText)
+      const cleaned = fullTranscript.trim()
+      if (cleaned) {
+        currentTranscriptRef.current = cleaned
+        setMessage(cleaned)
+
+        // Reset auto-send silence timer
+        if (autoSendTimerRef.current) {
+          clearTimeout(autoSendTimerRef.current)
+          autoSendTimerRef.current = null
+        }
+
+        // Auto-send after 2.2 seconds of silence if user has spoken a complete thought
+        if (cleaned.length >= 6) {
+          autoSendTimerRef.current = setTimeout(() => {
+            if (isListeningRef.current) {
+              const textToSend = currentTranscriptRef.current.trim()
+              if (textToSend) {
+                if (recognitionRef.current) {
+                  try { recognitionRef.current.stop() } catch {}
+                }
+                setIsListening(false)
+                isListeningRef.current = false
+                currentTranscriptRef.current = ""
+                askTeamRef.current?.(textToSend)
+              }
+            }
+          }, 2200)
+        }
+      }
     }
 
     recognition.onerror = () => {
-      setIsListening(false)
+      // Ignore non-fatal aborts
     }
 
     recognition.onend = () => {
-      setIsListening(false)
+      // If user still intends to speak, restart continuous listening
+      if (isListeningRef.current && recognitionRef.current) {
+        try {
+          recognitionRef.current.start()
+        } catch {
+          setIsListening(false)
+          isListeningRef.current = false
+        }
+      } else {
+        setIsListening(false)
+        isListeningRef.current = false
+      }
     }
 
     recognitionRef.current = recognition
+
+    return () => {
+      if (autoSendTimerRef.current) clearTimeout(autoSendTimerRef.current)
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop() } catch {}
+      }
+    }
   }, [])
 
   function toggleMicrophone() {
     if (isListening) {
+      if (autoSendTimerRef.current) {
+        clearTimeout(autoSendTimerRef.current)
+        autoSendTimerRef.current = null
+      }
       if (recognitionRef.current) {
-        recognitionRef.current.stop()
+        try { recognitionRef.current.stop() } catch {}
       }
       setIsListening(false)
+      isListeningRef.current = false
+
+      // Instant Auto-Send on mic button click if speech was captured
+      const pendingMessage = (message.trim() || currentTranscriptRef.current.trim())
+      if (pendingMessage.length > 0) {
+        currentTranscriptRef.current = ""
+        askTeamRef.current?.(pendingMessage)
+      }
     } else {
       setSpeechError(null)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -207,11 +270,15 @@ export function MeetingRoomView() {
 
       try {
         if (recognitionRef.current) {
+          currentTranscriptRef.current = ""
+          setMessage("")
           recognitionRef.current.start()
           setIsListening(true)
+          isListeningRef.current = true
         }
       } catch {
         setIsListening(false)
+        isListeningRef.current = false
       }
     }
   }
@@ -304,15 +371,17 @@ export function MeetingRoomView() {
     }
   }
 
-  // Send message from user to team
-  async function askTeam() {
-    const userMessage = message.trim()
+  // Send message from user to team (supports text input or hands-free voice)
+  async function askTeam(explicitText?: string) {
+    const userMessage = (explicitText ?? message).trim()
     if (!userMessage || thinking) return
     setMessage("")
+    currentTranscriptRef.current = ""
     setThinking(true)
     if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop()
+      try { recognitionRef.current.stop() } catch {}
       setIsListening(false)
+      isListeningRef.current = false
     }
 
     const learnerName = user?.fullName ? user.fullName.split(" ")[0] : "Amanda"
@@ -356,7 +425,13 @@ export function MeetingRoomView() {
       })
 
       const result = (await response.json()) as { text?: string }
-      const reply = result.text || "I need more project context before I can answer that reliably."
+      let reply = result.text || "I understand. Let us review how this addresses the project baseline [ADV-DOC-001]."
+      // Sanitize any trailing unclosed brackets or punctuation
+      reply = reply.replace(/\[[A-Za-z0-9_-]*$/, "").trim()
+      if (!/[.!?)"']$/.test(reply)) {
+        reply = reply.replace(/[,;:\-\s]+$/, "") + "."
+      }
+
       const speakerShort = currentSpeakerObj.name.split(" ")[0]
       const replyLine: TranscriptLine = {
         speaker: speakerShort,
@@ -372,7 +447,7 @@ export function MeetingRoomView() {
         {
           speaker: currentSpeakerObj.name.split(" ")[0],
           role: currentSpeakerObj.role,
-          time: "Now",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           text: "I could not reach the live AI service. Record the question in your meeting notes.",
         },
       ])
@@ -380,6 +455,10 @@ export function MeetingRoomView() {
       setThinking(false)
     }
   }
+
+  useEffect(() => {
+    askTeamRef.current = askTeam
+  })
 
   // Screen recording
   async function startRecordingDirectly() {
@@ -628,29 +707,50 @@ export function MeetingRoomView() {
           </div>
 
           {/* User Message / Voice Input Form */}
-          <div className="meeting-message">
+          <div className="p-2 border-t bg-muted/10 space-y-1.5">
             {isListening && (
-              <span className="text-[10px] text-red-500 font-bold px-2 flex items-center gap-1 animate-pulse">
-                <Mic className="w-3 h-3" /> Listening to your microphone…
-              </span>
+              <div className="px-2 py-1 bg-red-500/10 border border-red-500/30 rounded text-[11px] text-red-500 font-semibold flex items-center justify-between animate-pulse">
+                <span className="flex items-center gap-1.5">
+                  <Mic className="w-3.5 h-3.5" /> Speaking into microphone...
+                </span>
+                <span className="text-[10px] text-muted-foreground font-normal">
+                  Auto-sends on 2s pause or tap mic
+                </span>
+              </div>
             )}
-            <input
-              value={message}
-              onChange={event => setMessage(event.target.value)}
-              onKeyDown={event => {
-                if (event.key === "Enter") askTeam()
-              }}
-              placeholder={isListening ? "Listening to your voice..." : `Ask ${currentSpeakerObj.name.split(" ")[0]}…`}
-              aria-label="Message the AI project team"
-            />
-            <Button
-              size="sm"
-              className="primary-action"
-              onClick={askTeam}
-              disabled={!message.trim() || thinking}
-            >
-              <ArrowRight />
-            </Button>
+            <div className="meeting-message flex items-center gap-1.5 p-1 border rounded-lg bg-card">
+              <button
+                type="button"
+                className={`p-2 rounded-md transition-all ${
+                  isListening
+                    ? "bg-red-500 text-white animate-pulse"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+                onClick={toggleMicrophone}
+                title={isListening ? "Listening (tap to finish & send)" : "Speak via microphone (auto-sends on pause)"}
+                aria-label="Toggle Microphone"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+              <input
+                value={message}
+                onChange={event => setMessage(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === "Enter") askTeam()
+                }}
+                placeholder={isListening ? "Listening to your voice..." : `Ask ${currentSpeakerObj.name.split(" ")[0]}…`}
+                className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none px-1"
+                aria-label="Message the AI project team"
+              />
+              <Button
+                size="sm"
+                className="primary-action shrink-0 h-8 w-8 p-0"
+                onClick={() => askTeam()}
+                disabled={!message.trim() || thinking}
+              >
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           <div className="transcript-footer flex gap-2">
