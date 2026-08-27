@@ -6,6 +6,16 @@ const nextConfig: NextConfig = {
   basePath,
   output: "standalone",
   poweredByHeader: false,
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "https://app.advantcore.co/academy",
+        basePath: false,
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [{
       source: "/:path*",

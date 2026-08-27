@@ -15,6 +15,18 @@ describe("Canonical Domain & Proxy Routing", () => {
     expect(response.headers.get("location")).toBe("https://app.advantcore.co/academy")
   })
 
+  it("redirects root vercel.app visits with 308 to https://app.advantcore.co/academy", () => {
+    const request = new NextRequest("https://advantcore-academy.vercel.app/", {
+      headers: {
+        host: "advantcore-academy.vercel.app",
+      },
+    })
+
+    const response = proxy(request)
+    expect(response.status).toBe(308)
+    expect(response.headers.get("location")).toBe("https://app.advantcore.co/academy")
+  })
+
   it("allows reverse-proxied traffic from app.advantcore.co without redirecting", () => {
     const request = new NextRequest("https://app.advantcore.co/academy", {
       headers: {
