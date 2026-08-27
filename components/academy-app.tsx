@@ -14,29 +14,36 @@ import { SkipToContent } from "@/components/shared/skip-to-content"
 import { OfflineBanner } from "@/components/shared/offline-banner"
 import { MustChangePasswordDialog } from "@/components/auth/must-change-password-dialog"
 import { AccountStatusGate } from "@/components/auth/account-status-gate"
+import { PortalAuthView } from "@/components/auth/portal-auth-view"
 import type { View } from "@/components/shared/types"
 
 function AcademyMainContent() {
-  const [view, setView] = useState<View>("dashboard")
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
+  const [activeView, setActiveView] = useState<View | null>(null)
 
-  // Learners cannot directly view admin studio unless role is admin
-  const currentView = view === "admin" && user?.role !== "admin" ? "dashboard" : view
+  if (!isAuthenticated || !user) {
+    return <PortalAuthView />
+  }
+
+  // Derive current view based on user selection or role default
+  const defaultView: View = user.role === "admin" ? "admin" : "dashboard"
+  const resolvedView: View = activeView || defaultView
+  const currentView = resolvedView === "admin" && user.role !== "admin" ? "dashboard" : resolvedView
 
   return (
     <AccountStatusGate>
       <SkipToContent />
       <OfflineBanner />
-      <AcademyShell currentView={currentView} onSelectView={setView}>
+      <AcademyShell currentView={currentView} onSelectView={setActiveView}>
         <ErrorBoundary>
           {currentView === "dashboard" && (
-            <DashboardView onSelectView={setView} onOpenTour={() => {}} />
+            <DashboardView onSelectView={setActiveView} onOpenTour={() => {}} />
           )}
-          {currentView === "learning" && <LearningView onSelectView={setView} />}
-          {currentView === "workplace" && <WorkplaceView onSelectView={setView} />}
+          {currentView === "learning" && <LearningView onSelectView={setActiveView} />}
+          {currentView === "workplace" && <WorkplaceView onSelectView={setActiveView} />}
           {currentView === "meetings" && <MeetingRoomView />}
           {currentView === "calendar" && <CalendarView />}
-          {currentView === "admin" && user?.role === "admin" && <AdminStudioView />}
+          {currentView === "admin" && user.role === "admin" && <AdminStudioView />}
         </ErrorBoundary>
 
         <MustChangePasswordDialog />

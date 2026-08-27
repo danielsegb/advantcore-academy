@@ -10,6 +10,15 @@ export interface GroundedSource {
 
 export const approvedProjectSources: GroundedSource[] = [
   {
+    sourceId: "ADV-HDBK-01",
+    title: "Advantcore BA Programme Handbook",
+    docType: "Programme Handbook",
+    version: "v1.0 (August 2026)",
+    section: "12-Week Roadmap & Outcome Standards",
+    content: "The 12-Week Business Analyst Programme follows 6 linked stages: learn the profession, prepare for certification, deliver genuine work, collect verified evidence, position evidence for the market, and run a disciplined job campaign. Duration: 10 to 15 hours weekly. Primary certification: BCS Foundation Certificate in Business Analysis. Primary project: Advantcore Client Enquiry-to-Delivery Improvement.",
+    applicableRoles: ["all"],
+  },
+  {
     sourceId: "ADV-DOC-001",
     title: "Advantcore Enquiry-to-Delivery Project Charter",
     docType: "Project Charter",
@@ -28,21 +37,39 @@ export const approvedProjectSources: GroundedSource[] = [
     applicableRoles: ["Operations Lead", "BA Supervisor", "Project Sponsor"],
   },
   {
-    sourceId: "BCS-BA-001",
-    title: "BCS Foundation Certificate in Business Analysis Official Syllabus",
-    docType: "Accredited Syllabus",
-    version: "v4.2",
-    section: "Professional Standards & Requirements Engineering",
-    content: "Business Analysts must investigate situations using structured techniques (POPIT, BAM, Swimlanes), elicit functional and non-functional requirements without pre-judging solution design, maintain traceability, and formulate options appraisals based on sound business cases.",
+    sourceId: "ADV-TKT-03",
+    title: "Advantcore BA Work Experience & Portfolio Toolkit",
+    docType: "Delivery Toolkit",
+    version: "v1.0",
+    section: "10 Verified Project Deliverables & Review Gates",
+    content: "Deliverables required for completion: 1. Executive Problem Statement; 2. Project Charter; 3. RACI Governance Matrix; 4. As-Is Process Swimlane Diagram; 5. Gap Analysis & Options Appraisal; 6. Formal Requirements Catalogue; 7. To-Be Target Process Model; 8. Business Case & ROI; 9. UAT Test Plan & Traceability; 10. Change Impact Assessment. Governed by Sponsor Sarah Mitchell and Reviewer Helen Grant.",
     applicableRoles: ["all"],
   },
   {
-    sourceId: "ADV-RACI-003",
-    title: "Advantcore Governance & RACI Framework",
-    docType: "Governance Matrix",
-    version: "v1.1",
-    section: "Role Accountabilities & Review Gates",
-    content: "Sarah Mitchell is Accountable for commercial project charter sign-off and business case approval. Marcus Cole is Accountable for coaching deliverable rigor and BA standards. Priya Shah is Accountable for operational workflow accuracy. Helen Grant is Accountable for independent assessment audit sign-off.",
+    sourceId: "BCS-STG-02",
+    title: "BCS Foundation Study Guide & Timed Mocks",
+    docType: "Study Guide",
+    version: "v1.0",
+    section: "14 Modules & 8-Week Certification Schedule",
+    content: "Official BCS Foundation Exam format: 40 multiple-choice questions, 60 minutes, 65% pass mark (26/40). Covers 14 syllabus modules: Business Analysis Process Model, Strategy Analysis (SWOT/PESTLE/VMOST), Investigation Techniques, Stakeholder Management & Power/Interest Matrix, Process Modelling (BPMN), Options Appraisal, Business Cases, and Requirements Engineering.",
+    applicableRoles: ["all"],
+  },
+  {
+    sourceId: "BCS-TBK-05",
+    title: "Business Analysis 4th Edition Official Textbook (Debra Paul & James Cadle)",
+    docType: "Accredited Textbook",
+    version: "4th Edition (BCS Publishing)",
+    section: "Core Principles & Technique Taxonomy",
+    content: "Authors: Debra Paul, James Cadle, Malcolm Eva, Craig Rollason, Jonathan Hunsley. Establishes the authoritative taxonomy for business analysis: POPIT (People, Organisation, Process, Information, Technology), Business Activity Models (BAM), CATWOE, RACI, Functional vs Non-Functional requirements, MoSCoW prioritisation, and Investment Appraisal (Payback, DCF, IRR).",
+    applicableRoles: ["all"],
+  },
+  {
+    sourceId: "ADV-JOB-04",
+    title: "Business Analyst Job Landing Playbook",
+    docType: "Career Playbook",
+    version: "v1.0",
+    section: "Target BA Lanes & STAR Interview Preparation",
+    content: "Maps verified Advantcore project experience to 4 UK job market lanes: Digital/IT BA, Business/Process BA, Change/Project Analyst, and Product Analyst. Focuses on articulating verified deliverables, defending design decisions with evidence, and adhering to strict non-employment truth standards.",
     applicableRoles: ["all"],
   },
 ]
@@ -58,26 +85,18 @@ export function retrieveGroundedContext(
   // Filter sources applicable to project and character role
   const matchedSources = approvedProjectSources.filter(src => {
     if (!characterRole || characterRole === "all") return true
-    return src.applicableRoles.includes("all") || src.applicableRoles.some(r => characterRole.toLowerCase().includes(r.toLowerCase()))
+    return src.applicableRoles.includes("all") || src.applicableRoles.includes(characterRole)
   })
 
-  const sourcesList = matchedSources.map(s => ({
-    sourceId: s.sourceId,
-    title: s.title,
-    section: s.section,
-  }))
+  // Format into delimiter-encapsulated XML string
+  const sourcePayloads = matchedSources.map(s => {
+    return `<source id="${s.sourceId}" doc_type="${s.docType}" version="${s.version}" section="${s.section}">\n${s.content}\n</source>`
+  })
 
-  const formattedDocs = matchedSources
-    .map(
-      s => `<source id="${s.sourceId}" title="${s.title}" section="${s.section}" version="${s.version}">
-${s.content}
-</source>`
-    )
-    .join("\n\n")
+  const formattedContext = `<approved_project_sources project_code="${projectCode}">\n${sourcePayloads.join("\n\n")}\n</approved_project_sources>`
 
-  const formattedContext = `<approved_project_sources project="${projectCode}">
-${formattedDocs}
-</approved_project_sources>`
-
-  return { formattedContext, sources: sourcesList }
+  return {
+    formattedContext,
+    sources: matchedSources.map(s => ({ sourceId: s.sourceId, title: s.title, section: s.section })),
+  }
 }

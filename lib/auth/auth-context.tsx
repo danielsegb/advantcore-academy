@@ -32,7 +32,7 @@ const DEFAULT_DEMO_LEARNER: UserProfile = {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(DEFAULT_DEMO_ADMIN)
+  const [user, setUser] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const fetchProfile = useCallback(async (userId: string) => {
