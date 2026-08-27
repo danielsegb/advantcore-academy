@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button"
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
-  SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuBadge,
+  SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu,
   SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail,
   SidebarSeparator, SidebarTrigger,
 } from "@/components/ui/sidebar"
@@ -25,8 +25,8 @@ export const navItems = [
   { id: "dashboard" as View, label: "Home", icon: LayoutDashboard },
   { id: "learning" as View, label: "Learning studio", icon: GraduationCap },
   { id: "workplace" as View, label: "Workplace", icon: BriefcaseBusiness },
-  { id: "meetings" as View, label: "Meeting room", icon: Video, badge: "1" },
-  { id: "calendar" as View, label: "Plan & calendar", icon: CalendarDays, badge: "3" },
+  { id: "meetings" as View, label: "Meeting room", icon: Video },
+  { id: "calendar" as View, label: "Plan & calendar", icon: CalendarDays },
 ]
 
 interface AcademyShellProps {
@@ -72,7 +72,6 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
                       <item.icon />
                       <span>{item.label}</span>
                     </SidebarMenuButton>
-                    {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

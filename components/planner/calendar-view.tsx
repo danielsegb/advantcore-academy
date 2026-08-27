@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useMemo } from "react"
 import {
   Clock3, CheckCircle2, Target, CalendarDays,
   Sparkles, ExternalLink,
@@ -14,13 +14,25 @@ import { buildEventGoogleCalendarUrl } from "@/lib/planner/google-calendar"
 import { AdaptiveScheduleDialog } from "./adaptive-schedule-dialog"
 import { full12WeekSchedule } from "@/lib/planner/schedule-data"
 import { calculateAdaptiveSchedule } from "@/lib/planner/adaptive-scheduler"
+import { useAuth } from "@/lib/auth/auth-context"
+import { getLearnerRealProgress } from "@/lib/progress/learner-progress"
 
 export function CalendarView() {
-  const [selectedWeekNum, setSelectedWeekNum] = useState(5)
+  const { user } = useAuth()
+  const progress = useMemo(() => getLearnerRealProgress(user?.id), [user?.id])
+
+  // Calculate current active week based on real learner progress
+  const activeWeekNum = useMemo(() => {
+    if (progress.overallScore >= 100) return 12
+    const week = Math.floor(progress.overallScore / 8.5) + 1
+    return Math.max(1, Math.min(12, week))
+  }, [progress.overallScore])
+
+  const [selectedWeekNum, setSelectedWeekNum] = useState(activeWeekNum)
   const [isAccelerated, setIsAccelerated] = useState(false)
 
-  const selectedWeek = full12WeekSchedule.find(w => w.weekNumber === selectedWeekNum) || full12WeekSchedule[4]
-  const adaptivePlan = calculateAdaptiveSchedule(full12WeekSchedule, 5, isAccelerated ? 14 : 12)
+  const selectedWeek = full12WeekSchedule.find(w => w.weekNumber === selectedWeekNum) || full12WeekSchedule[0]
+  const adaptivePlan = calculateAdaptiveSchedule(full12WeekSchedule, activeWeekNum, isAccelerated ? 14 : 12)
 
   const daysList = ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
@@ -52,13 +64,25 @@ export function CalendarView() {
       />
 
       <section className="calendar-summary">
-        <StatCard icon={Clock3} value={`${selectedWeek.hoursEstimated}h`} label="Workload this week" detail={selectedWeek.moduleTitle} tone="mint" />
-        <StatCard icon={CheckCircle2} value={isAccelerated ? "14 days" : "12 days"} label="Pace status" detail="Ahead of schedule" tone="navy" />
+        <StatCard
+          icon={Clock3}
+          value={`${selectedWeek.hoursEstimated}h`}
+          label="Workload this week"
+          detail={selectedWeek.moduleTitle}
+          tone="mint"
+        />
+        <StatCard
+          icon={CheckCircle2}
+          value={isAccelerated ? "Accelerated" : "On track"}
+          label="Pace status"
+          detail={isAccelerated ? `Pace: 14h/wk (${adaptivePlan.acceleratedWeeks} wks)` : "Standard pace · 12 weeks"}
+          tone="navy"
+        />
         <StatCard
           icon={Target}
-          value={isAccelerated ? adaptivePlan.estimatedCompletionDate.split(" ")[0] + " " + adaptivePlan.estimatedCompletionDate.split(" ")[1] : "30 Oct"}
-          label="Forecast completion"
-          detail={isAccelerated ? `Accelerated (${adaptivePlan.acceleratedWeeks} wks)` : "Original: 13 Nov"}
+          value={isAccelerated ? adaptivePlan.estimatedCompletionDate.split(" ")[0] + " " + adaptivePlan.estimatedCompletionDate.split(" ")[1] : "12 Weeks"}
+          label="Target completion"
+          detail={isAccelerated ? `Graduation compressed by ${12 - adaptivePlan.acceleratedWeeks} weeks` : "Target: 12-week graduation"}
           tone="gold"
         />
       </section>
@@ -73,28 +97,32 @@ export function CalendarView() {
         </div>
 
         <div className="flex gap-1.5 overflow-x-auto pb-2">
-          {full12WeekSchedule.map(w => (
-            <button
-              key={w.weekNumber}
-              onClick={() => setSelectedWeekNum(w.weekNumber)}
-              className={`p-2.5 rounded-lg border text-left min-w-[130px] shrink-0 transition-all ${
-                w.weekNumber === selectedWeekNum
-                  ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : w.status === "done"
-                  ? "bg-muted/40 text-muted-foreground"
-                  : "bg-card hover:bg-muted/20"
-              }`}
-            >
-              <div className="flex items-center justify-between text-xs font-semibold">
-                <span>W{w.weekNumber}</span>
-                <Badge variant={w.status === "done" ? "outline" : w.weekNumber === 5 ? "default" : "secondary"} className="text-[10px] px-1 py-0">
-                  {w.status === "done" ? "Done" : w.weekNumber === 5 ? "Active" : "Planned"}
-                </Badge>
-              </div>
-              <strong className="text-xs block mt-1 line-clamp-1">{w.title}</strong>
-              <small className="text-[11px] text-muted-foreground block">{w.hoursEstimated}h workload</small>
-            </button>
-          ))}
+          {full12WeekSchedule.map(w => {
+            const isDone = w.weekNumber < activeWeekNum
+            const isActive = w.weekNumber === activeWeekNum
+            return (
+              <button
+                key={w.weekNumber}
+                onClick={() => setSelectedWeekNum(w.weekNumber)}
+                className={`p-2.5 rounded-lg border text-left min-w-[130px] shrink-0 transition-all ${
+                  w.weekNumber === selectedWeekNum
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : isDone
+                    ? "bg-muted/40 text-muted-foreground"
+                    : "bg-card hover:bg-muted/20"
+                }`}
+              >
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span>W{w.weekNumber}</span>
+                  <Badge variant={isDone ? "outline" : isActive ? "default" : "secondary"} className="text-[10px] px-1 py-0">
+                    {isDone ? "Done" : isActive ? "Active" : "Planned"}
+                  </Badge>
+                </div>
+                <strong className="text-xs block mt-1 line-clamp-1">{w.title}</strong>
+                <small className="text-[11px] text-muted-foreground block">{w.hoursEstimated}h workload</small>
+              </button>
+            )
+          })}
         </div>
       </section>
 
@@ -102,11 +130,12 @@ export function CalendarView() {
       <section className="week-board">
         {daysList.map(dayName => {
           const dayEvents = selectedWeek.events.filter(e => e.day === dayName)
+          const isCurrentActiveDay = dayName === "Mon" && selectedWeekNum === activeWeekNum
           return (
-            <div className={`day-column ${dayName === "Wed" && selectedWeekNum === 5 ? "today" : ""}`} key={dayName}>
+            <div className={`day-column ${isCurrentActiveDay ? "today" : ""}`} key={dayName}>
               <div className="day-head">
                 <span>{dayName}</span>
-                <strong>{dayName === "Wed" && selectedWeekNum === 5 ? "Active" : "Schedule"}</strong>
+                <strong>{isCurrentActiveDay ? "Active" : "Schedule"}</strong>
               </div>
 
               {dayEvents.length === 0 ? (

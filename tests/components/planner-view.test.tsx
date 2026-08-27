@@ -4,7 +4,7 @@ import { CalendarView } from "@/components/planner/calendar-view"
 import { AuthProvider } from "@/lib/auth/auth-context"
 
 describe("CalendarView Component", () => {
-  it("renders 12-week pathway roadmap and default active week", () => {
+  it("renders 12-week pathway roadmap and default active week 1", () => {
     render(
       <AuthProvider>
         <CalendarView />
@@ -12,7 +12,7 @@ describe("CalendarView Component", () => {
     )
 
     expect(screen.getByText(/12-Week Pathway Pathway Roadmap/i)).toBeInTheDocument()
-    expect(screen.getByText("As-Is Process Swimlanes")).toBeInTheDocument()
+    expect(screen.getByText("Orientation & Foundations")).toBeInTheDocument()
     expect(screen.getByText("Sync week to Google")).toBeInTheDocument()
   })
 
@@ -23,12 +23,12 @@ describe("CalendarView Component", () => {
       </AuthProvider>
     )
 
-    const week1Btn = screen.getByText("W1").closest("button")
-    if (week1Btn) {
-      fireEvent.click(week1Btn)
+    const week2Btn = screen.getByText("W2").closest("button")
+    if (week2Btn) {
+      fireEvent.click(week2Btn)
     }
 
-    expect(screen.getByText("Role of the Business Analyst")).toBeInTheDocument()
-    expect(screen.getByText("Problem Statement Deliverable")).toBeInTheDocument()
+    expect(screen.getByText(/PESTLE & Porter's 5 Forces/i)).toBeInTheDocument()
+    expect(screen.getByText(/Project Charter Formulation/i)).toBeInTheDocument()
   })
 })
