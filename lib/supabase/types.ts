@@ -9,7 +9,7 @@ export type Json =
 export type UserRole = "admin" | "learner"
 export type AccountStatus = "pending" | "active" | "suspended" | "archived"
 export type ModuleStatus = "locked" | "active" | "done"
-export type EvidenceStatus = "draft" | "submitted" | "reviewed" | "approved" | "rejected"
+export type EvidenceStatus = "draft" | "submitted" | "in_review" | "changes_requested" | "approved" | "rejected"
 export type MeetingStatus = "scheduled" | "live" | "completed" | "cancelled"
 export type ReviewDecision = "approved" | "changes_requested" | "rejected"
 
@@ -506,32 +506,46 @@ export interface Database {
           id: string
           project_id: string
           user_id: string
+          task_id: string | null
           title: string
-          stage_name: string
-          storage_path: string
+          stage_name: string | null
+          storage_path: string | null
+          content: string | null
+          version: number
           status: EvidenceStatus
+          reviewer_decision_json: Json | null
           submitted_at: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          project_id: string
+          project_id?: string
           user_id: string
+          task_id?: string | null
           title: string
-          stage_name: string
-          storage_path: string
+          stage_name?: string | null
+          storage_path?: string | null
+          content?: string | null
+          version?: number
           status?: EvidenceStatus
+          reviewer_decision_json?: Json | null
           submitted_at?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
+          project_id?: string
+          user_id?: string
+          task_id?: string | null
           title?: string
-          stage_name?: string
-          storage_path?: string
+          stage_name?: string | null
+          storage_path?: string | null
+          content?: string | null
+          version?: number
           status?: EvidenceStatus
+          reviewer_decision_json?: Json | null
           submitted_at?: string | null
           updated_at?: string
         }

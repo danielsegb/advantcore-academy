@@ -1,18 +1,19 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import {
   Activity, Video, CalendarDays, Users, FileText, Check,
-  CircleDot, UploadCloud, MoreHorizontal, Sparkles, MessageSquareText,
-  ArrowRight,
+  Sparkles, MessageSquareText, ShieldAlert,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SectionTitle } from "@/components/shared/section-title"
 import { ReadinessRing } from "@/components/shared/readiness-ring"
 import { defaultTeam } from "@/components/dashboard/dashboard-view"
-import { WorkTask } from "./work-task"
+import { EvidenceEditorDialog } from "./evidence-editor-dialog"
+import { PortfolioExportDialog } from "./portfolio-export-dialog"
+import { advantcoreProjectStages, initialEvidenceItems } from "@/lib/workplace/project-data"
+import type { EvidenceItem } from "@/lib/workplace/types"
 import type { View } from "@/components/shared/types"
 
 interface WorkplaceViewProps {
@@ -20,46 +21,47 @@ interface WorkplaceViewProps {
 }
 
 export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
-  const evidenceItems = [
-    ["Project charter", "Approved · 12 Aug"],
-    ["Stakeholder register", "Draft · Today"],
-    ["Discovery plan", "Reviewed · 24 Aug"],
-    ["Meeting minutes", "2 files · 24 Aug"],
-  ] as const
+  const [activeStageId, setActiveStageId] = useState<string>("stage-03")
+  const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>(initialEvidenceItems)
 
-  const deliveryStages = [
-    ["1", "Initiate", "done"],
-    ["2", "Discover", "active"],
-    ["3", "Analyse", ""],
-    ["4", "Design", ""],
-    ["5", "Validate", ""],
-  ] as const
+  const currentStage = advantcoreProjectStages.find(s => s.id === activeStageId) || advantcoreProjectStages[2]
+
+  function handleEvidenceSaved(saved: EvidenceItem) {
+    setEvidenceList(prev => {
+      const idx = prev.findIndex(e => e.id === saved.id || e.taskId === saved.taskId)
+      if (idx >= 0) {
+        const updated = [...prev]
+        updated[idx] = saved
+        return updated
+      }
+      return [...prev, saved]
+    })
+  }
 
   return (
     <div className="page-stack">
       <SectionTitle
         eyebrow="Virtual workplace"
         title="Advantcore delivery workspace"
-        copy="Complete genuine analysis activities, receive stakeholder feedback and build an employer-ready portfolio."
+        copy="Complete genuine analysis deliverables, receive supervisor feedback, pass independent review gates, and compile an exportable portfolio."
         actions={
           <>
-            <Select defaultValue="enquiry">
-              <SelectTrigger className="project-select">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="enquiry">Enquiry-to-delivery transformation</SelectItem>
-                <SelectItem value="client" disabled>
-                  Client portal discovery · Locked
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <PortfolioExportDialog evidenceItems={evidenceList} />
             <Button className="primary-action" onClick={() => onSelectView("meetings")}>
-              <Video /> Join project room
+              <Video className="w-4 h-4 mr-1.5" /> Project team room
             </Button>
           </>
         }
       />
+
+      {/* Non-Employment Simulation Notice */}
+      <div className="p-3 rounded-xl border border-blue-500/30 bg-blue-500/5 flex items-center justify-between text-xs">
+        <span className="flex items-center gap-2 text-blue-600 font-medium">
+          <ShieldAlert className="w-4 h-4 shrink-0" />
+          Supervised simulated project experience, not employment. Certified for career acceleration.
+        </span>
+        <Badge variant="outline" className="text-[11px]">ADV-BA-001</Badge>
+      </div>
 
       <section className="project-hero">
         <div className="project-mark">
@@ -77,96 +79,129 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
           <div className="project-facts">
             <span><CalendarDays /> 12 Aug to 30 Oct</span>
             <span><Users /> 4 stakeholders</span>
-            <span><FileText /> 8 evidence items</span>
+            <span><FileText /> {evidenceList.length} evidence items</span>
           </div>
         </div>
         <div className="project-score">
-          <ReadinessRing value={58} label="Project" tone="navy" />
-          <span>Discovery stage</span>
+          <ReadinessRing value={68} label="Project" tone="navy" />
+          <span>Stage {currentStage.stageNumber} of 5</span>
         </div>
       </section>
 
+      {/* Interactive Delivery Track */}
       <section className="stage-panel panel">
         <div className="panel-title-row">
           <div>
             <p className="eyebrow">Delivery pathway</p>
-            <h2>Stage 2 of 5 · Discovery</h2>
+            <h2>Stage {currentStage.stageNumber} of 5 · {currentStage.title}</h2>
           </div>
-          <span className="date-pill">12 days ahead</span>
+          <span className="date-pill">12 days ahead of schedule</span>
         </div>
         <div className="stage-track">
-          {deliveryStages.map(s => (
-            <div className={`stage-step ${s[2]}`} key={s[0]}>
-              <span>{s[2] === "done" ? <Check /> : s[0]}</span>
-              <strong>{s[1]}</strong>
-            </div>
+          {advantcoreProjectStages.map(s => (
+            <button
+              key={s.id}
+              className={`stage-step ${s.id === activeStageId ? "ring-2 ring-primary font-bold" : ""} ${s.status}`}
+              onClick={() => setActiveStageId(s.id)}
+            >
+              <span>{s.status === "done" ? <Check className="w-3.5 h-3.5" /> : s.stageNumber}</span>
+              <strong>{s.title}</strong>
+            </button>
           ))}
         </div>
       </section>
 
+      {/* Stage Tasks & Evidence Locker */}
       <section className="work-grid">
         <article className="panel sprint-panel">
           <div className="panel-title-row">
             <div>
-              <p className="eyebrow">Current sprint</p>
-              <h2>Understand people and process</h2>
+              <p className="eyebrow">Stage deliverables</p>
+              <h2>{currentStage.title} Tasks</h2>
             </div>
-            <Badge variant="outline">Week 5</Badge>
+            <Badge variant="outline">Stage {currentStage.stageNumber}</Badge>
           </div>
-          <div className="work-task-list">
-            <WorkTask
-              icon={<Check />}
-              title="Review current enquiry artefacts"
-              copy="Evidence approved by BA Supervisor"
-              action="Complete"
-              state="done"
-            />
-            <WorkTask
-              icon={<CircleDot />}
-              title="Map and analyse stakeholders"
-              copy="Power-interest grid · Due today"
-              action="In progress"
-              state="active"
-            />
-            <WorkTask
-              icon="3"
-              title="Run operations discovery interview"
-              copy="Priya Shah · Tomorrow at 10:00"
-              action="Prepare"
-              onClick={() => onSelectView("meetings")}
-            />
-            <WorkTask
-              icon="4"
-              title="Produce as-is process model"
-              copy="Unlocks after discovery interview"
-              action="Next"
-            />
+
+          <div className="space-y-3">
+            {currentStage.tasks.map(t => {
+              const matchedEvidence = evidenceList.find(e => e.taskId === t.id)
+              return (
+                <div key={t.id} className="p-4 border rounded-xl bg-card space-y-2">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-xs font-semibold text-primary">Task {t.taskNumber}</span>
+                      <h3 className="font-bold text-sm leading-tight">{t.title}</h3>
+                      <small className="text-muted-foreground block mt-0.5">
+                        Deliverable: {t.deliverable} · {t.assignedStakeholder}
+                      </small>
+                    </div>
+                    {matchedEvidence && (
+                      <Badge
+                        className={
+                          matchedEvidence.status === "approved"
+                            ? "bg-emerald-500 text-white"
+                            : matchedEvidence.status === "in_review"
+                            ? "bg-amber-500 text-white"
+                            : "bg-muted"
+                        }
+                      >
+                        {matchedEvidence.status.replace("_", " ").toUpperCase()}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">{t.description}</p>
+
+                  <div className="flex items-center justify-between pt-2 border-t text-xs">
+                    <span className="text-muted-foreground">{t.acceptanceCriteria.length} acceptance criteria</span>
+                    <EvidenceEditorDialog
+                      task={t}
+                      existingEvidence={matchedEvidence}
+                      onEvidenceSaved={handleEvidenceSaved}
+                    />
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </article>
 
+        {/* Evidence Locker */}
         <article className="panel evidence-panel">
           <div className="panel-title-row">
             <div>
               <p className="eyebrow">Portfolio evidence</p>
-              <h2>Evidence locker</h2>
+              <h2>Evidence locker ({evidenceList.length})</h2>
             </div>
-            <Button size="sm" variant="outline">
-              <UploadCloud /> Upload
-            </Button>
+            <PortfolioExportDialog evidenceItems={evidenceList} />
           </div>
-          {evidenceItems.map(r => (
-            <button className="evidence-row" key={r[0]}>
-              <span className="file-icon"><FileText /></span>
-              <span><strong>{r[0]}</strong><small>{r[1]}</small></span>
-              <MoreHorizontal />
-            </button>
-          ))}
-          <button className="text-link">
-            View all evidence <ArrowRight />
-          </button>
+
+          <div className="space-y-2 max-h-[480px] overflow-y-auto">
+            {evidenceList.map(ev => (
+              <div key={ev.id} className="p-3 border rounded-xl bg-card space-y-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <strong className="font-semibold">{ev.title}</strong>
+                  <Badge
+                    variant="outline"
+                    className={
+                      ev.status === "approved"
+                        ? "text-emerald-600 border-emerald-500/30"
+                        : "text-amber-600 border-amber-500/30"
+                    }
+                  >
+                    {ev.status.replace("_", " ")}
+                  </Badge>
+                </div>
+                <small className="text-muted-foreground block">
+                  v{ev.version}.0 · Updated {new Date(ev.updatedAt).toLocaleDateString()}
+                </small>
+              </div>
+            ))}
+          </div>
         </article>
       </section>
 
+      {/* Stakeholder Team */}
       <section className="panel people-board">
         <div className="panel-title-row">
           <div>
@@ -189,10 +224,10 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
                 <span>{p.role}</span>
                 <small>
                   {p.role === "BA Supervisor"
-                    ? "Coaches, challenges and signs off"
+                    ? "Coaches, challenges and reviews deliverables"
                     : p.role === "Independent Reviewer"
-                    ? "Assesses evidence independently"
-                    : "Provides project-specific decisions"}
+                    ? "Assesses evidence against BCS criteria"
+                    : "Provides project decisions and operational context"}
                 </small>
               </div>
               <Button size="sm" variant="ghost" onClick={() => onSelectView("meetings")}>
