@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useMemo } from "react"
 import {
   CircleDot, Play, BriefcaseBusiness, Sparkles, GraduationCap,
   Gauge, ClipboardCheck, Clock3, ChevronRight, ArrowRight,
@@ -13,7 +13,7 @@ import { StatCard } from "@/components/shared/stat-card"
 import { buildGoogleCalendarUrl } from "@/components/shared/calendar-utils"
 import { NotificationCenter } from "./notification-center"
 import { CareerAcceleratorDialog } from "./career-accelerator-dialog"
-import { calculateReadiness } from "@/lib/readiness/readiness-calculator"
+import { getLearnerRealProgress } from "@/lib/progress/learner-progress"
 import { useAuth } from "@/lib/auth/auth-context"
 import type { View, PathwayStaff } from "@/components/shared/types"
 
@@ -31,13 +31,7 @@ interface DashboardViewProps {
 
 export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) {
   const { user } = useAuth()
-  const readiness = calculateReadiness()
-
-  const tasks = [
-    ["Complete stakeholder power-interest grid", "Workplace · Due today", "35 min", "workplace" as View],
-    ["Finish lesson 3.4: Stakeholder management", "Learning · Due today", "25 min", "learning" as View],
-    ["Prepare discovery questions for Priya", "Meeting prep · Tomorrow", "20 min", "meetings" as View],
-  ] as const
+  const progress = useMemo(() => getLearnerRealProgress(user?.id), [user?.id])
 
   const firstName = user?.fullName ? user.fullName.split(" ")[0] : "Amanda"
 
@@ -54,9 +48,9 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
 
           <h1>Welcome, {firstName}.</h1>
           <p>
-            {readiness.overallScore > 0
-              ? "You are making progress across your certification curriculum and Advantcore project delivery."
-              : "Your Academy workspace is ready. Start with Module 1 to begin your certified pathway."}
+            {progress.overallScore > 0
+              ? "You are actively advancing your certification curriculum and workplace project delivery."
+              : "Your Academy workspace is ready. Start with Lesson 1.1 and your Executive Problem Statement to begin your pathway."}
           </p>
 
           <div className="welcome-actions flex-wrap gap-2">
@@ -74,21 +68,21 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
         </div>
 
         <div className="hero-progress">
-          <ReadinessRing value={readiness.overallScore} label="Overall" tone="mint" />
+          <ReadinessRing value={progress.overallScore} label="Overall" tone="mint" />
           <div className="hero-meta">
             <span>Overall pathway readiness</span>
-            <strong>{readiness.overallScore}% Ready</strong>
-            <small>{readiness.overallScore > 0 ? `${readiness.overallScore}% of pathway milestones achieved` : "Begin Module 1 to start tracking your progress"}</small>
+            <strong>{progress.overallScore}% Ready</strong>
+            <small>{progress.overallScore > 0 ? `${progress.overallScore}% of pathway milestones achieved` : "Begin Module 1 to start tracking your progress"}</small>
           </div>
         </div>
       </section>
 
       {/* Multi-Dimensional Readiness Metric Cards */}
       <section className="stat-grid">
-        <StatCard icon={GraduationCap} value={`${readiness.knowledgeMastery.score}%`} label="Knowledge mastery" detail={readiness.knowledgeMastery.detail} tone="mint" />
-        <StatCard icon={Gauge} value={`${readiness.mockExamScore.score}%`} label="Exam readiness" detail={readiness.mockExamScore.detail} tone="gold" />
-        <StatCard icon={BriefcaseBusiness} value={`${readiness.workplaceEvidence.score}%`} label="Workplace evidence" detail={readiness.workplaceEvidence.detail} tone="navy" />
-        <StatCard icon={ClipboardCheck} value={`${readiness.interviewReadiness.score}%`} label="Interview readiness" detail={readiness.interviewReadiness.detail} tone="coral" />
+        <StatCard icon={GraduationCap} value={`${progress.knowledgeMastery.score}%`} label="Knowledge mastery" detail={progress.knowledgeMastery.detail} tone="mint" />
+        <StatCard icon={Gauge} value={`${progress.examReadiness.score}%`} label="Exam readiness" detail={progress.examReadiness.detail} tone="gold" />
+        <StatCard icon={BriefcaseBusiness} value={`${progress.workplaceEvidence.score}%`} label="Workplace evidence" detail={progress.workplaceEvidence.detail} tone="navy" />
+        <StatCard icon={ClipboardCheck} value={`${progress.interviewReadiness.score}%`} label="Interview readiness" detail={progress.interviewReadiness.detail} tone="coral" />
       </section>
 
       <section className="dashboard-grid">
@@ -101,17 +95,17 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
             <span className="date-pill">Today</span>
           </div>
           <div className="task-list">
-            {tasks.map((task, i) => (
-              <button className="task-row" key={task[0]} onClick={() => onSelectView(task[3])}>
+            {progress.priorities.map((item, i) => (
+              <button className="task-row" key={`${item.title}-${i}`} onClick={() => onSelectView(item.view)}>
                 <span className={`task-kind k${i}`}>
-                  {i === 1 ? <BookOpen /> : i === 0 ? <BriefcaseBusiness /> : <Video />}
+                  {item.view === "learning" ? <BookOpen /> : item.view === "workplace" ? <BriefcaseBusiness /> : <Video />}
                 </span>
                 <span className="task-main">
-                  <strong>{task[0]}</strong>
-                  <small>{task[1]}</small>
+                  <strong>{item.title}</strong>
+                  <small>{item.subtitle}</small>
                 </span>
                 <span className="task-time">
-                  <Clock3 /> {task[2]}
+                  <Clock3 /> {item.duration}
                 </span>
                 <ChevronRight />
               </button>
@@ -126,13 +120,13 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
           <div className="meeting-kicker">
             <Radio /> Next live simulation
           </div>
-          <p className="eyebrow">Tomorrow · 10:00</p>
-          <h2>Stakeholder discovery interview</h2>
-          <p>Interview the Operations Lead, clarify pain points, and test your assumptions.</p>
+          <p className="eyebrow">Discovery Stage</p>
+          <h2>Project scoping meeting</h2>
+          <p>Clarify boundaries, present your draft deliverable to Sarah & Marcus, and test project assumptions.</p>
           <div className="mini-people">
-            <span className="avatar violet">PS</span>
+            <span className="avatar coral">SM</span>
             <span className="avatar blue">MC</span>
-            <span className="meeting-duration">45 min</span>
+            <span className="meeting-duration">30 min</span>
           </div>
           <div className="meeting-actions">
             <Button className="primary-action" onClick={() => onSelectView("meetings")}>
@@ -140,7 +134,7 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
             </Button>
             <Button variant="outline" asChild>
               <a
-                href={buildGoogleCalendarUrl("Stakeholder discovery interview", "Advantcore Academy simulated stakeholder interview")}
+                href={buildGoogleCalendarUrl("Project scoping meeting", "Advantcore Academy simulated stakeholder interview")}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -161,14 +155,18 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
             <Badge variant="outline">Grounded metrics</Badge>
           </div>
           <div className="trajectory-content">
-            <ReadinessRing value={readiness.knowledgeMastery.score} label="Knowledge" tone="mint" />
-            <ReadinessRing value={readiness.mockExamScore.score} label="Exam" tone="gold" />
-            <ReadinessRing value={readiness.workplaceEvidence.score} label="Evidence" tone="navy" />
+            <ReadinessRing value={progress.knowledgeMastery.score} label="Knowledge" tone="mint" />
+            <ReadinessRing value={progress.examReadiness.score} label="Exam" tone="gold" />
+            <ReadinessRing value={progress.workplaceEvidence.score} label="Evidence" tone="navy" />
             <div className="trajectory-note">
               <Sparkles />
               <div>
                 <strong>Reconciled Pathway Evidence</strong>
-                <span>Calculated from 5 passed BCS module quizzes, 40-question mock exam score, and 4 approved workplace deliverables.</span>
+                <span>
+                  {progress.overallScore > 0
+                    ? `Calculated from ${progress.knowledgeMastery.completedCount} passed lesson quizzes, ${progress.workplaceEvidence.approvedCount} approved workplace deliverables, and ${progress.examReadiness.score}% mock exam score.`
+                    : "Complete lesson quizzes, mock exams, and workplace deliverables to build your verified readiness score."}
+                </span>
               </div>
             </div>
           </div>

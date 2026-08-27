@@ -48,6 +48,13 @@ export function MockExamDialog() {
     setResult(evalResult)
     setStage("result")
 
+    if (typeof window !== "undefined") {
+      const uId = user?.id || "guest"
+      const currentScores: number[] = JSON.parse(localStorage.getItem(`advantcore_mock_scores_${uId}`) || "[]")
+      currentScores.push(evalResult.score)
+      localStorage.setItem(`advantcore_mock_scores_${uId}`, JSON.stringify(currentScores))
+    }
+
     // Optionally post to server
     if (user?.id) {
       fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/api/learning/mock-exam`, {

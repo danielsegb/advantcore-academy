@@ -60,34 +60,78 @@ export function MeetingRoomView() {
 
   const currentSpeakerObj = defaultTeam.find(p => p.name === selectedSpeaker) || defaultTeam[1]
 
-  // Speak aloud text helper
+  const activeUtterancesRef = useRef<SpeechSynthesisUtterance[]>([])
+  const speechKeepAliveRef = useRef<number | null>(null)
+
+  // Speak aloud text helper with sentence chunking and Chrome keepalive
   function speakText(text: string, characterName?: string) {
     if (!readAloud || typeof window === "undefined" || !("speechSynthesis" in window)) return
 
     window.speechSynthesis.cancel()
-    const cleanText = text.replace(/\[ADV-[^\]]+\]/g, "").replace(/\[BCS-[^\]]+\]/g, "").replace(/[*#_]/g, "")
-    const utterance = new SpeechSynthesisUtterance(cleanText)
-    utterance.rate = 0.98
-
-    // Try finding UK English voice
-    const voices = window.speechSynthesis.getVoices()
-    const ukVoice = voices.find(v => v.lang === "en-GB" || v.name.includes("UK") || v.name.includes("British"))
-    if (ukVoice) {
-      utterance.voice = ukVoice
+    if (speechKeepAliveRef.current) {
+      clearInterval(speechKeepAliveRef.current)
+      speechKeepAliveRef.current = null
     }
+
+    const cleanText = text
+      .replace(/\[ADV-[^\]]+\]/g, "")
+      .replace(/\[BCS-[^\]]+\]/g, "")
+      .replace(/[*#_]/g, "")
+      .trim()
+
+    if (!cleanText) return
+
+    // Split text into natural sentence chunks to prevent Chromium speech buffer cutoff
+    const sentences = cleanText.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g) || [cleanText]
 
     if (characterName) {
       setSpeakingCharacter(characterName)
     }
 
-    utterance.onend = () => {
-      setSpeakingCharacter(null)
-    }
-    utterance.onerror = () => {
-      setSpeakingCharacter(null)
-    }
+    const voices = window.speechSynthesis.getVoices()
+    const ukVoice = voices.find(v => v.lang === "en-GB" || v.name.includes("UK") || v.name.includes("British"))
 
-    window.speechSynthesis.speak(utterance)
+    activeUtterancesRef.current = []
+
+    sentences.forEach((sentence, index) => {
+      const trimmed = sentence.trim()
+      if (!trimmed) return
+
+      const utterance = new SpeechSynthesisUtterance(trimmed)
+      utterance.rate = 0.98
+      if (ukVoice) utterance.voice = ukVoice
+
+      if (index === sentences.length - 1) {
+        utterance.onend = () => {
+          setSpeakingCharacter(null)
+          if (speechKeepAliveRef.current) {
+            clearInterval(speechKeepAliveRef.current)
+            speechKeepAliveRef.current = null
+          }
+        }
+        utterance.onerror = () => {
+          setSpeakingCharacter(null)
+          if (speechKeepAliveRef.current) {
+            clearInterval(speechKeepAliveRef.current)
+            speechKeepAliveRef.current = null
+          }
+        }
+      }
+
+      activeUtterancesRef.current.push(utterance)
+      window.speechSynthesis.speak(utterance)
+    })
+
+    // Chrome keepalive interval to prevent speech engine sleeping during long playback
+    speechKeepAliveRef.current = window.setInterval(() => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window && window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause()
+        window.speechSynthesis.resume()
+      } else if (speechKeepAliveRef.current) {
+        clearInterval(speechKeepAliveRef.current)
+        speechKeepAliveRef.current = null
+      }
+    }, 8000)
   }
 
   // Handle Meeting Start / Pause

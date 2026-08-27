@@ -55,7 +55,7 @@ ${guardrails}
 
 The Business Analyst says: "${input.message || ""}"
 
-Respond in character in 50 to 90 words. Address the analyst directly, reference the shared document if relevant, cite sources when citing project numbers (e.g. [ADV-DOC-001]), and ask one targeted follow-up question to move the deliverable forward.`
+Respond in character in 50 to 90 words. Address the analyst directly, reference the shared document if relevant, cite sources when citing project numbers (e.g. [ADV-DOC-001]), and ask one targeted follow-up question to move the deliverable forward. Ensure your reply ends with a complete, grammatically finalized sentence.`
   }
 
   if (input.action === "quizFeedback") {

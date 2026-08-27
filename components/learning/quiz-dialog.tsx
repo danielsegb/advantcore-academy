@@ -56,8 +56,16 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
 
       const data = (await res.json()) as QuizSubmissionResult
       setResult(data)
-      if (data.masteryAchieved && onPass) {
-        onPass()
+      if (data.masteryAchieved) {
+        if (typeof window !== "undefined") {
+          const uId = user?.id || "guest"
+          const currentCompleted: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
+          if (!currentCompleted.includes(lesson.id)) {
+            currentCompleted.push(lesson.id)
+            localStorage.setItem(`advantcore_completed_lessons_${uId}`, JSON.stringify(currentCompleted))
+          }
+        }
+        if (onPass) onPass()
       }
     } catch {
       // Local fallback calculation
@@ -83,8 +91,16 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
         explanations,
       }
       setResult(res)
-      if (res.masteryAchieved && onPass) {
-        onPass()
+      if (res.masteryAchieved) {
+        if (typeof window !== "undefined") {
+          const uId = user?.id || "guest"
+          const currentCompleted: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
+          if (!currentCompleted.includes(lesson.id)) {
+            currentCompleted.push(lesson.id)
+            localStorage.setItem(`advantcore_completed_lessons_${uId}`, JSON.stringify(currentCompleted))
+          }
+        }
+        if (onPass) onPass()
       }
     } finally {
       setLoading(false)

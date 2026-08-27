@@ -18,7 +18,7 @@ async function callGroq(prompt: string, model: string, jsonMode: boolean) {
   const response = await fetchWithTimeout("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model, temperature: .35, max_tokens: 700, messages: [{ role: "user", content: prompt }], ...(jsonMode ? { response_format: { type: "json_object" } } : {}) }),
+    body: JSON.stringify({ model, temperature: .35, max_tokens: 1500, messages: [{ role: "user", content: prompt }], ...(jsonMode ? { response_format: { type: "json_object" } } : {}) }),
   })
   if (!response.ok) throw new Error(`Groq returned ${response.status}`)
   const body = await response.json() as { choices?: Array<{ message?: { content?: string } }> }
@@ -33,7 +33,7 @@ async function callGemini(prompt: string, model: string, jsonMode: boolean) {
   const response = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: .35, maxOutputTokens: 700, ...(jsonMode ? { responseMimeType: "application/json" } : {}) } }),
+    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: .35, maxOutputTokens: 1500, ...(jsonMode ? { responseMimeType: "application/json" } : {}) } }),
   })
   if (!response.ok) throw new Error(`Gemini returned ${response.status}`)
   const body = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
