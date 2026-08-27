@@ -184,6 +184,56 @@ export interface Database {
         }
         Relationships: []
       }
+      certifications: {
+        Row: {
+          id: string
+          pathway_id: string
+          title: string
+          awarding_body: string
+          exam_format: string
+          question_count: number
+          duration_minutes: number
+          pass_percentage: number
+          academy_target_percentage: number
+          source_url: string | null
+          verification_date: string
+          verified_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          pathway_id: string
+          title: string
+          awarding_body?: string
+          exam_format?: string
+          question_count?: number
+          duration_minutes?: number
+          pass_percentage?: number
+          academy_target_percentage?: number
+          source_url?: string | null
+          verification_date?: string
+          verified_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          pathway_id?: string
+          title?: string
+          awarding_body?: string
+          exam_format?: string
+          question_count?: number
+          duration_minutes?: number
+          pass_percentage?: number
+          academy_target_percentage?: number
+          source_url?: string | null
+          verification_date?: string
+          verified_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       course_modules: {
         Row: {
           id: string
