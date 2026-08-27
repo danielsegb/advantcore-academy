@@ -16,25 +16,45 @@ import { advantcoreProjectStages, initialEvidenceItems } from "@/lib/workplace/p
 import type { EvidenceItem } from "@/lib/workplace/types"
 import type { View } from "@/components/shared/types"
 
+import { useAuth } from "@/lib/auth/auth-context"
+
 interface WorkplaceViewProps {
   onSelectView: (view: View) => void
 }
 
 export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
-  const [activeStageId, setActiveStageId] = useState<string>("stage-03")
-  const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>(initialEvidenceItems)
+  const { user } = useAuth()
+  const storageKey = `advantcore_evidence_${user?.id || "guest"}`
 
-  const currentStage = advantcoreProjectStages.find(s => s.id === activeStageId) || advantcoreProjectStages[2]
+  const [activeStageId, setActiveStageId] = useState<string>("stage-01")
+  const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>(() => {
+    if (typeof window === "undefined") return initialEvidenceItems
+    try {
+      const saved = localStorage.getItem(storageKey)
+      return saved ? JSON.parse(saved) : initialEvidenceItems
+    } catch {
+      return initialEvidenceItems
+    }
+  })
+
+  const currentStage = advantcoreProjectStages.find(s => s.id === activeStageId) || advantcoreProjectStages[0]
+
+  const totalTasks = advantcoreProjectStages.reduce((acc, s) => acc + s.tasks.length, 0)
+  const approvedCount = evidenceList.filter(e => e.status === "approved").length
+  const projectScore = totalTasks > 0 ? Math.round((approvedCount / totalTasks) * 100) : 0
 
   function handleEvidenceSaved(saved: EvidenceItem) {
     setEvidenceList(prev => {
       const idx = prev.findIndex(e => e.id === saved.id || e.taskId === saved.taskId)
-      if (idx >= 0) {
-        const updated = [...prev]
-        updated[idx] = saved
-        return updated
+      const updated = idx >= 0
+        ? prev.map((item, i) => i === idx ? saved : item)
+        : [...prev, saved]
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(updated))
+      } catch {
+        // storage fallback
       }
-      return [...prev, saved]
+      return updated
     })
   }
 
@@ -83,7 +103,7 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
           </div>
         </div>
         <div className="project-score">
-          <ReadinessRing value={68} label="Project" tone="navy" />
+          <ReadinessRing value={projectScore} label="Project" tone="navy" />
           <span>Stage {currentStage.stageNumber} of 5</span>
         </div>
       </section>
@@ -95,7 +115,9 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
             <p className="eyebrow">Delivery pathway</p>
             <h2>Stage {currentStage.stageNumber} of 5 · {currentStage.title}</h2>
           </div>
-          <span className="date-pill">12 days ahead of schedule</span>
+          <span className="date-pill">
+            {projectScore > 0 ? `${approvedCount} of ${totalTasks} deliverables verified` : "Pathway In Progress"}
+          </span>
         </div>
         <div className="stage-track">
           {advantcoreProjectStages.map(s => (

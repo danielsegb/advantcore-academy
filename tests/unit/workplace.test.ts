@@ -27,10 +27,19 @@ describe("Virtual Workplace & Evidence Workflow", () => {
       return items.filter(i => i.status === "approved")
     }
 
-    const exportable = getExportablePortfolio(initialEvidenceItems)
+    const sampleItems: EvidenceItem[] = [
+      { id: "ev-1", taskId: "t-1", taskTitle: "Task 1", stageNumber: 1, title: "Doc 1", content: "...", version: 1, status: "approved", updatedAt: "2026-08-20T10:00:00Z" },
+      { id: "ev-2", taskId: "t-2", taskTitle: "Task 2", stageNumber: 1, title: "Doc 2", content: "...", version: 1, status: "in_review", updatedAt: "2026-08-20T10:00:00Z" },
+      { id: "ev-3", taskId: "t-3", taskTitle: "Task 3", stageNumber: 2, title: "Doc 3", content: "...", version: 1, status: "approved", updatedAt: "2026-08-20T10:00:00Z" },
+    ]
+
+    const exportable = getExportablePortfolio(sampleItems)
     expect(exportable.length).toBe(2)
     exportable.forEach(e => {
       expect(e.status).toBe("approved")
     })
+
+    // Confirm initial evidence items starts clean for new learners
+    expect(initialEvidenceItems.length).toBe(0)
   })
 })

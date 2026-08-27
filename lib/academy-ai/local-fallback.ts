@@ -4,6 +4,20 @@ function meetingReply(input: AcademyAIRequest): string {
   const name = input.character?.name || "Marcus Cole"
   const role = input.character?.role || "BA Supervisor"
   const question = (input.message || "").toLowerCase()
+  const doc = input.sharedDocument
+
+  if (doc && !question) {
+    if (role.toLowerCase().includes("sponsor") || name.includes("Sarah")) {
+      return `Thank you for presenting ${doc.title}. As Project Sponsor, I'm reviewing whether this aligns with our target to reduce cycle time from 14 days down to 4 days [ADV-DOC-001]. Walk me through your key assumptions.`
+    }
+    if (role.toLowerCase().includes("operation") || name.includes("Priya")) {
+      return `I can see ${doc.title} on screen. Looking at our spreadsheet bottlenecks [ADV-SOP-002], does this address the manual re-entry lag between intake and qualification?`
+    }
+    if (role.toLowerCase().includes("reviewer") || name.includes("Helen")) {
+      return `Reviewing ${doc.title} against BCS standards [BCS-BA-001]. Ensure all claims maintain traceability back to the initial problem statement.`
+    }
+    return `I am reviewing ${doc.title}. Good presentation — what specific stakeholder feedback or evidence informed this version?`
+  }
 
   if (role.toLowerCase().includes("sponsor") || name.includes("Sarah")) {
     if (question.includes("scope") || question.includes("boundary")) {

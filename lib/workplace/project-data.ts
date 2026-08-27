@@ -6,8 +6,8 @@ export const advantcoreProjectStages: ProjectStage[] = [
     stageNumber: 1,
     title: "Initiate & Scope",
     code: "STG-1",
-    status: "done",
-    progressPercentage: 100,
+    status: "active",
+    progressPercentage: 0,
     description: "Define project objectives, background context, scope boundaries, and project charter.",
     tasks: [
       {
@@ -24,8 +24,7 @@ export const advantcoreProjectStages: ProjectStage[] = [
           "Aligned with Sarah Mitchell's commercial priorities",
         ],
         assignedStakeholder: "Sarah Mitchell (Project Sponsor)",
-        status: "done",
-        evidenceId: "ev-01",
+        status: "todo",
       },
       {
         id: "task-01-02",
@@ -41,8 +40,7 @@ export const advantcoreProjectStages: ProjectStage[] = [
           "Approved by Project Sponsor",
         ],
         assignedStakeholder: "Sarah Mitchell (Project Sponsor)",
-        status: "done",
-        evidenceId: "ev-02",
+        status: "todo",
       },
     ],
   },
@@ -51,8 +49,8 @@ export const advantcoreProjectStages: ProjectStage[] = [
     stageNumber: 2,
     title: "Discover & Investigate",
     code: "STG-2",
-    status: "done",
-    progressPercentage: 100,
+    status: "locked",
+    progressPercentage: 0,
     description: "Identify stakeholders, map power-interest positions, conduct discovery interviews, and author discovery logs.",
     tasks: [
       {
@@ -69,8 +67,7 @@ export const advantcoreProjectStages: ProjectStage[] = [
           "Includes communication channel frequency for each role",
         ],
         assignedStakeholder: "Marcus Cole (BA Supervisor)",
-        status: "done",
-        evidenceId: "ev-03",
+        status: "todo",
       },
       {
         id: "task-02-02",
@@ -86,8 +83,7 @@ export const advantcoreProjectStages: ProjectStage[] = [
           "Cross-referenced with POPIT dimensions",
         ],
         assignedStakeholder: "Priya Shah (Operations Lead)",
-        status: "done",
-        evidenceId: "ev-04",
+        status: "todo",
       },
     ],
   },
@@ -96,8 +92,8 @@ export const advantcoreProjectStages: ProjectStage[] = [
     stageNumber: 3,
     title: "Analyse & Model Processes",
     code: "STG-3",
-    status: "active",
-    progressPercentage: 60,
+    status: "locked",
+    progressPercentage: 0,
     description: "Construct As-Is process swimlanes, identify bottlenecks and rework loops, and design the future-state To-Be workflow.",
     tasks: [
       {
@@ -114,8 +110,7 @@ export const advantcoreProjectStages: ProjectStage[] = [
           "Calculates average cycle time of 14 business days",
         ],
         assignedStakeholder: "Priya Shah (Operations Lead)",
-        status: "done",
-        evidenceId: "ev-05",
+        status: "todo",
       },
       {
         id: "task-03-02",
@@ -131,8 +126,7 @@ export const advantcoreProjectStages: ProjectStage[] = [
           "Targets reduction of cycle time from 14 days to 4 days",
         ],
         assignedStakeholder: "Marcus Cole (BA Supervisor)",
-        status: "in_progress",
-        evidenceId: "ev-06",
+        status: "todo",
       },
     ],
   },
@@ -224,97 +218,5 @@ export const advantcoreProjectStages: ProjectStage[] = [
   },
 ]
 
-export const initialEvidenceItems: EvidenceItem[] = [
-  {
-    id: "ev-01",
-    taskId: "task-01-01",
-    taskTitle: "Project Background & Problem Statement",
-    stageNumber: 1,
-    title: "Executive Problem Statement: Advantcore Enquiry Intake Friction",
-    content: `# Executive Problem Statement: Advantcore Enquiry Intake Friction
-**Project Code:** ADV-BA-001  
-**Author:** Amanda Okafor (Lead BA Trainee)  
-**Supervisor:** Marcus Cole  
+export const initialEvidenceItems: EvidenceItem[] = []
 
-## 1. Background & Context
-Advantcore Ltd provides specialised consulting and professional services. Over the past 12 months, client inbound enquiries have expanded by 65%, causing severe operational bottlenecks in the qualification and onboarding lifecycle.
-
-## 2. Core Problem Statements
-1. **Unstructured Inbound Channels:** Enquiries arrive via disparate email inboxes, contact web forms, and direct partner phone calls without standardized qualification data.
-2. **Spreadsheet Hand-Off Delays:** Inbound leads are manually copied into disconnected spreadsheets, causing an average lead response lag of 4.8 business days.
-3. **Delivery Misalignment:** Crucial scoping details collected during initial sales calls are frequently omitted during hand-off to delivery teams, leading to rework and project mobilization delays.
-
-## 3. Business Impact
-- 18% of qualified enterprise prospects abandon the process due to slow initial response times.
-- Delivery mobilization cycle time currently averages 14 business days against a corporate SLA target of 4 business days.`,
-    version: 1,
-    status: "approved",
-    supervisorFeedback: "Excellent problem definition. Clearly separated the business pain points from solution assumptions.",
-    reviewerDecision: {
-      reviewerName: "Helen Grant (Independent Reviewer)",
-      decision: "approved",
-      comment: "Meets BCS problem framing criteria. Traceable and well evidenced.",
-      timestamp: "2026-08-20T11:30:00Z",
-    },
-    updatedAt: "2026-08-20T11:30:00Z",
-  },
-  {
-    id: "ev-03",
-    taskId: "task-02-01",
-    taskTitle: "Stakeholder Power-Interest Matrix & RACI",
-    stageNumber: 2,
-    title: "Stakeholder Engagement Matrix & RACI Governance",
-    content: `# Stakeholder Engagement Matrix & RACI Governance
-**Project Code:** ADV-BA-001  
-**Project:** Enquiry-to-Delivery Process Transformation  
-
-## 1. Power-Interest Grid Placement
-- **Sarah Mitchell (Project Sponsor):** High Power / High Interest (Key Player) -> Manage Closely. Weekly 1:1 steering briefings.
-- **Marcus Cole (BA Supervisor):** High Power / High Interest (Key Player) -> Daily standups and deliverable quality coaching.
-- **Priya Shah (Operations Lead):** High Power / High Interest (Key Player) -> Bi-weekly process workshops and deep-dive discovery.
-- **Helen Grant (Independent Reviewer):** High Power / Low Interest (Keep Satisfied) -> Formal gate stage submissions and audit trail reviews.
-
-## 2. RACI Governance Matrix
-| Deliverable | Sarah Mitchell | Marcus Cole | Priya Shah | Amanda Okafor (BA) | Helen Grant |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Project Charter | Accountable | Consulted | Consulted | Responsible | Informed |
-| Process Swimlanes | Informed | Consulted | Accountable | Responsible | Informed |
-| Requirements Catalogue | Consulted | Accountable | Consulted | Responsible | Informed |
-| Business Case Sign-off | Accountable | Consulted | Consulted | Responsible | Informed |
-| Portfolio Final Audit | Informed | Consulted | Informed | Responsible | Accountable |`,
-    version: 1,
-    status: "approved",
-    supervisorFeedback: "The RACI matrix is unambiguous. Clear separation between operational accountability and independent governance.",
-    reviewerDecision: {
-      reviewerName: "Helen Grant (Independent Reviewer)",
-      decision: "approved",
-      comment: "RACI governance complies with BCS stakeholder analysis rubrics.",
-      timestamp: "2026-08-22T14:15:00Z",
-    },
-    updatedAt: "2026-08-22T14:15:00Z",
-  },
-  {
-    id: "ev-06",
-    taskId: "task-03-02",
-    taskTitle: "To-Be Target Operating Process Model",
-    stageNumber: 3,
-    title: "To-Be Future-State Enquiry Intake & Mobilisation Workflow",
-    content: `# To-Be Future-State Process Specification
-**Target Workflow:** Automated Intake, Dynamic Qualification & Instant Hand-off  
-
-## 1. Process Streamlining Principles
-- Eliminate manual duplicate entry between CRM and project mobilisation boards.
-- Embed mandatory qualification checklist at intake (Budget, Authority, Need, Timeline - BANT).
-- Automated notification trigger sent to Operations Lead upon qualified status.
-
-## 2. Key Process Activities
-1. **Intake Event:** Client submits structured web inquiry with automated SLA timestamp.
-2. **Automated Triage:** System verifies company domain and assigns score.
-3. **Qualification Call:** Sales consultant uses standardized dynamic script in CRM.
-4. **Instant Mobilization Trigger:** When status changes to 'Contracted', automated webhook generates project workspace and assigns delivery lead.`,
-    version: 2,
-    status: "in_review",
-    supervisorFeedback: "Very strong future-state draft. Please ensure you detail how legacy manual spreadsheets will be safely decommissioned.",
-    updatedAt: "2026-08-27T10:00:00Z",
-  },
-]

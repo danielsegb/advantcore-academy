@@ -38,6 +38,9 @@ export function buildAcademyPrompt(input: AcademyAIRequest): string {
 
   if (input.action === "meetingReply") {
     const roleGuidance = getCharacterGuidance(input.character?.role)
+    const docContext = input.sharedDocument
+      ? `\nSHARED DOCUMENT PRESENTED IN MEETING:\nTitle: ${input.sharedDocument.title}\nDeliverable: ${input.sharedDocument.deliverable || "N/A"}\nContent:\n${input.sharedDocument.content}\n`
+      : ""
 
     return `You are ${input.character?.name || "an Advantcore stakeholder"} (${input.character?.role || "Stakeholder"}).
 ${roleGuidance}
@@ -45,14 +48,14 @@ ${roleGuidance}
 PROJECT: ${input.project?.name || "Enquiry-to-delivery transformation (ADV-BA-001)"}
 COMPANY: ${input.project?.company || "Advantcore Ltd"}
 PROJECT STAGE: ${input.project?.stage || "Discovery"}
-
+${docContext}
 ${formattedContext}
 
 ${guardrails}
 
 The Business Analyst says: "${input.message || ""}"
 
-Respond in character in 50 to 90 words. Address the analyst directly, cite relevant sources when citing project numbers (e.g. [ADV-DOC-001]), and ask one targeted follow-up question to move the deliverable forward.`
+Respond in character in 50 to 90 words. Address the analyst directly, reference the shared document if relevant, cite sources when citing project numbers (e.g. [ADV-DOC-001]), and ask one targeted follow-up question to move the deliverable forward.`
   }
 
   if (input.action === "quizFeedback") {

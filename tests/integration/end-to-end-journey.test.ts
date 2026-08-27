@@ -4,7 +4,6 @@ import { evaluateMockExam } from "@/lib/mock-exam/engine"
 import { fullMockQuestionBank } from "@/lib/mock-exam/question-bank"
 import type { MockExamQuestion } from "@/lib/mock-exam/types"
 import { initialEvidenceItems, advantcoreProjectStages } from "@/lib/workplace/project-data"
-import type { EvidenceItem } from "@/lib/workplace/types"
 import { buildAcademyPrompt } from "@/lib/academy-ai/prompts"
 import { runAcademyLocalFallback } from "@/lib/academy-ai/local-fallback"
 import { generateMeetingMinutes } from "@/lib/meetings/minutes-generator"
@@ -45,9 +44,10 @@ describe("Advantcore Academy End-to-End Learner Pathway Journey", () => {
 
     // Stage 4: Workplace Project Delivery & Evidence Gates
     expect(advantcoreProjectStages.length).toBe(5)
-    expect(initialEvidenceItems.length).toBeGreaterThan(0)
-    const approvedItems = initialEvidenceItems.filter((e: EvidenceItem) => e.status === "approved")
-    expect(approvedItems.length).toBeGreaterThanOrEqual(1)
+    const totalTasks = advantcoreProjectStages.reduce((acc, s) => acc + s.tasks.length, 0)
+    expect(totalTasks).toBe(10)
+    // Verify initial clean state
+    expect(initialEvidenceItems.length).toBe(0)
 
     // Stage 5: Grounded AI Consultation & Executive Meeting Minutes
     const aiPrompt = buildAcademyPrompt({

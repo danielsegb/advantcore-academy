@@ -16,6 +16,11 @@ export type AcademyAIRequest = {
   targetRole?: string
   certification?: string
   evidence?: string
+  sharedDocument?: {
+    title: string
+    deliverable?: string
+    content: string
+  }
 }
 
 export type AcademyAIResult = {
