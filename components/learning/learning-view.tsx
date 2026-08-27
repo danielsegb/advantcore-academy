@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { SectionTitle } from "@/components/shared/section-title"
 import { ReadinessRing } from "@/components/shared/readiness-ring"
 import { QuizDialog } from "./quiz-dialog"
+import { MockExamDialog } from "./mock-exam-dialog"
 import { fullCurriculum } from "@/lib/learning/curriculum-data"
 import type { View } from "@/components/shared/types"
 
@@ -111,9 +112,7 @@ export function LearningView({ onSelectView }: LearningViewProps) {
               <strong>Mock practice</strong>
               <span>Topic, mixed or full exam</span>
             </div>
-            <Button size="sm" variant="outline">
-              Practise
-            </Button>
+            <MockExamDialog />
           </div>
         </aside>
 
