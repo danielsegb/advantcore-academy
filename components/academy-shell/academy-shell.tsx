@@ -3,7 +3,8 @@
 import React, { useMemo, useState } from "react"
 import {
   Sparkles, LayoutDashboard, GraduationCap, BriefcaseBusiness, Video,
-  CalendarDays, Settings, MoreHorizontal, Search, Bell, ChevronRight,
+  CalendarDays, Settings, LogIn, LogOut, Search, Bell, ChevronRight,
+  ShieldCheck, User,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,6 +15,8 @@ import {
 } from "@/components/ui/sidebar"
 import type { View } from "@/components/shared/types"
 import { GuidedTourDialog } from "./guided-tour-dialog"
+import { LoginDialog } from "@/components/auth/login-dialog"
+import { useAuth } from "@/lib/auth/auth-context"
 
 export const navItems = [
   { id: "dashboard" as View, label: "Home", icon: LayoutDashboard },
@@ -30,11 +33,15 @@ interface AcademyShellProps {
 }
 
 export function AcademyShell({ currentView, onSelectView, children }: AcademyShellProps) {
+  const { user, signOut, switchDemoRole } = useAuth()
   const [tourOpen, setTourOpen] = useState(false)
+  const [loginOpen, setLoginOpen] = useState(false)
 
   const activeTitle = useMemo(() => {
     return navItems.find(i => i.id === currentView)?.label ?? "Admin studio"
   }, [currentView])
+
+  const isAdmin = user?.role === "admin"
 
   return (
     <SidebarProvider>
@@ -67,30 +74,70 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          {isAdmin && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Governance</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      tooltip="Admin studio"
+                      isActive={currentView === "admin"}
+                      onClick={() => onSelectView("admin")}
+                    >
+                      <Settings />
+                      <span>Admin studio</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+
+          {/* Quick role toggle for preview/testing */}
           <SidebarGroup>
-            <SidebarGroupLabel>Manage</SidebarGroupLabel>
+            <SidebarGroupLabel>Role preview</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    tooltip="Admin studio"
-                    isActive={currentView === "admin"}
-                    onClick={() => onSelectView("admin")}
+                    onClick={() => switchDemoRole(isAdmin ? "learner" : "admin")}
+                    tooltip={`Switch to ${isAdmin ? "Learner" : "Admin"} mode`}
                   >
-                    <Settings />
-                    <span>Admin studio</span>
+                    {isAdmin ? <User /> : <ShieldCheck />}
+                    <span>{isAdmin ? "Preview as Learner" : "Switch to Admin"}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+
         <SidebarFooter>
-          <div className="sidebar-user">
-            <span className="avatar user">DE</span>
-            <span><strong>Daniel</strong><small>Learner · Admin</small></span>
-            <MoreHorizontal />
-          </div>
+          {user ? (
+            <div className="sidebar-user flex items-center justify-between">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <span className={`avatar user ${user.avatarColour}`}>{user.avatarInitials}</span>
+                <div className="truncate">
+                  <strong>{user.fullName}</strong>
+                  <small className="capitalize block">{user.role} · {user.status}</small>
+                </div>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => signOut()}
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <Button variant="outline" className="w-full" onClick={() => setLoginOpen(true)}>
+              <LogIn className="w-4 h-4 mr-2" /> Sign in
+            </Button>
+          )}
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
@@ -108,7 +155,7 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
             <span className="journey-icon"><GraduationCap /></span>
             <div>
               <small>Active pathway</small>
-              <strong>Business Analysis</strong>
+              <strong>{user?.assignedPathwayTitle || "Business Analysis"}</strong>
             </div>
             <ChevronRight />
           </div>
@@ -125,6 +172,11 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
             <Button size="sm" variant="outline" onClick={() => setTourOpen(true)}>
               <Sparkles /> Help
             </Button>
+            {!user && (
+              <Button size="sm" className="primary-action" onClick={() => setLoginOpen(true)}>
+                <LogIn className="w-4 h-4 mr-1.5" /> Sign in
+              </Button>
+            )}
           </div>
         </header>
 
@@ -136,6 +188,11 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
           open={tourOpen}
           onOpenChange={setTourOpen}
           onStartLearning={onSelectView}
+        />
+
+        <LoginDialog
+          open={loginOpen}
+          onOpenChange={setLoginOpen}
         />
       </SidebarInset>
     </SidebarProvider>

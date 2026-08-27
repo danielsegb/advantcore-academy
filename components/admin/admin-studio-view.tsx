@@ -6,12 +6,12 @@ import {
   Plus, Users, CircleDot, ChevronRight, Sparkles, WandSparkles,
   ArrowRight, UploadCloud, Check, Settings,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SectionTitle } from "@/components/shared/section-title"
 import { StatCard } from "@/components/shared/stat-card"
+import { UserManagementTab } from "./user-management-tab"
 
 export function AdminStudioView() {
   const [step, setStep] = useState("pathway")
@@ -23,12 +23,6 @@ export function AdminStudioView() {
     ["project", "3", "Work experience"],
     ["people", "4", "AI colleagues"],
     ["review", "5", "Review & publish"],
-  ] as const
-
-  const mockUsers = [
-    ["Amanda Okafor", "Business Analysis", "Pending"],
-    ["Lewis Grant", "Business Analysis", "Active"],
-    ["Nina Bello", "Unassigned", "Pending"],
   ] as const
 
   const integrations = [
@@ -181,29 +175,7 @@ export function AdminStudioView() {
         </TabsContent>
 
         <TabsContent value="users">
-          <section className="admin-table">
-            <div className="table-head">
-              <span>User</span>
-              <span>Pathway</span>
-              <span>Status</span>
-              <span>Action</span>
-            </div>
-            {mockUsers.map(r => (
-              <div className="table-row" key={r[0]}>
-                <span>
-                  <span className="avatar small blue">
-                    {r[0].split(" ").map(x => x[0]).join("")}
-                  </span>
-                  <strong>{r[0]}</strong>
-                </span>
-                <span>{r[1]}</span>
-                <Badge variant="outline">{r[2]}</Badge>
-                <Button size="sm" variant="outline">
-                  {r[2] === "Pending" ? "Review" : "Manage"}
-                </Button>
-              </div>
-            ))}
-          </section>
+          <UserManagementTab />
         </TabsContent>
 
         <TabsContent value="integrations">
