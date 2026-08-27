@@ -1,100 +1,170 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import {
-  Clock3, CheckCircle2, Target, Plus, RefreshCw, CalendarDays, Sparkles,
+  Clock3, CheckCircle2, Target, CalendarDays,
+  Sparkles, ExternalLink,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { SectionTitle } from "@/components/shared/section-title"
 import { StatCard } from "@/components/shared/stat-card"
 import { buildGoogleCalendarUrl } from "@/components/shared/calendar-utils"
-import { PlanCard } from "./plan-card"
+import { buildEventGoogleCalendarUrl } from "@/lib/planner/google-calendar"
+import { AdaptiveScheduleDialog } from "./adaptive-schedule-dialog"
+import { full12WeekSchedule } from "@/lib/planner/schedule-data"
+import { calculateAdaptiveSchedule } from "@/lib/planner/adaptive-scheduler"
 
 export function CalendarView() {
-  const days = ["Monday 31", "Tuesday 1", "Wednesday 2", "Thursday 3", "Friday 4"]
+  const [selectedWeekNum, setSelectedWeekNum] = useState(5)
+  const [isAccelerated, setIsAccelerated] = useState(false)
+
+  const selectedWeek = full12WeekSchedule.find(w => w.weekNumber === selectedWeekNum) || full12WeekSchedule[4]
+  const adaptivePlan = calculateAdaptiveSchedule(full12WeekSchedule, 5, isAccelerated ? 14 : 12)
+
+  const daysList = ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
   return (
     <div className="page-stack">
       <SectionTitle
-        eyebrow="Adaptive plan"
-        title="Week 6 · Requirements discovery"
-        copy="Finish early, reschedule safely and let Academy realign the remaining pathway without losing your target."
+        eyebrow="Adaptive planner"
+        title={`Week ${selectedWeek.weekNumber} · ${selectedWeek.title}`}
+        copy="Self-paced 12-week curriculum and delivery calendar. Working ahead of pace dynamically compresses future milestones."
         actions={
           <>
             <Button variant="outline" asChild>
               <a
-                href={buildGoogleCalendarUrl("Advantcore Academy weekly plan", "Learning and virtual workplace plan", 72, 120)}
+                href={buildGoogleCalendarUrl(
+                  `[Advantcore Academy] Week ${selectedWeek.weekNumber}: ${selectedWeek.title}`,
+                  `Study & Project Blocks for Week ${selectedWeek.weekNumber}\nModule: ${selectedWeek.moduleTitle}\nProject: ${selectedWeek.projectStageTitle}`,
+                  72,
+                  120
+                )}
                 target="_blank"
                 rel="noreferrer"
               >
-                <CalendarDays /> Add week to Google
+                <CalendarDays className="w-4 h-4 mr-1.5" /> Sync week to Google
               </a>
             </Button>
-            <Button className="primary-action">
-              <RefreshCw /> Realign plan
-            </Button>
+            <AdaptiveScheduleDialog onScheduleApplied={() => setIsAccelerated(true)} />
           </>
         }
       />
 
       <section className="calendar-summary">
-        <StatCard icon={Clock3} value="8h 20m" label="Planned this week" detail="Across work and learning" tone="mint" />
-        <StatCard icon={CheckCircle2} value="3/11" label="Activities complete" detail="12 days ahead" tone="navy" />
-        <StatCard icon={Target} value="30 Oct" label="Forecast finish" detail="Original date: 13 Nov" tone="gold" />
+        <StatCard icon={Clock3} value={`${selectedWeek.hoursEstimated}h`} label="Workload this week" detail={selectedWeek.moduleTitle} tone="mint" />
+        <StatCard icon={CheckCircle2} value={isAccelerated ? "14 days" : "12 days"} label="Pace status" detail="Ahead of schedule" tone="navy" />
+        <StatCard
+          icon={Target}
+          value={isAccelerated ? adaptivePlan.estimatedCompletionDate.split(" ")[0] + " " + adaptivePlan.estimatedCompletionDate.split(" ")[1] : "30 Oct"}
+          label="Forecast completion"
+          detail={isAccelerated ? `Accelerated (${adaptivePlan.acceleratedWeeks} wks)` : "Original: 13 Nov"}
+          tone="gold"
+        />
       </section>
 
-      <section className="week-board">
-        {days.map((day, i) => (
-          <div className={`day-column ${i === 3 ? "today" : ""}`} key={day}>
-            <div className="day-head">
-              <span>{day.split(" ")[0]}</span>
-              <strong>{day.split(" ")[1]}</strong>
-              {i === 3 && <small>Today</small>}
-            </div>
-
-            {i === 0 && (
-              <>
-                <PlanCard type="learn" time="09:30 · 40 min" title="Requirements foundations" label="Learning" />
-                <PlanCard type="work" time="14:00 · 60 min" title="Interview planning" label="Workplace" />
-              </>
-            )}
-
-            {i === 1 && (
-              <PlanCard type="meeting" time="10:00 · 45 min" title="Operations interview" label="AI meeting" />
-            )}
-
-            {i === 2 && (
-              <>
-                <PlanCard type="work" time="09:30 · 90 min" title="As-is process model" label="Workplace" />
-                <PlanCard type="learn" time="16:00 · 25 min" title="Quiz · Modelling" label="Learning" />
-              </>
-            )}
-
-            {i === 3 && (
-              <>
-                <PlanCard type="current" time="11:30 · 35 min" title="Stakeholder grid" label="Due today" />
-                <button className="add-plan" aria-label="Add activity">
-                  <Plus /> Add activity
-                </button>
-              </>
-            )}
-
-            {i === 4 && (
-              <PlanCard type="review" time="15:00 · 45 min" title="Supervisor review" label="Evidence gate" />
-            )}
-          </div>
-        ))}
-      </section>
-
-      <section className="panel realign-note">
-        <Sparkles />
-        <div>
-          <strong>How adaptive scheduling works</strong>
-          <p>
-            Complete an activity early or move a deadline, and Academy proposes the smallest safe adjustment to dependent learning, meetings and project tasks. You approve every change.
-          </p>
+      {/* 12-Week Roadmap Track */}
+      <section className="p-4 border rounded-xl bg-card space-y-3">
+        <div className="flex items-center justify-between">
+          <strong className="text-sm font-bold flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-primary" /> 12-Week Pathway Pathway Roadmap
+          </strong>
+          <span className="text-xs text-muted-foreground">Click any week to inspect study blocks</span>
         </div>
-        <Button variant="outline">View dependencies</Button>
+
+        <div className="flex gap-1.5 overflow-x-auto pb-2">
+          {full12WeekSchedule.map(w => (
+            <button
+              key={w.weekNumber}
+              onClick={() => setSelectedWeekNum(w.weekNumber)}
+              className={`p-2.5 rounded-lg border text-left min-w-[130px] shrink-0 transition-all ${
+                w.weekNumber === selectedWeekNum
+                  ? "border-primary bg-primary/5 ring-1 ring-primary"
+                  : w.status === "done"
+                  ? "bg-muted/40 text-muted-foreground"
+                  : "bg-card hover:bg-muted/20"
+              }`}
+            >
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span>W{w.weekNumber}</span>
+                <Badge variant={w.status === "done" ? "outline" : w.weekNumber === 5 ? "default" : "secondary"} className="text-[10px] px-1 py-0">
+                  {w.status === "done" ? "Done" : w.weekNumber === 5 ? "Active" : "Planned"}
+                </Badge>
+              </div>
+              <strong className="text-xs block mt-1 line-clamp-1">{w.title}</strong>
+              <small className="text-[11px] text-muted-foreground block">{w.hoursEstimated}h workload</small>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Week Day Board */}
+      <section className="week-board">
+        {daysList.map(dayName => {
+          const dayEvents = selectedWeek.events.filter(e => e.day === dayName)
+          return (
+            <div className={`day-column ${dayName === "Wed" && selectedWeekNum === 5 ? "today" : ""}`} key={dayName}>
+              <div className="day-head">
+                <span>{dayName}</span>
+                <strong>{dayName === "Wed" && selectedWeekNum === 5 ? "Active" : "Schedule"}</strong>
+              </div>
+
+              {dayEvents.length === 0 ? (
+                <div className="p-3 text-center text-xs text-muted-foreground italic">
+                  Self-paced study & project work
+                </div>
+              ) : (
+                dayEvents.map(ev => (
+                  <div key={ev.id} className="p-3 rounded-lg border bg-card space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <Badge
+                        variant="outline"
+                        className={
+                          ev.type === "review_gate"
+                            ? "bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]"
+                            : ev.type === "mock_exam"
+                            ? "bg-purple-500/10 text-purple-600 border-purple-500/30 text-[10px]"
+                            : "text-[10px]"
+                        }
+                      >
+                        {ev.type.replace("_", " ").toUpperCase()}
+                      </Badge>
+                      <span className="text-[11px] text-muted-foreground font-mono">{ev.time}</span>
+                    </div>
+
+                    <strong className="font-semibold block leading-tight text-foreground">{ev.title}</strong>
+                    <p className="text-muted-foreground text-[11px] leading-relaxed">{ev.detail}</p>
+
+                    <div className="flex items-center justify-between pt-1 border-t text-[11px]">
+                      <span className="text-muted-foreground">{ev.durationMinutes} min</span>
+                      <a
+                        href={buildEventGoogleCalendarUrl(ev)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary hover:underline flex items-center gap-0.5"
+                      >
+                        GCal <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )
+        })}
+      </section>
+
+      <section className="panel realign-note flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+          <div>
+            <strong>Adaptive scheduling & pace governance</strong>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Complete modules early and the adaptive planner automatically recalculates future study milestones while strictly preserving fixed independent assessment review gates.
+            </p>
+          </div>
+        </div>
+        <AdaptiveScheduleDialog onScheduleApplied={() => setIsAccelerated(true)} />
       </section>
     </div>
   )
