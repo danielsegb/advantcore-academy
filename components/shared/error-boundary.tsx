@@ -1,12 +1,12 @@
 "use client"
 
-import React, { Component, type ReactNode } from "react"
+import React, { Component, ErrorInfo, ReactNode } from "react"
+import { AlertTriangle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, AlertTriangle } from "lucide-react"
 
 interface Props {
   children: ReactNode
-  fallbackTitle?: string
+  fallback?: ReactNode
 }
 
 interface State {
@@ -15,39 +15,49 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props)
-    this.state = { hasError: false }
+  public state: State = {
+    hasError: false,
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo)
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Uncaught error caught by Academy ErrorBoundary:", error, errorInfo)
   }
 
-  handleReset = () => {
+  private handleReset = () => {
     this.setState({ hasError: false, error: undefined })
   }
 
-  render() {
+  public render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback
+      }
+
       return (
-        <div className="p-8 text-center bg-card rounded-xl border border-destructive/20 my-4 space-y-4">
-          <div className="inline-flex p-3 rounded-full bg-destructive/10 text-destructive mb-2">
-            <AlertTriangle className="w-6 h-6" />
+        <div className="min-h-[400px] flex items-center justify-center p-6 text-center">
+          <div className="max-w-md p-6 border rounded-2xl bg-card shadow-xs space-y-4">
+            <div className="inline-flex p-3 rounded-full bg-destructive/10 text-destructive">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-lg font-bold">Something went wrong</h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                An unexpected interface error occurred. Your progress and saved evidence remain secure.
+              </p>
+            </div>
+            {this.state.error && (
+              <div className="p-2.5 rounded bg-muted/40 text-[11px] font-mono text-muted-foreground text-left overflow-x-auto max-h-32">
+                {this.state.error.message}
+              </div>
+            )}
+            <Button className="primary-action w-full" onClick={this.handleReset}>
+              <RefreshCw className="w-4 h-4 mr-1.5" /> Reload view
+            </Button>
           </div>
-          <h2 className="text-xl font-bold text-foreground">
-            {this.props.fallbackTitle || "Something went wrong in this section"}
-          </h2>
-          <p className="text-muted-foreground max-w-md mx-auto text-sm">
-            An unexpected error occurred. Please try reloading this component.
-          </p>
-          <Button variant="outline" onClick={this.handleReset}>
-            <RefreshCw className="w-4 h-4 mr-2" /> Try again
-          </Button>
         </div>
       )
     }

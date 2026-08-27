@@ -10,6 +10,8 @@ import { MeetingRoomView } from "@/components/meetings/meeting-room-view"
 import { CalendarView } from "@/components/planner/calendar-view"
 import { AdminStudioView } from "@/components/admin/admin-studio-view"
 import { ErrorBoundary } from "@/components/shared/error-boundary"
+import { SkipToContent } from "@/components/shared/skip-to-content"
+import { OfflineBanner } from "@/components/shared/offline-banner"
 import { MustChangePasswordDialog } from "@/components/auth/must-change-password-dialog"
 import { AccountStatusGate } from "@/components/auth/account-status-gate"
 import type { View } from "@/components/shared/types"
@@ -23,8 +25,10 @@ function AcademyMainContent() {
 
   return (
     <AccountStatusGate>
+      <SkipToContent />
+      <OfflineBanner />
       <AcademyShell currentView={currentView} onSelectView={setView}>
-        <ErrorBoundary fallbackTitle="Academy View Error">
+        <ErrorBoundary>
           {currentView === "dashboard" && (
             <DashboardView onSelectView={setView} onOpenTour={() => {}} />
           )}
