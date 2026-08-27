@@ -16,3 +16,11 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 Advantcore_Academy_Antigravity_Production_Build_Guide.md
+*.traineddata
+ba resources/extracted_*
+ba resources/*.zip
+ba resources/study_extracted/
+ba resources/*.pdf
+ba resources/*.jpg
+ba resources/*.txt
+ba resources/ocr_extracted_summaries.json
