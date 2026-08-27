@@ -7,12 +7,13 @@ This document formalises the architectural, security, and product decisions gove
 ## ADR-001: Dedicated Base Path `/academy` and Multi-Zone Reverse Proxy
 
 - **Status**: Accepted
-- **Context**: Advantcore Academy is part of the Advantcore technology ecosystem and must reside under the unified domain `https://app.advantcore.co/academy`. It is also deployed on Vercel at `https://advantcore-academy.vercel.app/academy`.
+- **Context**: Advantcore Academy is part of the Advantcore technology ecosystem and must reside exclusively under the unified domain `https://app.advantcore.co/academy`. Direct usage of `*.vercel.app` URLs is prohibited.
 - **Decision**: 
   1. Next.js is configured with `basePath: "/academy"`.
-  2. The parent application hub at `app.advantcore.co` rewrites `/academy` and `/academy/:path*` to the Academy Vercel deployment.
-  3. Automatic root redirects (`/` $\rightarrow$ `/academy`) are configured at both the Next.js and Vercel edge layers (`vercel.json`) to prevent 404 errors for direct domain visits.
-- **Consequences**: All internal links, assets, API routes, and router calls must respect `basePath`. Assets load under `/academy/_next/`.
+  2. The parent application hub at `app.advantcore.co` routes `/academy` and `/academy/:path*` to the Academy deployment.
+  3. All requests arriving on `*.vercel.app` domains or non-canonical hosts permanently redirect (HTTP 308) to `https://app.advantcore.co/academy/:path*`.
+  4. Automatic root redirects (`/` $\rightarrow$ `/academy`) are configured at both Next.js middleware, Next.js config, and Vercel edge layers (`vercel.json`).
+- **Consequences**: All user traffic is consolidated onto `https://app.advantcore.co/academy`. Internal links, assets, API routes, and router calls respect `basePath`.
 
 ---
 

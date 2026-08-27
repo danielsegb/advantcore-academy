@@ -12,7 +12,7 @@ This document defines the master engineering and architecture roadmap to transit
 
 ### 2.1 Non-Negotiable Constraints
 - **Application Identity**: Preserve the name `Advantcore Academy` across all branding, metadata, and interfaces.
-- **Dedicated Route**: Maintain the `/academy` base path across both `https://app.advantcore.co/academy` and `https://advantcore-academy.vercel.app/academy`.
+- **Dedicated Route & Canonical Domain**: Maintain the `/academy` base path exclusively at `https://app.advantcore.co/academy`. All `*.vercel.app` requests permanently 308-redirect to `https://app.advantcore.co/academy`.
 - **Language & Tone**: Professional British English across all learner-facing and administrative content.
 - **Truth in Simulation**: Simulated project experience must never be represented as real-world employment.
 - **Assessment Integrity**: AI provides assistive feedback and coaching, but human administrator and reviewer sign-off remains the sole authority for pathway publication, evidence approval, and completion certification.

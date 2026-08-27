@@ -9,6 +9,18 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "(?<subdomain>.*)\\.vercel\\.app",
+          },
+        ],
+        destination: "https://app.advantcore.co/academy/:path*",
+        basePath: false,
+        permanent: true,
+      },
+      {
         source: "/",
         destination: "/academy",
         basePath: false,

@@ -1,9 +1,8 @@
 # Project Status Report
 
 **Repository**: `danielsegb/advantcore-academy`  
-**Current Branch**: `antigravity/step-00-audit-decisions`  
-**Target URL**: `https://app.advantcore.co/academy`  
-**Vercel URL**: `https://advantcore-academy.vercel.app/academy`  
+**Production URL**: `https://app.advantcore.co/academy`  
+**Domain Policy**: All `*.vercel.app` requests permanently 308-redirect to `https://app.advantcore.co/academy`  
 **Status Date**: 27 August 2026  
 
 ---
