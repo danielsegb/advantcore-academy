@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import {
-  Radio, CalendarDays, Mic, MicOff, MonitorUp, Square, CircleDot,
-  Pause, Play, Volume2, VolumeX, ArrowRight, Download, WandSparkles, Check, Video,
-  Users,
+  Radio, CalendarDays, Mic, MicOff, MonitorUp,
+  Pause, Play, Volume2, VolumeX, ArrowRight, Video,
+  Users, Check,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,9 @@ import { Progress } from "@/components/ui/progress"
 import { SectionTitle } from "@/components/shared/section-title"
 import { buildGoogleCalendarUrl } from "@/components/shared/calendar-utils"
 import { defaultTeam } from "@/components/dashboard/dashboard-view"
+import { MeetingMinutesDialog } from "./meeting-minutes-dialog"
+import { TranscriptExportDialog } from "./transcript-export-dialog"
+import { RecordingConsentDialog } from "./recording-consent-dialog"
 import type { TranscriptLine } from "@/components/shared/types"
 import { useAuth } from "@/lib/auth/auth-context"
 
@@ -40,6 +43,7 @@ export function MeetingRoomView() {
   const chunks = useRef<Blob[]>([])
 
   const currentSpeakerObj = defaultTeam.find(p => p.name === selectedSpeaker) || defaultTeam[1]
+  const fullTranscriptList = [...initialTranscript.slice(0, visible), ...customLines]
 
   useEffect(() => {
     if (!live || visible >= initialTranscript.length) return
@@ -66,12 +70,7 @@ export function MeetingRoomView() {
     }
   }
 
-  async function toggleRecording() {
-    if (recording && recorder.current) {
-      recorder.current.stop()
-      setRecording(false)
-      return
-    }
+  async function startRecordingDirectly() {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
       const r = new MediaRecorder(stream)
@@ -90,6 +89,13 @@ export function MeetingRoomView() {
       recorder.current = r
       setRecording(true)
     } catch {
+      setRecording(false)
+    }
+  }
+
+  function stopRecordingDirectly() {
+    if (recorder.current) {
+      recorder.current.stop()
       setRecording(false)
     }
   }
@@ -158,7 +164,7 @@ export function MeetingRoomView() {
       <SectionTitle
         eyebrow="AI meeting room"
         title="Project scoping meeting"
-        copy="A context-aware simulation with spoken responses, live transcript, and document-grounded AI characters."
+        copy="A context-aware simulation with spoken responses, live transcript, recording controls, and document-grounded AI characters."
         actions={
           <>
             <Badge className={live ? "live-badge" : "scheduled-badge"}>
@@ -218,13 +224,11 @@ export function MeetingRoomView() {
             >
               <MonitorUp />
             </button>
-            <button
-              className={`round-control ${recording ? "recording" : ""}`}
-              onClick={toggleRecording}
-              aria-label={recording ? "Stop Recording" : "Start Recording"}
-            >
-              {recording ? <Square /> : <CircleDot />}
-            </button>
+            <RecordingConsentDialog
+              recording={recording}
+              onStartRecording={startRecordingDirectly}
+              onStopRecording={stopRecordingDirectly}
+            />
             <button
               className={`end-control ${live ? "pause" : ""}`}
               onClick={() => setLive(v => !v)}
@@ -251,7 +255,7 @@ export function MeetingRoomView() {
           </div>
 
           <div className="transcript-scroll">
-            {[...initialTranscript.slice(0, visible), ...customLines].map((l, index) => (
+            {fullTranscriptList.map((l, index) => (
               <div className="transcript-line" key={`${l.time}-${l.speaker}-${index}`}>
                 <span className="transcript-avatar">{l.speaker[0]}</span>
                 <div>
@@ -303,13 +307,9 @@ export function MeetingRoomView() {
             </Button>
           </div>
 
-          <div className="transcript-footer">
-            <Button variant="outline">
-              <Download /> Transcript
-            </Button>
-            <Button className="primary-action">
-              <WandSparkles /> Generate minutes
-            </Button>
+          <div className="transcript-footer flex gap-2">
+            <TranscriptExportDialog transcript={fullTranscriptList} />
+            <MeetingMinutesDialog transcript={fullTranscriptList} />
           </div>
         </aside>
       </section>
