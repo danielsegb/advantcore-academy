@@ -1,44 +1,46 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import {
   LibraryBig, Play, Target, Check, ChevronRight, Gauge,
-  Sparkles, ArrowRight,
+  Sparkles, ArrowRight, BookOpen, Clock,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SectionTitle } from "@/components/shared/section-title"
 import { ReadinessRing } from "@/components/shared/readiness-ring"
 import { QuizDialog } from "./quiz-dialog"
+import { fullCurriculum } from "@/lib/learning/curriculum-data"
 import type { View } from "@/components/shared/types"
-
-export const bcsModules = [
-  ["01", "Business analysis foundations", 100, "done"],
-  ["02", "Strategy analysis", 100, "done"],
-  ["03", "Stakeholder analysis", 72, "active"],
-  ["04", "Business systems modelling", 0, "locked"],
-  ["05", "Requirements engineering", 0, "locked"],
-  ["06", "Business cases", 0, "locked"],
-] as const
 
 interface LearningViewProps {
   onSelectView?: (view: View) => void
 }
 
 export function LearningView({ onSelectView }: LearningViewProps) {
+  const [selectedModuleId, setSelectedModuleId] = useState<string>("mod-03")
+
+  const currentModule = fullCurriculum.find(m => m.id === selectedModuleId) || fullCurriculum[2]
+  const currentLesson = currentModule.lessons[0]
+
+  // Calculate overall course stats
+  const totalModules = fullCurriculum.length
+  const completedModules = fullCurriculum.filter(m => m.status === "done").length
+  const overallComplete = Math.round((completedModules / totalModules) * 100)
+
   return (
     <div className="page-stack">
       <SectionTitle
         eyebrow="Learning studio"
         title="BCS Foundation Certificate in Business Analysis"
-        copy="A mastery-based pathway aligned with the current 40-question, 60-minute examination format."
+        copy="A mastery-based pathway aligned with the accredited 40-question, 60-minute examination format and 90% Academy mastery standards."
         actions={
           <>
             <Button variant="outline">
-              <LibraryBig /> Resources
+              <LibraryBig className="w-4 h-4 mr-1.5" /> Approved syllabus
             </Button>
-            <Button className="primary-action">
-              <Play /> Resume lesson
+            <Button className="primary-action" onClick={() => setSelectedModuleId("mod-03")}>
+              <Play className="w-4 h-4 mr-1.5" /> Resume lesson
             </Button>
           </>
         }
@@ -46,10 +48,10 @@ export function LearningView({ onSelectView }: LearningViewProps) {
 
       <div className="learning-overview">
         <div className="course-progress-main">
-          <ReadinessRing value={67} label="Complete" tone="mint" />
+          <ReadinessRing value={overallComplete || 67} label="Complete" tone="mint" />
           <div>
             <Badge className="status-badge">
-              <Target /> Target: 90% mastery
+              <Target className="w-3.5 h-3.5 mr-1" /> Target: 90% mastery threshold
             </Badge>
             <h2>Week 5 of 12</h2>
             <p>14 lessons completed · 5 quizzes passed · Current average 87%</p>
@@ -80,30 +82,31 @@ export function LearningView({ onSelectView }: LearningViewProps) {
           <div className="panel-title-row">
             <div>
               <p className="eyebrow">Course map</p>
-              <h2>6 modules</h2>
+              <h2>6 BCS modules</h2>
             </div>
-            <span>67%</span>
+            <span className="font-semibold text-sm">{overallComplete}%</span>
           </div>
           <div className="module-list">
-            {bcsModules.map(m => (
+            {fullCurriculum.map(m => (
               <button
-                key={m[0]}
-                className={`module-row ${m[3]}`}
-                disabled={m[3] === "locked"}
+                key={m.id}
+                className={`module-row ${m.id === selectedModuleId ? "active" : m.status}`}
+                onClick={() => setSelectedModuleId(m.id)}
               >
-                <span className="module-number">{m[3] === "done" ? <Check /> : m[0]}</span>
+                <span className="module-number">{m.status === "done" ? <Check className="w-3.5 h-3.5" /> : m.moduleNumber}</span>
                 <span>
-                  <strong>{m[1]}</strong>
+                  <strong>{m.title}</strong>
                   <small>
-                    {m[3] === "done" ? "Completed" : m[3] === "active" ? `${m[2]}% complete` : "Unlocks next"}
+                    {m.status === "done" ? "Completed" : m.status === "active" ? `${m.progressPercentage}% complete` : "Self-paced"}
                   </small>
                 </span>
-                <ChevronRight />
+                <ChevronRight className="w-4 h-4 ml-auto" />
               </button>
             ))}
           </div>
+
           <div className="mock-card">
-            <Gauge />
+            <Gauge className="w-5 h-5 text-amber-500" />
             <div>
               <strong>Mock practice</strong>
               <span>Topic, mixed or full exam</span>
@@ -116,67 +119,68 @@ export function LearningView({ onSelectView }: LearningViewProps) {
 
         <article className="lesson-panel">
           <div className="lesson-topline">
-            <span>Module 3 · Lesson 4 of 6</span>
-            <Badge variant="outline">25 min</Badge>
+            <span className="flex items-center gap-1.5">
+              <BookOpen className="w-4 h-4 text-primary" /> Module {currentModule.moduleNumber} · Lesson {currentLesson.lessonNumber}
+            </span>
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Clock className="w-3 h-3" /> {currentLesson.estimatedMinutes} min
+            </Badge>
           </div>
-          <h1>Managing stakeholder relationships</h1>
-          <p className="lesson-intro">
-            Select engagement approaches that reflect stakeholder influence, interest, attitudes and information needs.
-          </p>
+          <h1>{currentLesson.title}</h1>
+          <p className="lesson-intro">{currentLesson.intro}</p>
 
+          {/* Objectives and Learning Outcomes rendered BEFORE content */}
           <section className="objectives-card">
             <div className="objectives-icon">
-              <Target />
+              <Target className="w-5 h-5" />
             </div>
             <div>
               <p className="eyebrow">Learning outcomes</p>
               <h3>By the end of this lesson, you can:</h3>
-              <ul>
-                <li><Check /> explain stakeholder management strategy</li>
-                <li><Check /> apply the power-interest grid</li>
-                <li><Check /> recommend suitable communication approaches</li>
+              <ul className="space-y-1 mt-2">
+                {currentLesson.outcomes.map(outc => (
+                  <li key={outc} className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span>{outc}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </section>
 
+          {/* Key Concept Breakdown */}
           <div className="concept-grid">
-            <div>
-              <span>01</span>
-              <h3>Analyse</h3>
-              <p>Assess power, interest, attitude and impact using evidence.</p>
-            </div>
-            <div>
-              <span>02</span>
-              <h3>Position</h3>
-              <p>Map each stakeholder while recognising that positions change.</p>
-            </div>
-            <div>
-              <span>03</span>
-              <h3>Engage</h3>
-              <p>Choose communications that fit the person and decision.</p>
-            </div>
+            {currentLesson.concepts.map(con => (
+              <div key={con.number}>
+                <span>{con.number}</span>
+                <h3>{con.title}</h3>
+                <p>{con.description}</p>
+              </div>
+            ))}
           </div>
 
+          {/* Workplace Connection */}
           <div className="lesson-example">
             <div>
-              <Sparkles />
+              <Sparkles className="w-5 h-5 text-amber-500" />
             </div>
             <div>
               <p className="eyebrow">Workplace connection</p>
-              <h3>Apply this to the Advantcore project</h3>
-              <p>Classify Sarah, Marcus, Priya and Helen, then justify how you will engage each person during discovery.</p>
-              <button onClick={() => onSelectView?.("workplace")}>
-                Open project task <ArrowRight />
+              <h3>{currentLesson.workplaceConnection.title}</h3>
+              <p>{currentLesson.workplaceConnection.description}</p>
+              <button onClick={() => onSelectView?.("workplace")} className="text-primary font-semibold flex items-center gap-1 text-sm mt-2">
+                {currentLesson.workplaceConnection.actionText} <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
 
+          {/* Knowledge Check Mastery Gate */}
           <div className="lesson-footer">
             <div>
               <strong>Lesson mastery check</strong>
-              <span>3 questions · 90% required · Retakes allowed</span>
+              <span>{currentLesson.questions.length} questions · 90% required · Retakes allowed</span>
             </div>
-            <QuizDialog />
+            <QuizDialog lesson={currentLesson} />
           </div>
         </article>
       </section>
