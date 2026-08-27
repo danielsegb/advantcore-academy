@@ -2,8 +2,8 @@
 
 import React, { useState } from "react"
 import {
-  Sparkles, ShieldCheck, UserCheck, KeyRound, ArrowRight, Loader2,
-  Lock, Mail, CheckCircle2, ShieldAlert,
+  Sparkles, ArrowRight, Loader2, Lock, Mail, CheckCircle2,
+  ShieldAlert, Award, BriefcaseBusiness, Users,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth/auth-context"
 
 export function PortalAuthView() {
-  const { signIn, switchDemoRole } = useAuth()
+  const { signIn } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -26,17 +26,7 @@ export function PortalAuthView() {
     setLoading(false)
 
     if (!res.success) {
-      setError(res.error || "Authentication failed. Please verify credentials.")
-    }
-  }
-
-  function handleQuickRole(role: "admin" | "learner" | "new_learner") {
-    if (role === "admin") {
-      switchDemoRole("admin")
-    } else if (role === "learner") {
-      switchDemoRole("learner")
-    } else {
-      signIn("amanda@advantcore.co", "temp123")
+      setError(res.error || "Authentication failed. Please verify your credentials.")
     }
   }
 
@@ -52,22 +42,22 @@ export function PortalAuthView() {
             <div className="font-bold text-lg tracking-tight text-white flex items-center gap-2">
               Advantcore <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/20 text-primary-foreground border border-primary/30">ACADEMY</span>
             </div>
-            <p className="text-xs text-slate-400">Professional Certification & Simulated Workplace Platform · Manchester</p>
+            <p className="text-xs text-slate-400">Professional Learning & Virtual Workplace Platform · Manchester</p>
           </div>
         </div>
 
-        <Badge variant="outline" className="border-slate-700 text-slate-400 bg-slate-900/60 hidden sm:inline-flex">
-          BCS Accredited Syllabus
+        <Badge variant="outline" className="border-slate-700 text-slate-300 bg-slate-900/60 hidden sm:inline-flex text-xs">
+          Accredited Professional Pathways
         </Badge>
       </header>
 
       {/* Main Container */}
-      <main className="max-w-5xl mx-auto w-full my-auto py-8 grid md:grid-cols-12 gap-8 items-center">
-        {/* Left Column: Value Prop & Context */}
+      <main className="max-w-5xl mx-auto w-full my-auto py-10 grid md:grid-cols-12 gap-10 items-center">
+        {/* Left Column: Platform Mission & Features */}
         <div className="md:col-span-6 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Advantcore BA Career Accelerator Active</span>
+            <span>Advantcore Career Accelerator Active</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
@@ -75,74 +65,52 @@ export function PortalAuthView() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-            Welcome to Advantcore Academy. Access your 12-week Business Analysis pathway, official BCS study materials, 5-stage simulated client projects, and AI stakeholder team.
+            Welcome to Advantcore Academy. Access your professional career pathways, structured learning curriculum, simulated client projects, and AI stakeholder team.
           </p>
 
-          {/* Quick Access Roles Cards */}
-          <div className="pt-2 space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Quick Role Sign-In Options
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-3">
-              {/* Admin Button */}
-              <button
-                type="button"
-                onClick={() => handleQuickRole("admin")}
-                className="p-4 rounded-xl border border-indigo-500/30 bg-indigo-950/40 hover:bg-indigo-900/50 hover:border-indigo-400 transition-all text-left group cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-300">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <div className="font-semibold text-sm text-white">Platform Administrator</div>
-                <div className="text-xs text-slate-400 mt-0.5">Daniel Emmanuel · Admin Studio & User Onboarding</div>
-              </button>
-
-              {/* Learner Button */}
-              <button
-                type="button"
-                onClick={() => handleQuickRole("learner")}
-                className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/40 hover:bg-emerald-900/50 hover:border-emerald-400 transition-all text-left group cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300">
-                    <UserCheck className="w-5 h-5" />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <div className="font-semibold text-sm text-white">Enrolled Learner</div>
-                <div className="text-xs text-slate-400 mt-0.5">Amanda Okafor · BA Pathway & Workplace</div>
-              </button>
-            </div>
-
-            {/* First Login Demo */}
-            <button
-              type="button"
-              onClick={() => handleQuickRole("new_learner")}
-              className="w-full px-4 py-2.5 rounded-lg border border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/40 text-xs text-amber-300 flex items-center justify-between transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <KeyRound className="w-4 h-4" />
-                <span>Test New Learner Onboarding (Mandatory Password Rotation)</span>
+          <div className="space-y-3 pt-2">
+            <div className="flex items-start gap-3 text-xs text-slate-300">
+              <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0 mt-0.5">
+                <Award className="w-4 h-4" />
               </div>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+              <div>
+                <strong className="text-white block">Industry-Accredited Curriculum</strong>
+                <span>Comprehensive study modules, lesson mastery checks, and timed mock examinations.</span>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 text-xs text-slate-300">
+              <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 mt-0.5">
+                <BriefcaseBusiness className="w-4 h-4" />
+              </div>
+              <div>
+                <strong className="text-white block">Virtual Workplace Experience</strong>
+                <span>Deliver structured deliverables and project evidence through supervised review gates.</span>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 text-xs text-slate-300">
+              <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0 mt-0.5">
+                <Users className="w-4 h-4" />
+              </div>
+              <div>
+                <strong className="text-white block">Grounded AI Stakeholder Team</strong>
+                <span>Collaborate with virtual project sponsors, supervisors, and reviewers in interactive team rooms.</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Right Column: Secure Sign-in Card */}
         <div className="md:col-span-6 md:pl-6">
-          <Card className="border-slate-800 bg-slate-900/80 backdrop-blur-md shadow-2xl">
-            <CardHeader className="space-y-1 pb-4">
+          <Card className="border-slate-800 bg-slate-900/90 backdrop-blur-md shadow-2xl">
+            <CardHeader className="space-y-1.5 pb-4">
               <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
                 <Lock className="w-5 h-5 text-primary" />
                 Sign in to your account
               </CardTitle>
               <CardDescription className="text-slate-400 text-xs">
-                Enter your authorized Advantcore Academy credentials to continue.
+                Enter your authorized Advantcore Academy credentials to access your portal.
               </CardDescription>
             </CardHeader>
 
@@ -167,19 +135,16 @@ export function PortalAuthView() {
                       required
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      placeholder="admin@advantcore.co or learner@example.com"
+                      placeholder="Enter your email"
                       className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950/60 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-semibold text-slate-300" htmlFor="password-input">
-                      Password
-                    </label>
-                    <span className="text-[11px] text-slate-400">Default password: Advantcore2026!</span>
-                  </div>
+                  <label className="block text-xs font-semibold text-slate-300" htmlFor="password-input">
+                    Password
+                  </label>
                   <div className="relative">
                     <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                     <input
@@ -188,7 +153,7 @@ export function PortalAuthView() {
                       required
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder="••••••••••••"
+                      placeholder="Enter your password"
                       className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950/60 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                     />
                   </div>
@@ -197,7 +162,7 @@ export function PortalAuthView() {
                 <Button
                   type="submit"
                   disabled={loading || !email || !password}
-                  className="w-full primary-action mt-2 h-10 font-semibold"
+                  className="w-full primary-action mt-3 h-10 font-semibold cursor-pointer"
                 >
                   {loading ? (
                     <>
@@ -219,9 +184,9 @@ export function PortalAuthView() {
       <footer className="max-w-6xl mx-auto w-full pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
         <div>© 2026 Advantcore Ltd. Registered in England & Wales. All rights reserved.</div>
         <div className="flex items-center gap-4">
-          <span>UK GDPR Certified</span>
+          <span>UK GDPR Compliant</span>
           <span>·</span>
-          <span>BCS Foundation Aligned</span>
+          <span>Professional Standards</span>
           <span>·</span>
           <span>Manchester Digital Studio</span>
         </div>
