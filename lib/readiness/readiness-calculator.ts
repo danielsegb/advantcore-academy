@@ -1,10 +1,10 @@
 import type { ReadinessBreakdown, InterviewScenario } from "./types"
 
 export function calculateReadiness(
-  knowledgeMastery = 87,
-  mockExamScore = 82,
-  workplaceEvidence = 68,
-  interviewReadiness = 80
+  knowledgeMastery = 0,
+  mockExamScore = 0,
+  workplaceEvidence = 0,
+  interviewReadiness = 0
 ): ReadinessBreakdown {
   // Composite calculation: 35% Knowledge + 25% Mock Exam + 25% Workplace Evidence + 15% Interview Prep
   const overallScore = Math.round(
@@ -18,24 +18,24 @@ export function calculateReadiness(
     overallScore,
     knowledgeMastery: {
       score: knowledgeMastery,
-      detail: "14 lessons completed · 5 quizzes passed at >=90%",
+      detail: knowledgeMastery > 0 ? `${Math.round(knowledgeMastery / 10)} lessons completed` : "No lessons completed yet",
       status: knowledgeMastery >= 90 ? "mastered" : "on_track",
     },
     mockExamScore: {
       score: mockExamScore,
-      detail: "Passed official BCS 65% benchmark · Target 90% mastery",
+      detail: mockExamScore > 0 ? "Passed official benchmark · Target 90% mastery" : "No mock exams completed yet",
       status: mockExamScore >= 90 ? "mastered" : "passed_official",
     },
     workplaceEvidence: {
       score: workplaceEvidence,
-      detail: "4 deliverables approved · Stage 3 in progress",
-      approvedDeliverables: 4,
+      detail: workplaceEvidence > 0 ? `${Math.round(workplaceEvidence / 10)} deliverables approved` : "No deliverables submitted yet",
+      approvedDeliverables: workplaceEvidence > 0 ? Math.round(workplaceEvidence / 10) : 0,
       totalDeliverables: 10,
     },
     interviewReadiness: {
       score: interviewReadiness,
-      detail: "4 technical & behavioral scenarios prepared",
-      scenariosCompleted: 4,
+      detail: interviewReadiness > 0 ? `${Math.round(interviewReadiness / 20)} scenarios prepared` : "No interview scenarios completed yet",
+      scenariosCompleted: interviewReadiness > 0 ? Math.round(interviewReadiness / 20) : 0,
     },
   }
 }

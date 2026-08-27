@@ -6,8 +6,8 @@ export const fullCurriculum: CourseModule[] = [
     moduleNumber: "01",
     title: "Business analysis foundations",
     description: "Role of the business analyst, professional competencies, strategic context and lifecycle stages.",
-    progressPercentage: 100,
-    status: "done",
+    progressPercentage: 0,
+    status: "active",
     lessons: [
       {
         id: "les-01-01",
@@ -52,8 +52,8 @@ export const fullCurriculum: CourseModule[] = [
     moduleNumber: "02",
     title: "Strategy analysis",
     description: "External environment analysis, internal capability evaluation, and SWOT / TOWS synthesis.",
-    progressPercentage: 100,
-    status: "done",
+    progressPercentage: 0,
+    status: "locked",
     lessons: [
       {
         id: "les-02-01",
@@ -98,8 +98,8 @@ export const fullCurriculum: CourseModule[] = [
     moduleNumber: "03",
     title: "Stakeholder analysis",
     description: "Stakeholder identification, power-interest mapping, RACI matrices, and tailored engagement planning.",
-    progressPercentage: 72,
-    status: "active",
+    progressPercentage: 0,
+    status: "locked",
     lessons: [
       {
         id: "les-03-04",

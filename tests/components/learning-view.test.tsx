@@ -12,8 +12,8 @@ describe("LearningView Component", () => {
     )
 
     expect(screen.getByText("6 BCS modules")).toBeInTheDocument()
-    expect(screen.getByText("Stakeholder analysis")).toBeInTheDocument()
-    expect(screen.getByText("Managing stakeholder relationships")).toBeInTheDocument()
+    expect(screen.getByText("Business analysis foundations")).toBeInTheDocument()
+    expect(screen.getByText("The role and competencies of a Business Analyst")).toBeInTheDocument()
     expect(screen.getByText("Learning outcomes")).toBeInTheDocument()
   })
 

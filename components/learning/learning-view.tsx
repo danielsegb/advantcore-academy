@@ -22,15 +22,19 @@ interface LearningViewProps {
 
 export function LearningView({ onSelectView }: LearningViewProps) {
   const [activeStudioTab, setActiveStudioTab] = useState<"lessons" | "resources">("lessons")
-  const [selectedModuleId, setSelectedModuleId] = useState<string>("mod-03")
+  const firstActiveModuleId = fullCurriculum.find(m => m.status === "active" || m.status === "done")?.id ?? "mod-01"
+  const [selectedModuleId, setSelectedModuleId] = useState<string>(firstActiveModuleId)
 
-  const currentModule = fullCurriculum.find(m => m.id === selectedModuleId) || fullCurriculum[2]
+  const currentModule = fullCurriculum.find(m => m.id === selectedModuleId) ?? fullCurriculum[0]
   const currentLesson = currentModule.lessons[0]
 
-  // Calculate overall course stats
+  // Calculate overall course stats from actual data
   const totalModules = fullCurriculum.length
   const completedModules = fullCurriculum.filter(m => m.status === "done").length
   const overallComplete = Math.round((completedModules / totalModules) * 100)
+  const currentWeek = completedModules > 0 ? Math.min(completedModules * 2 + 1, 12) : 1
+  const lessonsCompleted = fullCurriculum.filter(m => m.status === "done").reduce((acc, m) => acc + m.lessons.length, 0)
+  const quizzesPassed = lessonsCompleted // 1 quiz per lesson
 
   return (
     <div className="page-stack">
@@ -81,8 +85,8 @@ export function LearningView({ onSelectView }: LearningViewProps) {
                 <Badge className="status-badge">
                   <Target className="w-3.5 h-3.5 mr-1" /> Target: 90% mastery threshold
                 </Badge>
-                <h2>Week 5 of 12</h2>
-                <p>14 lessons completed · 5 quizzes passed · Current average 87%</p>
+                <h2>Week {currentWeek} of 12</h2>
+                <p>{lessonsCompleted > 0 ? `${lessonsCompleted} lesson${lessonsCompleted > 1 ? "s" : ""} completed · ${quizzesPassed} quiz${quizzesPassed !== 1 ? "zes" : ""} passed` : "No lessons completed yet — start Module 1"}</p>
               </div>
             </div>
             <div className="exam-facts">

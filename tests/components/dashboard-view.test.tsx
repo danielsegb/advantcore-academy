@@ -14,7 +14,7 @@ describe("DashboardView Component", () => {
       </AuthProvider>
     )
 
-    expect(screen.getByText(/Good morning/i)).toBeInTheDocument()
+    expect(screen.getByText(/Welcome/i)).toBeInTheDocument()
     expect(screen.getByText("Knowledge mastery")).toBeInTheDocument()
     expect(screen.getByText("Exam readiness")).toBeInTheDocument()
     expect(screen.getByText("Workplace evidence")).toBeInTheDocument()

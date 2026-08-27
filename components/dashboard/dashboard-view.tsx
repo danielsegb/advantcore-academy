@@ -52,9 +52,11 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
             <NotificationCenter onNavigate={onSelectView} />
           </div>
 
-          <h1>Good morning, {firstName}.</h1>
+          <h1>Welcome, {firstName}.</h1>
           <p>
-            You are making strong progress across both BCS syllabus mastery and Advantcore workplace delivery.
+            {readiness.overallScore > 0
+              ? "You are making progress across your certification curriculum and Advantcore project delivery."
+              : "Your Academy workspace is ready. Start with Module 1 to begin your certified pathway."}
           </p>
 
           <div className="welcome-actions flex-wrap gap-2">
@@ -76,7 +78,7 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
           <div className="hero-meta">
             <span>Overall pathway readiness</span>
             <strong>{readiness.overallScore}% Ready</strong>
-            <small>12 days ahead of original schedule</small>
+            <small>{readiness.overallScore > 0 ? `${readiness.overallScore}% of pathway milestones achieved` : "Begin Module 1 to start tracking your progress"}</small>
           </div>
         </div>
       </section>
