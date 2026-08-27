@@ -1,24 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": ".*\\.vercel\\.app"
-        }
-      ],
-      "destination": "https://app.advantcore.co/academy/$1",
-      "permanent": true
-    },
-    {
-      "source": "/",
-      "destination": "/academy",
-      "permanent": false
-    }
-  ],
   "functions": {
     "app/api/academy-ai/route.ts": { "maxDuration": 30 }
   },
