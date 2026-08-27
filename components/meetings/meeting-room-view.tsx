@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react"
 import {
   Radio, CalendarDays, Mic, MicOff, MonitorUp, Square, CircleDot,
   Pause, Play, Volume2, VolumeX, ArrowRight, Download, WandSparkles, Check, Video,
+  Users,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,18 +13,20 @@ import { SectionTitle } from "@/components/shared/section-title"
 import { buildGoogleCalendarUrl } from "@/components/shared/calendar-utils"
 import { defaultTeam } from "@/components/dashboard/dashboard-view"
 import type { TranscriptLine } from "@/components/shared/types"
+import { useAuth } from "@/lib/auth/auth-context"
 
 const APP_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "/academy"
 
 export const initialTranscript: TranscriptLine[] = [
-  { speaker: "Sarah", role: "Project Sponsor", time: "10:02", text: "Morning, Daniel. Today I want us to agree the scope for improving Advantcore's enquiry-to-delivery process. What do you see as the core business problem?" },
-  { speaker: "Marcus", role: "BA Supervisor", time: "10:03", text: "Before proposing a solution, separate the symptoms from the underlying cause. Talk us through the evidence you would seek." },
-  { speaker: "Daniel", role: "Business Analyst", time: "10:04", text: "I would validate where enquiries are lost, how hand-offs are recorded, who owns each stage, and what information is missing when work reaches delivery." },
-  { speaker: "Priya", role: "Operations Lead", time: "10:05", text: "That reflects our experience. We currently use email and separate spreadsheets, so ownership becomes unclear after qualification." },
-  { speaker: "Helen", role: "Independent Reviewer", time: "10:06", text: "Good start. Your next step should define measurable success and record any assumptions that still need stakeholder validation." },
+  { speaker: "Sarah", role: "Project Sponsor", time: "10:02", text: "Morning, Amanda. Today I want us to agree the scope for improving Advantcore's enquiry-to-delivery process. What do you see as the core business problem?" },
+  { speaker: "Marcus", role: "BA Supervisor", time: "10:03", text: "Before proposing a solution, separate the symptoms from the underlying cause [ADV-DOC-001]. Talk us through the evidence you would seek." },
+  { speaker: "Amanda", role: "Business Analyst", time: "10:04", text: "I would validate where enquiries are lost, how hand-offs are recorded, who owns each stage, and what information is missing when work reaches delivery." },
+  { speaker: "Priya", role: "Operations Lead", time: "10:05", text: "That reflects our experience. We currently use email and separate spreadsheets [ADV-SOP-002], so ownership becomes unclear after qualification." },
+  { speaker: "Helen", role: "Independent Reviewer", time: "10:06", text: "Good start. Your next step should define measurable success [BCS-BA-001] and record any assumptions that still need stakeholder validation." },
 ]
 
 export function MeetingRoomView() {
+  const { user } = useAuth()
   const [live, setLive] = useState(false)
   const [readAloud, setReadAloud] = useState(true)
   const [visible, setVisible] = useState(2)
@@ -32,8 +35,11 @@ export function MeetingRoomView() {
   const [thinking, setThinking] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [recording, setRecording] = useState(false)
+  const [selectedSpeaker, setSelectedSpeaker] = useState("Marcus Cole")
   const recorder = useRef<MediaRecorder | null>(null)
   const chunks = useRef<Blob[]>([])
+
+  const currentSpeakerObj = defaultTeam.find(p => p.name === selectedSpeaker) || defaultTeam[1]
 
   useEffect(() => {
     if (!live || visible >= initialTranscript.length) return
@@ -93,9 +99,11 @@ export function MeetingRoomView() {
     if (!userMessage || thinking) return
     setMessage("")
     setThinking(true)
+    const learnerName = user?.fullName || "Amanda"
+
     setCustomLines(lines => [
       ...lines,
-      { speaker: "Daniel", role: "Business Analyst", time: "Now", text: userMessage },
+      { speaker: learnerName, role: "Business Analyst", time: "Now", text: userMessage },
     ])
 
     try {
@@ -105,17 +113,18 @@ export function MeetingRoomView() {
         body: JSON.stringify({
           action: "meetingReply",
           character: {
-            name: "Marcus Cole",
-            role: "BA Supervisor",
-            behaviour: "Coach through questions, challenge unsupported assumptions and protect professional standards.",
+            name: currentSpeakerObj.name,
+            role: currentSpeakerObj.role,
+            behaviour: currentSpeakerObj.role === "BA Supervisor"
+              ? "Coach through questions, challenge unsupported assumptions and protect professional standards."
+              : "Provide realistic workplace stakeholder feedback.",
           },
           project: {
-            name: "Enquiry-to-delivery process transformation",
+            name: "Enquiry-to-delivery process transformation (ADV-BA-001)",
             company: "Advantcore Ltd",
-            objective: "Reduce hand-off ambiguity and improve delivery mobilisation.",
+            objective: "Reduce hand-off ambiguity and reduce delivery cycle time from 14 to 4 days.",
             stage: "Discovery",
           },
-          context: "Confirmed: enquiry information is split across email and spreadsheets. Assumption requiring validation: ownership becomes unclear after lead qualification.",
           message: userMessage,
         }),
       })
@@ -124,7 +133,7 @@ export function MeetingRoomView() {
       const reply = result.text || "I need more project context before I can answer that reliably."
       setCustomLines(lines => [
         ...lines,
-        { speaker: "Marcus", role: "BA Supervisor", time: "Now", text: reply },
+        { speaker: currentSpeakerObj.name.split(" ")[0], role: currentSpeakerObj.role, time: "Now", text: reply },
       ])
       if (readAloud && "speechSynthesis" in window) {
         window.speechSynthesis.speak(new SpeechSynthesisUtterance(reply))
@@ -133,10 +142,10 @@ export function MeetingRoomView() {
       setCustomLines(lines => [
         ...lines,
         {
-          speaker: "Marcus",
-          role: "BA Supervisor",
+          speaker: currentSpeakerObj.name.split(" ")[0],
+          role: currentSpeakerObj.role,
           time: "Now",
-          text: "I could not reach the AI service. Record the question and continue with the approved meeting evidence.",
+          text: "I could not reach the AI service. Record the question in your notes and continue with the approved meeting evidence.",
         },
       ])
     } finally {
@@ -149,7 +158,7 @@ export function MeetingRoomView() {
       <SectionTitle
         eyebrow="AI meeting room"
         title="Project scoping meeting"
-        copy="A context-aware simulation with spoken responses, live transcript and evidence capture."
+        copy="A context-aware simulation with spoken responses, live transcript, and document-grounded AI characters."
         actions={
           <>
             <Badge className={live ? "live-badge" : "scheduled-badge"}>
@@ -172,16 +181,21 @@ export function MeetingRoomView() {
         <div className="meeting-video-area">
           <div className="video-grid">
             {defaultTeam.map((p, i) => (
-              <div className={`video-tile ${live && i === visible % 4 ? "speaking" : ""}`} key={p.name}>
+              <button
+                type="button"
+                className={`video-tile text-left cursor-pointer transition-all ${p.name === selectedSpeaker ? "ring-2 ring-primary" : ""} ${live && i === visible % 4 ? "speaking" : ""}`}
+                key={p.name}
+                onClick={() => setSelectedSpeaker(p.name)}
+              >
                 <span className={`avatar video-avatar ${p.colour}`}>{p.initials}</span>
                 <div className="voice-wave"><i /><i /><i /><i /></div>
                 <span className="video-name">{p.name}<small>{p.role}</small></span>
                 <Mic />
-              </div>
+              </button>
             ))}
             <div className="video-tile self">
-              <span className="avatar video-avatar user">DE</span>
-              <span className="video-name">Daniel Emmanuel<small>You · Business Analyst</small></span>
+              <span className="avatar video-avatar user">{user?.fullName ? user.fullName[0] : "A"}</span>
+              <span className="video-name">{user?.fullName || "Amanda Okafor"}<small>You · Business Analyst</small></span>
               <MicOff />
             </div>
             <div className="video-tile share-tile">
@@ -253,9 +267,25 @@ export function MeetingRoomView() {
             {((live && visible < initialTranscript.length) || thinking) && (
               <div className="typing">
                 <i /><i /><i />
-                <span>{thinking ? "Marcus is thinking" : `${initialTranscript[visible]?.speaker || "Character"} is responding`}</span>
+                <span>{thinking ? `${currentSpeakerObj.name} is thinking` : `${initialTranscript[visible]?.speaker || "Character"} is responding`}</span>
               </div>
             )}
+          </div>
+
+          {/* Character Target Selector */}
+          <div className="px-3 py-1.5 border-t bg-muted/20 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Users className="w-3.5 h-3.5" /> Directing to:
+            </span>
+            <select
+              value={selectedSpeaker}
+              onChange={e => setSelectedSpeaker(e.target.value)}
+              className="px-2 py-0.5 text-xs font-semibold rounded bg-background border"
+            >
+              {defaultTeam.map(p => (
+                <option key={p.name} value={p.name}>{p.name} ({p.role})</option>
+              ))}
+            </select>
           </div>
 
           <div className="meeting-message">
@@ -265,7 +295,7 @@ export function MeetingRoomView() {
               onKeyDown={event => {
                 if (event.key === "Enter") askTeam()
               }}
-              placeholder="Ask the project team…"
+              placeholder={`Ask ${currentSpeakerObj.name.split(" ")[0]}…`}
               aria-label="Message the AI project team"
             />
             <Button size="sm" className="primary-action" onClick={askTeam} disabled={!message.trim() || thinking}>
