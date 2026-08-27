@@ -1,7 +1,25 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/academy",
+      "permanent": false
+    }
+  ],
   "functions": {
     "app/api/academy-ai/route.ts": { "maxDuration": 30 }
-  }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, noai, noimageai"
+        }
+      ]
+    }
+  ]
 }
