@@ -4,9 +4,9 @@
 
 The Academy uses one server-side AI service for meetings, learning feedback, pathway recommendations and evidence review. New features should add an Academy action and prompt, rather than creating separate provider integrations.
 
-## Reused Job AI Pro methods
+## Core AI service patterns
 
-Only these patterns were adapted:
+The AI service uses these patterns:
 
 - Groq as the first provider
 - Gemini as the second provider
@@ -15,7 +15,7 @@ Only these patterns were adapted:
 - Server-side provider keys
 - Input sanitisation and request limits
 
-Job AI Pro prompts, CV services, document generators, authentication, database models and page components are not part of this repository.
+The AI layer is limited to Academy-specific prompts, actions and safeguards. Unrelated product services and data models are outside this repository.
 
 ## Provider sequence
 
@@ -154,4 +154,3 @@ Each character should have:
 - Version and administrator approval state
 
 Shared project facts should be stored once. Character prompts should reference those facts and add role-specific perspective without duplicating provider integrations.
-

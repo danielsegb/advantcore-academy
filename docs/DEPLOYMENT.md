@@ -81,7 +81,7 @@ Add these in Vercel under Project Settings, Environment Variables:
 | `GROQ_API_KEY` | Production and Preview | Yes | Primary AI provider |
 | `GEMINI_API_KEY` | Production and Preview | Yes | Secondary AI provider |
 
-Use the existing Job AI Pro Groq and Gemini keys if they are authorised for use by this application. Do not copy keys into source files or GitHub Actions.
+Use only Groq and Gemini keys authorised for this application. Do not copy keys into source files or GitHub Actions.
 
 The local Academy fallback remains available when both cloud keys are absent, but its replies are intentionally restricted.
 
@@ -185,4 +185,3 @@ Ensure `app.advantcore.co` is assigned to the Academy Vercel project. The Academ
 ### Browser screen sharing fails
 
 Screen capture requires HTTPS, explicit user permission and browser support. Test on the final secure domain.
-

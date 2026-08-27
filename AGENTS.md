@@ -12,7 +12,7 @@ Read `README.md`, `docs/ARCHITECTURE.md`, `docs/AI_ARCHITECTURE.md`, `docs/DEPLO
 - Keep administrator approval as the final authority for pathway, project, source and character publication.
 - Do not present simulated project experience as employment.
 - Do not invent current certification rules. Use administrator-approved sources and mark information requiring verification.
-- Reuse only useful shared AI infrastructure patterns. Keep Job AI Pro product prompts, CV functions and database entities outside this repository.
+- Keep the Academy domain model, prompts and product features independent from unrelated applications.
 
 ## Before committing
 
@@ -25,4 +25,3 @@ npm run build
 ```
 
 Document new environment variables in `.env.example` and `docs/DEPLOYMENT.md`.
-

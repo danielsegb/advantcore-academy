@@ -85,7 +85,7 @@ Completion gate: Academy and Google Calendar remain synchronised and schedule ch
 
 - Add portfolio, CV and LinkedIn preparation.
 - Add targeted application tracking.
-- Reuse a supported link to Job AI Pro rather than copying its CV functions.
+- Add an approved integration or external link for CV preparation without duplicating unrelated product functions.
 - Add BA interview simulation and scoring.
 - Separate certification, practical and job readiness.
 
@@ -101,4 +101,3 @@ Completion gate: the learner receives a transparent job-readiness report and act
 - Add institutional privacy, retention and service documentation.
 
 Completion gate: another organisation can operate an isolated Academy programme with its own approved content.
-

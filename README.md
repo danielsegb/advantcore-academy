@@ -65,13 +65,13 @@ The `/academy` base path is configured in `next.config.ts` and `.env.example`.
 
 ## AI architecture
 
-The Academy reuses only the useful provider-resilience patterns from Job AI Pro:
+The Academy uses a resilient, server-side AI provider sequence:
 
 1. Try Groq using `GROQ_API_KEY`.
 2. Fall back to Gemini using `GEMINI_API_KEY`.
 3. Use the local Academy rule engine if neither provider is available.
 
-All Academy prompts, roles and safeguards are separate from Job AI Pro. No CV tools, pages, authentication code or database models were copied.
+All Academy prompts, roles and safeguards are purpose-built for the learning and virtual workplace environment.
 
 Read [AI Architecture](docs/AI_ARCHITECTURE.md) before modifying providers, prompts or model behaviour.
 
@@ -108,7 +108,7 @@ macOS or Linux:
 cp .env.example .env.local
 ```
 
-4. Add the existing Job AI Pro provider keys to `.env.local` if required:
+4. Add authorised Groq or Gemini provider keys to `.env.local` if required:
 
 ```env
 NEXT_PUBLIC_BASE_PATH=/academy
@@ -226,4 +226,3 @@ vendor/                 Vendored interface styles and licence
 Copyright © 2026 Advantcore Ltd. All rights reserved.
 
 This source package is prepared for Advantcore Ltd development and deployment. No open-source licence is granted by this repository.
-
