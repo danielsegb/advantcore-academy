@@ -125,77 +125,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     const cleanEmail = email.trim().toLowerCase()
-    const supabase = getSupabaseBrowserClient()
+    const cleanPassword = password.trim()
 
-    if (!supabase) {
-      // 1. Admin Authentication Check
-      if (cleanEmail === "admin@advantcore.co") {
-        let storedAdminPass = "default"
-        if (typeof window !== "undefined") {
-          storedAdminPass = localStorage.getItem(STORAGE_KEY_ADMIN_PASS) || "default"
-        }
-
-        if (password === storedAdminPass || (storedAdminPass === "default" && password === "default")) {
-          setUser(DEFAULT_ADMIN)
-          return { success: true }
-        }
-        return { success: false, error: "Incorrect password for admin@advantcore.co." }
-      }
-
-      // 2. Onboarded Learner Authentication Check
-      let registeredLearners: StoredLearner[] = []
+    // 1. Prioritize Platform Administrator Access
+    if (cleanEmail === "admin@advantcore.co") {
+      let storedAdminPass = "default"
       if (typeof window !== "undefined") {
-        try {
-          registeredLearners = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTERED_USERS) || "[]")
-        } catch {
-          registeredLearners = []
-        }
+        storedAdminPass = localStorage.getItem(STORAGE_KEY_ADMIN_PASS) || "default"
       }
 
-      const matchedLearner = registeredLearners.find(l => l.email.toLowerCase() === cleanEmail)
-      if (matchedLearner) {
-        if (matchedLearner.passwordHash === password) {
-          setUser({
-            id: matchedLearner.id,
-            email: matchedLearner.email,
-            fullName: matchedLearner.fullName,
-            avatarInitials: matchedLearner.fullName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
-            avatarColour: "mint",
-            role: "learner",
-            status: matchedLearner.status,
-            mustChangePassword: false,
-            assignedPathwayTitle: matchedLearner.pathway,
-          })
-          return { success: true }
-        }
-        return { success: false, error: "Incorrect password." }
+      if (cleanPassword === storedAdminPass || (storedAdminPass === "default" && cleanPassword === "default")) {
+        setUser(DEFAULT_ADMIN)
+        return { success: true }
       }
+      return { success: false, error: "Incorrect password for admin@advantcore.co." }
+    }
 
-      return {
-        success: false,
-        error: "Account not found. Please contact the Academy Administrator to provision your access.",
+    // 2. Prioritize Onboarded Learners in Registry
+    let registeredLearners: StoredLearner[] = []
+    if (typeof window !== "undefined") {
+      try {
+        registeredLearners = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTERED_USERS) || "[]")
+      } catch {
+        registeredLearners = []
       }
     }
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password })
-      if (error) {
-        return { success: false, error: error.message }
+    const matchedLearner = registeredLearners.find(l => l.email.toLowerCase() === cleanEmail)
+    if (matchedLearner) {
+      if (matchedLearner.passwordHash === cleanPassword) {
+        setUser({
+          id: matchedLearner.id,
+          email: matchedLearner.email,
+          fullName: matchedLearner.fullName,
+          avatarInitials: matchedLearner.fullName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+          avatarColour: "mint",
+          role: "learner",
+          status: matchedLearner.status,
+          mustChangePassword: false,
+          assignedPathwayTitle: matchedLearner.pathway,
+        })
+        return { success: true }
       }
-      if (data.user) {
-        const profile = await fetchProfile(data.user.id)
-        setUser(profile)
+      return { success: false, error: "Incorrect password for learner account." }
+    }
+
+    // 3. Supabase Auth Fallback
+    const supabase = getSupabaseBrowserClient()
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword })
+        if (error) {
+          return { success: false, error: error.message }
+        }
+        if (data.user) {
+          const profile = await fetchProfile(data.user.id)
+          setUser(profile)
+        }
+        return { success: true }
+      } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : "Authentication failed." }
       }
-      return { success: true }
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : "Authentication failed." }
+    }
+
+    return {
+      success: false,
+      error: "Account not found. Please contact the Academy Administrator to provision your access.",
     }
   }, [fetchProfile])
 
   const signOut = useCallback(async () => {
     const supabase = getSupabaseBrowserClient()
     if (supabase) {
-      await supabase.auth.signOut()
+      try {
+        await supabase.auth.signOut()
+      } catch {
+        // ignore
+      }
     }
     setUser(null)
   }, [])
@@ -205,54 +211,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Password must be at least 5 characters." }
     }
 
-    const supabase = getSupabaseBrowserClient()
-    if (!supabase) {
-      // Local storage update
-      if (user?.role === "admin") {
-        if (typeof window !== "undefined") {
-          localStorage.setItem(STORAGE_KEY_ADMIN_PASS, newPassword)
-        }
-        setUser(prev => (prev ? { ...prev, mustChangePassword: false } : null))
-        return { success: true }
+    // Always update local storage first so Admin password works immediately
+    if (user?.role === "admin") {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY_ADMIN_PASS, newPassword)
       }
-
-      // Learner password update
-      if (user?.email && typeof window !== "undefined") {
-        try {
-          const registeredLearners: StoredLearner[] = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTERED_USERS) || "[]")
-          const updated = registeredLearners.map(l => (
-            l.email.toLowerCase() === user.email.toLowerCase()
-              ? { ...l, passwordHash: newPassword, mustChangePassword: false }
-              : l
-          ))
-          localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(updated))
-        } catch {
-          // ignore
-        }
-      }
-
       setUser(prev => (prev ? { ...prev, mustChangePassword: false } : null))
       return { success: true }
     }
 
-    try {
-      const { error: authError } = await supabase.auth.updateUser({ password: newPassword })
-      if (authError) {
-        return { success: false, error: authError.message }
+    // Learner password update in local storage
+    if (user?.email && typeof window !== "undefined") {
+      try {
+        const registeredLearners: StoredLearner[] = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTERED_USERS) || "[]")
+        const updated = registeredLearners.map(l => (
+          l.email.toLowerCase() === user.email.toLowerCase()
+            ? { ...l, passwordHash: newPassword, mustChangePassword: false }
+            : l
+        ))
+        localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(updated))
+      } catch {
+        // ignore
       }
-
-      if (user?.id) {
-        await supabase
-          .from("profiles")
-          .update({ must_change_password: false })
-          .eq("id", user.id)
-        setUser(prev => (prev ? { ...prev, mustChangePassword: false } : null))
-      }
-
-      return { success: true }
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : "Failed to update password." }
     }
+
+    const supabase = getSupabaseBrowserClient()
+    if (supabase) {
+      try {
+        await supabase.auth.updateUser({ password: newPassword })
+        if (user?.id) {
+          await supabase
+            .from("profiles")
+            .update({ must_change_password: false })
+            .eq("id", user.id)
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    setUser(prev => (prev ? { ...prev, mustChangePassword: false } : null))
+    return { success: true }
   }, [user])
 
   const switchDemoRole = useCallback((role: UserRole) => {
