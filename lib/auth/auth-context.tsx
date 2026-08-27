@@ -19,6 +19,7 @@ const DEFAULT_ADMIN: UserProfile = {
   assignedPathwayTitle: "Executive Management",
 }
 
+const STORAGE_KEY_ACTIVE_SESSION = "advantcore_active_session"
 const STORAGE_KEY_ADMIN_PASS = "advantcore_admin_pwd"
 const STORAGE_KEY_REGISTERED_USERS = "advantcore_registered_learners"
 
@@ -34,7 +35,16 @@ interface StoredLearner {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const saveSession = useCallback((profile: UserProfile | null) => {
+    if (typeof window === "undefined") return
+    if (profile) {
+      localStorage.setItem(STORAGE_KEY_ACTIVE_SESSION, JSON.stringify(profile))
+    } else {
+      localStorage.removeItem(STORAGE_KEY_ACTIVE_SESSION)
+    }
+  }, [])
 
   const fetchProfile = useCallback(async (userId: string) => {
     const supabase = getSupabaseBrowserClient()
@@ -67,61 +77,88 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  // Hydrate user session on mount
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient()
-    if (!supabase) {
-      return
-    }
-
     let isMounted = true
 
     async function initAuth() {
-      if (!supabase) return
       setIsLoading(true)
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user && isMounted) {
-          const profile = await fetchProfile(session.user.id)
-          if (profile) {
-            setUser(profile)
-          } else {
-            setUser({
-              id: session.user.id,
-              email: session.user.email || "",
-              fullName: session.user.user_metadata?.full_name || "Administrator",
-              avatarInitials: (session.user.email?.slice(0, 2) || "AD").toUpperCase(),
-              avatarColour: "blue",
-              role: (session.user.user_metadata?.role as UserRole) || "admin",
-              status: "active",
-              mustChangePassword: false,
-            })
+
+      // 1. First restore from persistent local session
+      if (typeof window !== "undefined") {
+        try {
+          const rawLocalSession = localStorage.getItem(STORAGE_KEY_ACTIVE_SESSION)
+          if (rawLocalSession && isMounted) {
+            const parsedSession: UserProfile = JSON.parse(rawLocalSession)
+            if (parsedSession && parsedSession.email) {
+              setUser(parsedSession)
+            }
           }
+        } catch {
+          // Ignore corrupted local session
         }
-      } catch {
-        // Leave unauthenticated
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
+      }
+
+      // 2. Sync with Supabase session if connected
+      const supabase = getSupabaseBrowserClient()
+      if (supabase) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session?.user && isMounted) {
+            const profile = await fetchProfile(session.user.id)
+            if (profile) {
+              setUser(profile)
+              saveSession(profile)
+            } else {
+              const fallbackUser: UserProfile = {
+                id: session.user.id,
+                email: session.user.email || "",
+                fullName: session.user.user_metadata?.full_name || "Administrator",
+                avatarInitials: (session.user.email?.slice(0, 2) || "AD").toUpperCase(),
+                avatarColour: "blue",
+                role: (session.user.user_metadata?.role as UserRole) || "admin",
+                status: "active",
+                mustChangePassword: false,
+              }
+              setUser(fallbackUser)
+              saveSession(fallbackUser)
+            }
+          }
+        } catch {
+          // Keep restored local session
         }
+      }
+
+      if (isMounted) {
+        setIsLoading(false)
       }
     }
 
     initAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user && isMounted) {
-        const profile = await fetchProfile(session.user.id)
-        setUser(profile)
-      } else if (isMounted) {
-        setUser(null)
+    const supabase = getSupabaseBrowserClient()
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (session?.user && isMounted) {
+          const profile = await fetchProfile(session.user.id)
+          setUser(profile)
+          saveSession(profile)
+        } else if (isMounted && !localStorage.getItem(STORAGE_KEY_ACTIVE_SESSION)) {
+          setUser(null)
+          saveSession(null)
+        }
+      })
+
+      return () => {
+        isMounted = false
+        subscription.unsubscribe()
       }
-    })
+    }
 
     return () => {
       isMounted = false
-      subscription.unsubscribe()
     }
-  }, [fetchProfile])
+  }, [fetchProfile, saveSession])
 
   const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     const cleanEmail = email.trim().toLowerCase()
@@ -136,6 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (cleanPassword === storedAdminPass || (storedAdminPass === "default" && cleanPassword === "default")) {
         setUser(DEFAULT_ADMIN)
+        saveSession(DEFAULT_ADMIN)
         return { success: true }
       }
       return { success: false, error: "Incorrect password for admin@advantcore.co." }
@@ -154,7 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const matchedLearner = registeredLearners.find(l => l.email.toLowerCase() === cleanEmail)
     if (matchedLearner) {
       if (matchedLearner.passwordHash === cleanPassword) {
-        setUser({
+        const learnerProfile: UserProfile = {
           id: matchedLearner.id,
           email: matchedLearner.email,
           fullName: matchedLearner.fullName,
@@ -164,7 +202,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           status: matchedLearner.status,
           mustChangePassword: false,
           assignedPathwayTitle: matchedLearner.pathway,
-        })
+        }
+        setUser(learnerProfile)
+        saveSession(learnerProfile)
         return { success: true }
       }
       return { success: false, error: "Incorrect password for learner account." }
@@ -181,6 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data.user) {
           const profile = await fetchProfile(data.user.id)
           setUser(profile)
+          saveSession(profile)
         }
         return { success: true }
       } catch (err) {
@@ -192,7 +233,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       success: false,
       error: "Account not found. Please contact the Academy Administrator to provision your access.",
     }
-  }, [fetchProfile])
+  }, [fetchProfile, saveSession])
 
   const signOut = useCallback(async () => {
     const supabase = getSupabaseBrowserClient()
@@ -203,8 +244,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // ignore
       }
     }
+    saveSession(null)
     setUser(null)
-  }, [])
+  }, [saveSession])
 
   const changePassword = useCallback(async (newPassword: string): Promise<{ success: boolean; error?: string }> => {
     if (newPassword.length < 5) {
@@ -216,7 +258,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== "undefined") {
         localStorage.setItem(STORAGE_KEY_ADMIN_PASS, newPassword)
       }
-      setUser(prev => (prev ? { ...prev, mustChangePassword: false } : null))
+      const updatedAdmin = { ...user, mustChangePassword: false }
+      setUser(updatedAdmin)
+      saveSession(updatedAdmin)
       return { success: true }
     }
 
@@ -250,17 +294,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    setUser(prev => (prev ? { ...prev, mustChangePassword: false } : null))
+    const updatedUser = user ? { ...user, mustChangePassword: false } : null
+    setUser(updatedUser)
+    saveSession(updatedUser)
     return { success: true }
-  }, [user])
+  }, [user, saveSession])
 
   const switchDemoRole = useCallback((role: UserRole) => {
     if (role === "admin") {
       setUser(DEFAULT_ADMIN)
+      saveSession(DEFAULT_ADMIN)
     } else {
       setUser(null)
+      saveSession(null)
     }
-  }, [])
+  }, [saveSession])
 
   const value = useMemo<AuthContextType>(() => ({
     user,
