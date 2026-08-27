@@ -7,28 +7,29 @@ import type { UserRole } from "@/lib/supabase/types"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const DEFAULT_DEMO_ADMIN: UserProfile = {
-  id: "demo-admin-001",
+const DEFAULT_ADMIN: UserProfile = {
+  id: "admin-001",
   email: "admin@advantcore.co",
-  fullName: "Daniel Emmanuel",
-  avatarInitials: "DE",
+  fullName: "Platform Administrator",
+  avatarInitials: "AD",
   avatarColour: "blue",
   role: "admin",
   status: "active",
   mustChangePassword: false,
-  assignedPathwayTitle: "Business Analysis",
+  assignedPathwayTitle: "Executive Management",
 }
 
-const DEFAULT_DEMO_LEARNER: UserProfile = {
-  id: "demo-learner-001",
-  email: "amanda.okafor@example.com",
-  fullName: "Amanda Okafor",
-  avatarInitials: "AO",
-  avatarColour: "mint",
-  role: "learner",
-  status: "active",
-  mustChangePassword: false,
-  assignedPathwayTitle: "Business Analysis",
+const STORAGE_KEY_ADMIN_PASS = "advantcore_admin_pwd"
+const STORAGE_KEY_REGISTERED_USERS = "advantcore_registered_learners"
+
+interface StoredLearner {
+  id: string
+  fullName: string
+  email: string
+  passwordHash: string
+  pathway: string
+  status: "active" | "pending" | "suspended"
+  mustChangePassword: boolean
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -87,17 +88,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser({
               id: session.user.id,
               email: session.user.email || "",
-              fullName: session.user.user_metadata?.full_name || "Academy User",
-              avatarInitials: (session.user.email?.slice(0, 2) || "AU").toUpperCase(),
+              fullName: session.user.user_metadata?.full_name || "Administrator",
+              avatarInitials: (session.user.email?.slice(0, 2) || "AD").toUpperCase(),
               avatarColour: "blue",
-              role: (session.user.user_metadata?.role as UserRole) || "learner",
+              role: (session.user.user_metadata?.role as UserRole) || "admin",
               status: "active",
               mustChangePassword: false,
             })
           }
         }
       } catch {
-        // Fall back to default demo user
+        // Leave unauthenticated
       } finally {
         if (isMounted) {
           setIsLoading(false)
@@ -123,27 +124,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchProfile])
 
   const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.trim().toLowerCase()
     const supabase = getSupabaseBrowserClient()
+
     if (!supabase) {
-      // Offline/demo login simulation
-      if (password === "temp123") {
-        setUser({
-          ...DEFAULT_DEMO_LEARNER,
-          email,
-          mustChangePassword: true,
-        })
-        return { success: true }
+      // 1. Admin Authentication Check
+      if (cleanEmail === "admin@advantcore.co") {
+        let storedAdminPass = "default"
+        if (typeof window !== "undefined") {
+          storedAdminPass = localStorage.getItem(STORAGE_KEY_ADMIN_PASS) || "default"
+        }
+
+        if (password === storedAdminPass || (storedAdminPass === "default" && password === "default")) {
+          setUser(DEFAULT_ADMIN)
+          return { success: true }
+        }
+        return { success: false, error: "Incorrect password for admin@advantcore.co." }
       }
-      if (email.includes("admin")) {
-        setUser(DEFAULT_DEMO_ADMIN)
-      } else {
-        setUser(DEFAULT_DEMO_LEARNER)
+
+      // 2. Onboarded Learner Authentication Check
+      let registeredLearners: StoredLearner[] = []
+      if (typeof window !== "undefined") {
+        try {
+          registeredLearners = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTERED_USERS) || "[]")
+        } catch {
+          registeredLearners = []
+        }
       }
-      return { success: true }
+
+      const matchedLearner = registeredLearners.find(l => l.email.toLowerCase() === cleanEmail)
+      if (matchedLearner) {
+        if (matchedLearner.passwordHash === password) {
+          setUser({
+            id: matchedLearner.id,
+            email: matchedLearner.email,
+            fullName: matchedLearner.fullName,
+            avatarInitials: matchedLearner.fullName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+            avatarColour: "mint",
+            role: "learner",
+            status: matchedLearner.status,
+            mustChangePassword: false,
+            assignedPathwayTitle: matchedLearner.pathway,
+          })
+          return { success: true }
+        }
+        return { success: false, error: "Incorrect password." }
+      }
+
+      return {
+        success: false,
+        error: "Account not found. Please contact the Academy Administrator to provision your access.",
+      }
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password })
       if (error) {
         return { success: false, error: error.message }
       }
@@ -166,13 +201,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const changePassword = useCallback(async (newPassword: string): Promise<{ success: boolean; error?: string }> => {
-    if (newPassword.length < 8) {
-      return { success: false, error: "Password must be at least 8 characters." }
+    if (newPassword.length < 5) {
+      return { success: false, error: "Password must be at least 5 characters." }
     }
 
     const supabase = getSupabaseBrowserClient()
     if (!supabase) {
-      // Local fallback
+      // Local storage update
+      if (user?.role === "admin") {
+        if (typeof window !== "undefined") {
+          localStorage.setItem(STORAGE_KEY_ADMIN_PASS, newPassword)
+        }
+        setUser(prev => (prev ? { ...prev, mustChangePassword: false } : null))
+        return { success: true }
+      }
+
+      // Learner password update
+      if (user?.email && typeof window !== "undefined") {
+        try {
+          const registeredLearners: StoredLearner[] = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTERED_USERS) || "[]")
+          const updated = registeredLearners.map(l => (
+            l.email.toLowerCase() === user.email.toLowerCase()
+              ? { ...l, passwordHash: newPassword, mustChangePassword: false }
+              : l
+          ))
+          localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(updated))
+        } catch {
+          // ignore
+        }
+      }
+
       setUser(prev => (prev ? { ...prev, mustChangePassword: false } : null))
       return { success: true }
     }
@@ -199,9 +257,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const switchDemoRole = useCallback((role: UserRole) => {
     if (role === "admin") {
-      setUser(DEFAULT_DEMO_ADMIN)
+      setUser(DEFAULT_ADMIN)
     } else {
-      setUser(DEFAULT_DEMO_LEARNER)
+      setUser(null)
     }
   }, [])
 

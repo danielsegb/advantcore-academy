@@ -12,7 +12,6 @@ import { AdminStudioView } from "@/components/admin/admin-studio-view"
 import { ErrorBoundary } from "@/components/shared/error-boundary"
 import { SkipToContent } from "@/components/shared/skip-to-content"
 import { OfflineBanner } from "@/components/shared/offline-banner"
-import { MustChangePasswordDialog } from "@/components/auth/must-change-password-dialog"
 import { AccountStatusGate } from "@/components/auth/account-status-gate"
 import { PortalAuthView } from "@/components/auth/portal-auth-view"
 import type { View } from "@/components/shared/types"
@@ -45,8 +44,6 @@ function AcademyMainContent() {
           {currentView === "calendar" && <CalendarView />}
           {currentView === "admin" && user.role === "admin" && <AdminStudioView />}
         </ErrorBoundary>
-
-        <MustChangePasswordDialog />
       </AcademyShell>
     </AccountStatusGate>
   )

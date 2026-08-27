@@ -4,7 +4,6 @@ import React, { useMemo, useState } from "react"
 import {
   Sparkles, LayoutDashboard, GraduationCap, BriefcaseBusiness, Video,
   CalendarDays, Settings, LogIn, LogOut, Search, Bell, ChevronRight,
-  ShieldCheck, User,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,8 +15,8 @@ import {
 import type { View } from "@/components/shared/types"
 import { GuidedTourDialog } from "./guided-tour-dialog"
 import { LoginDialog } from "@/components/auth/login-dialog"
+import { AdminChangePasswordDialog } from "@/components/auth/admin-change-password-dialog"
 import { useAuth } from "@/lib/auth/auth-context"
-
 import { PrivacyCenterDialog } from "@/components/compliance/privacy-center-dialog"
 
 export const navItems = [
@@ -35,7 +34,7 @@ interface AcademyShellProps {
 }
 
 export function AcademyShell({ currentView, onSelectView, children }: AcademyShellProps) {
-  const { user, signOut, switchDemoRole } = useAuth()
+  const { user, signOut } = useAuth()
   const [tourOpen, setTourOpen] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
 
@@ -49,7 +48,7 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
     <SidebarProvider>
       <Sidebar collapsible="icon" className="academy-sidebar">
         <SidebarHeader className="brand-header">
-          <button className="brand" onClick={() => onSelectView("dashboard")} aria-label="Advantcore Academy Home">
+          <button className="brand" onClick={() => onSelectView(isAdmin ? "admin" : "dashboard")} aria-label="Advantcore Academy Home">
             <span className="brand-mark"><Sparkles /></span>
             <span><strong>Advantcore</strong><small>ACADEMY</small></span>
           </button>
@@ -57,7 +56,7 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
         <SidebarSeparator />
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>My journey</SidebarGroupLabel>
+            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {navItems.map(item => (
@@ -96,24 +95,6 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
               </SidebarGroupContent>
             </SidebarGroup>
           )}
-
-          {/* Quick role toggle for preview/testing */}
-          <SidebarGroup>
-            <SidebarGroupLabel>Role preview</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => switchDemoRole(isAdmin ? "learner" : "admin")}
-                    tooltip={`Switch to ${isAdmin ? "Learner" : "Admin"} mode`}
-                  >
-                    {isAdmin ? <User /> : <ShieldCheck />}
-                    <span>{isAdmin ? "Preview as Learner" : "Switch to Admin"}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter>
@@ -126,7 +107,7 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
                 <span className={`avatar user ${user.avatarColour}`}>{user.avatarInitials}</span>
                 <div className="truncate">
                   <strong>{user.fullName}</strong>
-                  <small className="capitalize block">{user.role} · {user.status}</small>
+                  <small className="capitalize block">{user.email}</small>
                 </div>
               </div>
               <button
@@ -153,18 +134,19 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
             <SidebarTrigger />
             <div className="mobile-title">
               <span>{activeTitle}</span>
-              <small>Business Analysis pathway</small>
+              <small>Advantcore Academy</small>
             </div>
           </div>
           <div className="journey-selector">
             <span className="journey-icon"><GraduationCap /></span>
             <div>
-              <small>Active pathway</small>
-              <strong>{user?.assignedPathwayTitle || "Business Analysis"}</strong>
+              <small>Active role</small>
+              <strong className="capitalize">{isAdmin ? "Platform Administrator" : (user?.assignedPathwayTitle || "Business Analysis")}</strong>
             </div>
             <ChevronRight />
           </div>
           <div className="top-actions">
+            {isAdmin && <AdminChangePasswordDialog />}
             <button className="search-button" aria-label="Search">
               <Search />
               <span>Search anything</span>
@@ -177,6 +159,11 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
             <Button size="sm" variant="outline" onClick={() => setTourOpen(true)}>
               <Sparkles /> Help
             </Button>
+            {user && (
+              <Button size="sm" variant="ghost" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => signOut()}>
+                <LogOut className="w-3.5 h-3.5 mr-1" /> Sign out
+              </Button>
+            )}
             {!user && (
               <Button size="sm" className="primary-action" onClick={() => setLoginOpen(true)}>
                 <LogIn className="w-4 h-4 mr-1.5" /> Sign in
