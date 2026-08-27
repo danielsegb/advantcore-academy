@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react"
 import {
   Sparkles, LayoutDashboard, GraduationCap, BriefcaseBusiness, Video,
-  CalendarDays, Settings, LogIn, LogOut, Search, Bell, ChevronRight,
+  CalendarDays, Settings, LogIn, LogOut, Search, ChevronRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,6 +18,8 @@ import { LoginDialog } from "@/components/auth/login-dialog"
 import { AdminChangePasswordDialog } from "@/components/auth/admin-change-password-dialog"
 import { useAuth } from "@/lib/auth/auth-context"
 import { PrivacyCenterDialog } from "@/components/compliance/privacy-center-dialog"
+import { NotificationCenter } from "@/components/dashboard/notification-center"
+import { GlobalSearchDialog } from "@/components/shared/global-search-dialog"
 
 export const navItems = [
   { id: "dashboard" as View, label: "Home", icon: LayoutDashboard },
@@ -37,6 +39,7 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
   const { user, signOut } = useAuth()
   const [tourOpen, setTourOpen] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const activeTitle = useMemo(() => {
     return navItems.find(i => i.id === currentView)?.label ?? "Admin studio"
@@ -137,27 +140,35 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
               <small>Advantcore Academy</small>
             </div>
           </div>
-          <div className="journey-selector">
+          <button
+            type="button"
+            className="journey-selector text-left cursor-pointer hover:bg-muted/40 transition-all"
+            onClick={() => onSelectView("learning")}
+            title="Active learning pathway - click to view curriculum"
+          >
             <span className="journey-icon"><GraduationCap /></span>
             <div>
               <small>Active role</small>
               <strong className="capitalize">{isAdmin ? "Platform Administrator" : (user?.assignedPathwayTitle || "Business Analysis")}</strong>
             </div>
             <ChevronRight />
-          </div>
+          </button>
           <div className="top-actions">
             {isAdmin && <AdminChangePasswordDialog />}
-            <button className="search-button" aria-label="Search">
-              <Search />
+            <button
+              type="button"
+              className="search-button cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search"
+              title="Search anything (Ctrl+K)"
+            >
+              <Search className="w-4 h-4" />
               <span>Search anything</span>
               <kbd>⌘ K</kbd>
             </button>
-            <button className="icon-button notification" aria-label="Notifications">
-              <Bell />
-              <i />
-            </button>
+            <NotificationCenter onNavigate={onSelectView} />
             <Button size="sm" variant="outline" onClick={() => setTourOpen(true)}>
-              <Sparkles /> Help
+              <Sparkles className="w-3.5 h-3.5 mr-1" /> Help
             </Button>
             {user && (
               <Button size="sm" variant="ghost" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => signOut()}>
@@ -175,6 +186,12 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
         <main className="content-area">
           {children}
         </main>
+
+        <GlobalSearchDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          onNavigate={onSelectView}
+        />
 
         <GuidedTourDialog
           open={tourOpen}
