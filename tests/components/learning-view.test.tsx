@@ -30,4 +30,40 @@ describe("LearningView Component", () => {
     expect(screen.getByText("The role and competencies of a Business Analyst")).toBeInTheDocument()
     expect(screen.getByText("Advantcore Engagement Scoping")).toBeInTheDocument()
   })
+
+  it("navigates to the next lesson when Next button is clicked", () => {
+    render(
+      <AuthProvider>
+        <LearningView />
+      </AuthProvider>
+    )
+
+    // Starting on Lesson 1.1
+    expect(screen.getByText("The role and competencies of a Business Analyst")).toBeInTheDocument()
+
+    // Find and click the bottom "Next: Lesson 2.1" button
+    const nextBtn = screen.getByText(/Next: Lesson 2.1/i)
+    fireEvent.click(nextBtn)
+
+    // Now should be on Lesson 2.1
+    expect(screen.getByText("External environmental analysis: PESTLE and Five Forces")).toBeInTheDocument()
+    expect(screen.getByText("Advantcore Market Context")).toBeInTheDocument()
+  })
+
+  it("marks a lesson as complete and triggers the celebratory completion dialog", () => {
+    render(
+      <AuthProvider>
+        <LearningView />
+      </AuthProvider>
+    )
+
+    // Click "Mark as Complete" button
+    const completeBtn = screen.getByText("Mark as Complete")
+    fireEvent.click(completeBtn)
+
+    // Verify celebration modal opens
+    expect(screen.getByText(/Lesson 1.1 Completed!/i)).toBeInTheDocument()
+    expect(screen.getByText("Lesson Mastered")).toBeInTheDocument()
+    expect(screen.getByText("Verified Learning Outcomes")).toBeInTheDocument()
+  })
 })

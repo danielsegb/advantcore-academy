@@ -132,7 +132,7 @@ export function EvidenceEditorDialog({ task, existingEvidence, onEvidenceSaved }
           {existingEvidence ? (existingEvidence.status === "approved" ? "View evidence" : "Edit deliverable") : "Author deliverable"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <Badge variant="outline">Task {task.taskNumber} · Deliverable</Badge>
@@ -149,8 +149,8 @@ export function EvidenceEditorDialog({ task, existingEvidence, onEvidenceSaved }
               {status.replace("_", " ").toUpperCase()}
             </Badge>
           </div>
-          <DialogTitle>{task.title}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-base sm:text-lg">{task.title}</DialogTitle>
+          <DialogDescription className="text-xs">
             Required Deliverable: <strong>{task.deliverable}</strong> ({task.requiredFormat})
           </DialogDescription>
         </DialogHeader>
@@ -191,41 +191,41 @@ export function EvidenceEditorDialog({ task, existingEvidence, onEvidenceSaved }
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full mt-1 p-2 text-sm border rounded bg-background"
+                className="w-full mt-1 p-2.5 text-base sm:text-sm border rounded-lg bg-background"
               />
             </label>
 
             <label className="block text-xs font-semibold">
               Deliverable Content (Markdown formatted)
               <textarea
-                rows={12}
+                rows={10}
                 value={content}
                 onChange={e => setContent(e.target.value)}
-                className="w-full mt-1 p-3 text-xs font-mono border rounded bg-background leading-relaxed"
+                className="w-full mt-1 p-3 text-base sm:text-xs font-mono border rounded-lg bg-background leading-relaxed"
               />
             </label>
           </div>
         </div>
 
-        <DialogFooter className="flex justify-between items-center w-full pt-3">
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="flex flex-col sm:flex-row justify-between items-center w-full gap-2 pt-3">
+          <Button variant="outline" className="w-full sm:w-auto h-9" onClick={() => setOpen(false)}>
             Close
           </Button>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {isAdmin ? (
               <>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-destructive border-destructive"
+                  className="text-destructive border-destructive w-full sm:w-auto h-9"
                   onClick={() => handleReviewDecision("changes_requested")}
                 >
                   <AlertCircle className="w-4 h-4 mr-1" /> Request changes
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto h-9 font-bold"
                   onClick={() => handleReviewDecision("approved")}
                 >
                   <ShieldCheck className="w-4 h-4 mr-1" /> Approve deliverable
@@ -233,12 +233,12 @@ export function EvidenceEditorDialog({ task, existingEvidence, onEvidenceSaved }
               </>
             ) : (
               <>
-                <Button size="sm" variant="outline" onClick={() => handleSave("saveDraft")}>
+                <Button size="sm" variant="outline" className="w-full sm:w-auto h-9" onClick={() => handleSave("saveDraft")}>
                   Save draft
                 </Button>
                 <Button
                   size="sm"
-                  className="primary-action"
+                  className="primary-action w-full sm:w-auto h-9 font-bold"
                   disabled={loading}
                   onClick={() => handleSave("submit")}
                 >

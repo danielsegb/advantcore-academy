@@ -739,7 +739,7 @@ export function MeetingRoomView() {
                   if (event.key === "Enter") askTeam()
                 }}
                 placeholder={isListening ? "Listening to your voice..." : `Ask ${currentSpeakerObj.name.split(" ")[0]}…`}
-                className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none px-1"
+                className="flex-1 bg-transparent text-base sm:text-xs text-foreground placeholder:text-muted-foreground focus:outline-none px-1"
                 aria-label="Message the AI project team"
               />
               <Button

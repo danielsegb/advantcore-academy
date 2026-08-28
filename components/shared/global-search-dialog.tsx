@@ -212,7 +212,7 @@ export function GlobalSearchDialog({ open, onOpenChange, onNavigate }: GlobalSea
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search lessons, textbook, RACI, user stories, mock exams, or meetings..."
-            className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            className="w-full bg-transparent text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             autoFocus
           />
           <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground bg-muted border rounded">

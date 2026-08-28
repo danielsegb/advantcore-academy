@@ -13,10 +13,12 @@ import { useAuth } from "@/lib/auth/auth-context"
 
 interface QuizDialogProps {
   lesson: Lesson
-  onPass?: () => void
+  onPass?: (score?: number) => void
+  nextLesson?: Lesson | null
+  onNavigateToNextLesson?: (nextLesson: Lesson) => void
 }
 
-export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
+export function QuizDialog({ lesson, onPass, nextLesson, onNavigateToNextLesson }: QuizDialogProps) {
   const { user } = useAuth()
   const [open, setOpen] = useState(false)
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -41,6 +43,19 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
     }
   }
 
+  function recordLessonCompletion(score: number) {
+    if (typeof window !== "undefined") {
+      const uId = user?.id || "guest"
+      const currentCompleted: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
+      if (!currentCompleted.includes(lesson.id)) {
+        currentCompleted.push(lesson.id)
+        localStorage.setItem(`advantcore_completed_lessons_${uId}`, JSON.stringify(currentCompleted))
+      }
+      window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { lessonId: lesson.id } }))
+    }
+    if (onPass) onPass(score)
+  }
+
   async function submitQuiz() {
     setLoading(true)
     try {
@@ -57,15 +72,7 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
       const data = (await res.json()) as QuizSubmissionResult
       setResult(data)
       if (data.masteryAchieved) {
-        if (typeof window !== "undefined") {
-          const uId = user?.id || "guest"
-          const currentCompleted: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
-          if (!currentCompleted.includes(lesson.id)) {
-            currentCompleted.push(lesson.id)
-            localStorage.setItem(`advantcore_completed_lessons_${uId}`, JSON.stringify(currentCompleted))
-          }
-        }
-        if (onPass) onPass()
+        recordLessonCompletion(data.score)
       }
     } catch {
       // Local fallback calculation
@@ -92,15 +99,7 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
       }
       setResult(res)
       if (res.masteryAchieved) {
-        if (typeof window !== "undefined") {
-          const uId = user?.id || "guest"
-          const currentCompleted: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
-          if (!currentCompleted.includes(lesson.id)) {
-            currentCompleted.push(lesson.id)
-            localStorage.setItem(`advantcore_completed_lessons_${uId}`, JSON.stringify(currentCompleted))
-          }
-        }
-        if (onPass) onPass()
+        recordLessonCompletion(score)
       }
     } finally {
       setLoading(false)
@@ -113,6 +112,13 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
     setCurrentIdx(0)
   }
 
+  function handleContinueToNext() {
+    setOpen(false)
+    if (nextLesson && onNavigateToNextLesson) {
+      onNavigateToNextLesson(nextLesson)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={o => {
       setOpen(o)
@@ -123,88 +129,111 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
           <ListChecks className="w-4 h-4 mr-1.5" /> Take lesson quiz
         </Button>
       </DialogTrigger>
-      <DialogContent className="quiz-dialog max-w-xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <p className="eyebrow">Lesson {lesson.lessonNumber} · Knowledge Mastery Check</p>
             <Badge variant="outline" className="text-xs">
-              <Award className="w-3.5 h-3.5 mr-1" /> 90% required
+              <Award className="w-3.5 h-3.5 mr-1 text-primary" /> Mastery check · 80% required
             </Badge>
+            <span className="text-xs text-muted-foreground font-mono">
+              {lesson.id.toUpperCase()}
+            </span>
           </div>
-          <DialogTitle>{lesson.title}</DialogTitle>
-          <DialogDescription>
-            You must score 90% or higher to master this lesson. Detailed explanations are provided for all questions.
+          <DialogTitle className="text-base sm:text-lg">{lesson.title}</DialogTitle>
+          <DialogDescription className="text-xs">
+            Answer the 10 questions below to demonstrate core competence and earn verified progress.
           </DialogDescription>
         </DialogHeader>
 
         {!result ? (
-          <div className="quiz-body space-y-4">
-            <div className="question-count">
-              <span>Question {currentIdx + 1} of {lesson.questions.length}</span>
-              <Progress value={((currentIdx + 1) / lesson.questions.length) * 100} />
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                <span>Question {currentIdx + 1} of {lesson.questions.length}</span>
+                <span>{Math.round(((currentIdx + 1) / lesson.questions.length) * 100)}% Complete</span>
+              </div>
+              <Progress value={((currentIdx + 1) / lesson.questions.length) * 100} className="h-1.5" />
             </div>
 
             {currentQ && (
               <div className="space-y-3">
-                <h3 className="font-semibold text-base leading-snug">{currentQ.prompt}</h3>
+                <h3 className="font-semibold text-sm sm:text-base leading-snug text-foreground">
+                  {currentQ.prompt}
+                </h3>
+
                 <div className="space-y-2">
-                  {currentQ.options.map(opt => (
-                    <label
-                      key={opt.key}
-                      className={`answer-option ${selectedAnswer === opt.key ? "selected" : ""}`}
-                    >
-                      <input
-                        type="radio"
-                        name={`q-${currentQ.id}`}
-                        value={opt.key}
-                        checked={selectedAnswer === opt.key}
-                        onChange={() => handleSelectOption(opt.key)}
-                      />
-                      <span>{opt.text}</span>
-                    </label>
-                  ))}
+                  {currentQ.options.map(opt => {
+                    const isSelected = selectedAnswer === opt.key
+                    return (
+                      <button
+                        type="button"
+                        key={opt.key}
+                        onClick={() => handleSelectOption(opt.key)}
+                        className={`w-full p-3 rounded-xl border text-left text-xs sm:text-sm flex items-center gap-3 transition-all min-h-[44px] cursor-pointer ${
+                          isSelected
+                            ? "border-primary bg-primary/10 font-semibold ring-1 ring-primary text-foreground"
+                            : "bg-card hover:bg-muted/40 text-foreground"
+                        }`}
+                      >
+                        <span
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                            isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {opt.key.toUpperCase()}
+                        </span>
+                        <span className="flex-1 leading-snug">{opt.text}</span>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className={`quiz-result ${result.masteryAchieved ? "correct" : "retry"}`}>
+          <div className="space-y-4 py-2">
+            <div
+              className={`p-4 rounded-xl border flex items-start gap-3 ${
+                result.masteryAchieved
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-950 dark:text-emerald-100"
+                  : "bg-amber-500/10 border-amber-500/20 text-amber-950 dark:text-amber-100"
+              }`}
+            >
               {result.masteryAchieved ? (
-                <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
+                <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
               ) : (
-                <RefreshCw className="w-6 h-6 text-amber-500 shrink-0" />
+                <RefreshCw className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
               )}
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-base">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-bold text-sm sm:text-base">
                     {result.masteryAchieved ? "Mastery Achieved!" : "Mastery Not Yet Achieved"}
                   </h3>
                   <Badge variant={result.masteryAchieved ? "default" : "destructive"}>
                     {result.score}% ({result.correctCount}/{result.totalQuestions})
                   </Badge>
                 </div>
-                <p className="text-sm mt-1">
+                <p className="text-xs sm:text-sm mt-1 leading-relaxed">
                   {result.masteryAchieved
                     ? "Outstanding work. You have mastered this lesson and can advance to the next topic or apply this knowledge in the workplace."
-                    : "You need 90% or higher to master this module. Review the explanations below and retake the quiz."}
+                    : "You need 80% or higher to master this module. Review the explanations below and retake the quiz."}
                 </p>
               </div>
             </div>
 
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-60 sm:max-h-72 overflow-y-auto pr-1">
               <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Question Review & Rationales</h4>
               {result.explanations.map((exp, idx) => (
                 <div key={exp.questionId} className="p-3 rounded-lg border bg-card text-xs space-y-1">
-                  <div className="flex items-start justify-between font-medium">
-                    <span>Q{idx + 1}: {exp.prompt}</span>
+                  <div className="flex items-start justify-between font-medium gap-2">
+                    <span className="leading-snug">Q{idx + 1}: {exp.prompt}</span>
                     {exp.isCorrect ? (
-                      <span className="text-emerald-500 flex items-center shrink-0 ml-2"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Correct</span>
+                      <span className="text-emerald-500 flex items-center shrink-0 ml-1"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Correct</span>
                     ) : (
-                      <span className="text-amber-500 flex items-center shrink-0 ml-2"><ShieldAlert className="w-3.5 h-3.5 mr-1" /> Review</span>
+                      <span className="text-amber-500 flex items-center shrink-0 ml-1"><ShieldAlert className="w-3.5 h-3.5 mr-1" /> Review</span>
                     )}
                   </div>
-                  <p className="text-muted-foreground pt-1 border-t text-[11px]">{exp.explanation}</p>
+                  <p className="text-muted-foreground pt-1 border-t text-[11px] leading-relaxed">{exp.explanation}</p>
                 </div>
               ))}
             </div>
@@ -213,16 +242,17 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
 
         <DialogFooter className="pt-2">
           {!result ? (
-            <div className="flex justify-between w-full">
+            <div className="flex justify-between items-center w-full gap-2">
               <Button
                 variant="outline"
                 disabled={currentIdx === 0}
                 onClick={() => setCurrentIdx(i => Math.max(0, i - 1))}
+                className="h-10 px-4 text-xs font-semibold"
               >
                 Previous
               </Button>
               <Button
-                className="primary-action"
+                className="primary-action h-10 px-4 text-xs font-bold"
                 disabled={!selectedAnswer || loading}
                 onClick={handleNextOrSubmit}
               >
@@ -231,15 +261,26 @@ export function QuizDialog({ lesson, onPass }: QuizDialogProps) {
               </Button>
             </div>
           ) : (
-            <div className="flex justify-end gap-2 w-full">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 w-full">
               {!result.masteryAchieved ? (
-                <Button variant="outline" onClick={handleRetake}>
+                <Button variant="outline" className="w-full sm:w-auto h-10" onClick={handleRetake}>
                   <RefreshCw className="w-4 h-4 mr-1.5" /> Retake quiz
                 </Button>
               ) : (
-                <Button className="primary-action" onClick={() => setOpen(false)}>
-                  Continue learning <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
+                <>
+                  <Button variant="outline" className="w-full sm:w-auto h-10" onClick={() => setOpen(false)}>
+                    Review Lesson
+                  </Button>
+                  {nextLesson && onNavigateToNextLesson ? (
+                    <Button className="primary-action w-full sm:w-auto h-10 font-bold" onClick={handleContinueToNext}>
+                      Next Lesson ({nextLesson.lessonNumber}) <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  ) : (
+                    <Button className="primary-action w-full sm:w-auto h-10 font-bold" onClick={() => setOpen(false)}>
+                      Continue learning <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           )}

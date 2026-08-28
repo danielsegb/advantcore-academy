@@ -77,18 +77,18 @@ ${item.content}
           <FileDown className="w-4 h-4 mr-1.5" /> Export portfolio case study
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 text-xs text-primary font-semibold">
               <ShieldCheck className="w-4 h-4" /> Verified Evidence Portfolio
             </div>
-            <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+            <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
               {approvedItems.length} Approved Deliverables
             </Badge>
           </div>
-          <DialogTitle>Advantcore BA Case Study Portfolio</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-base sm:text-lg">Advantcore BA Case Study Portfolio</DialogTitle>
+          <DialogDescription className="text-xs">
             An exportable executive case study compiling only independently verified deliverables. Unapproved drafts and internal drafts are strictly excluded.
           </DialogDescription>
         </DialogHeader>
@@ -98,26 +98,26 @@ ${item.content}
             <strong className="text-amber-600 flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> Verified Non-Employment Statement:
             </strong>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground leading-relaxed">
               This portfolio represents assessed simulated workplace project experience completed at Advantcore Academy, not direct employment.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border bg-muted/30 max-h-96 overflow-y-auto text-xs font-mono whitespace-pre-wrap leading-relaxed">
+          <div className="p-4 rounded-xl border bg-muted/30 max-h-80 sm:max-h-96 overflow-y-auto text-xs font-mono whitespace-pre-wrap leading-relaxed">
             {portfolioMarkdown}
           </div>
         </div>
 
-        <DialogFooter className="flex justify-between items-center w-full pt-3">
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="flex flex-col sm:flex-row justify-between items-center w-full gap-2 pt-3">
+          <Button variant="outline" className="w-full sm:w-auto h-9" onClick={() => setOpen(false)}>
             Close
           </Button>
 
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={handlePrint}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button size="sm" variant="outline" className="w-full sm:w-auto h-9" onClick={handlePrint}>
               <Printer className="w-4 h-4 mr-1.5" /> Print PDF
             </Button>
-            <Button size="sm" className="primary-action" onClick={handleCopy}>
+            <Button size="sm" className="primary-action w-full sm:w-auto h-9 font-bold" onClick={handleCopy}>
               {copied ? <Check className="w-4 h-4 mr-1.5" /> : <Copy className="w-4 h-4 mr-1.5" />}
               {copied ? "Copied Markdown!" : "Copy markdown"}
             </Button>

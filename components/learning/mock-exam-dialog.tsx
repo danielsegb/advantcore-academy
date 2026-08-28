@@ -126,74 +126,81 @@ export function MockExamDialog() {
       }
     }}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <Gauge className="w-4 h-4 mr-1.5" /> Mock exam simulator
+        <Button variant="outline" className="w-full sm:w-auto h-10 font-semibold">
+          <Gauge className="w-4 h-4 mr-1.5 text-primary" /> BCS timed mock exam
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         {stage === "setup" && (
           <div className="space-y-6">
             <DialogHeader>
               <div className="inline-flex p-3 rounded-full bg-primary/10 text-primary w-fit mb-1">
-                <Gauge className="w-6 h-6" />
+                <Award className="w-5 h-5" />
               </div>
-              <DialogTitle>BCS Foundation in Business Analysis Mock Exam Simulator</DialogTitle>
-              <DialogDescription>
-                Simulate the accredited 40-question examination format, test specific syllabus topics, or run a diagnostic practice session.
+              <DialogTitle className="text-lg sm:text-xl">BCS Foundation Examination Simulator</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
+                40 multiple-choice questions adhering to the official BCS Foundation Certificate syllabus and weighting guidelines.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                type="button"
-                onClick={() => setMode("full_mock")}
-                className={`p-4 border rounded-xl text-left space-y-2 transition-colors ${mode === "full_mock" ? "border-primary bg-primary/5 ring-1 ring-primary" : "bg-card"}`}
-              >
-                <div className="flex items-center justify-between">
-                  <strong className="text-sm">Full Mock Exam</strong>
-                  <Badge variant="outline">40 Qs · 60m</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Simulates the official exam structure across all 6 syllabus sections. Official pass mark: 65% (26/40).
-                </p>
-              </button>
+            <div className="space-y-3">
+              <strong className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select Exam Mode</strong>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMode("full_mock")}
+                  className={`p-4 rounded-xl border text-left space-y-1 transition-all cursor-pointer ${
+                    mode === "full_mock" ? "border-primary bg-primary/5 ring-2 ring-primary" : "bg-card hover:bg-muted/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <strong className="text-sm">Full Mock Exam</strong>
+                    <Badge variant="default" className="text-[10px]">40 Questions</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">60-minute full simulation covering all 6 syllabus modules.</p>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setMode("topic_practice")}
-                className={`p-4 border rounded-xl text-left space-y-2 transition-colors ${mode === "topic_practice" ? "border-primary bg-primary/5 ring-1 ring-primary" : "bg-card"}`}
-              >
-                <div className="flex items-center justify-between">
-                  <strong className="text-sm">Topic Practice</strong>
-                  <Badge variant="outline">Focused</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Focus on a specific module (e.g. Stakeholders, Systems Modelling, Requirements).
-                </p>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("diagnostic")}
+                  className={`p-4 rounded-xl border text-left space-y-1 transition-all cursor-pointer ${
+                    mode === "diagnostic" ? "border-primary bg-primary/5 ring-2 ring-primary" : "bg-card hover:bg-muted/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <strong className="text-sm">Rapid Diagnostic</strong>
+                    <Badge variant="secondary" className="text-[10px]">10 Questions</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">15-minute quick test to assess overall syllabus readiness.</p>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setMode("diagnostic")}
-                className={`p-4 border rounded-xl text-left space-y-2 transition-colors ${mode === "diagnostic" ? "border-primary bg-primary/5 ring-1 ring-primary" : "bg-card"}`}
-              >
-                <div className="flex items-center justify-between">
-                  <strong className="text-sm">Quick Diagnostic</strong>
-                  <Badge variant="outline">10 Qs · 15m</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  A rapid assessment of strengths and knowledge gaps across all syllabus domains.
-                </p>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("topic_practice")}
+                  className={`p-4 rounded-xl border text-left space-y-1 transition-all cursor-pointer ${
+                    mode === "topic_practice" ? "border-primary bg-primary/5 ring-2 ring-primary" : "bg-card hover:bg-muted/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <strong className="text-sm">Topic Practice</strong>
+                    <Badge variant="outline" className="text-[10px]">Targeted</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Focus specifically on a chosen business analysis domain.</p>
+                </button>
+              </div>
             </div>
 
             {mode === "topic_practice" && (
-              <div className="p-4 border rounded-xl bg-card space-y-2">
-                <label className="block text-sm font-medium">Select Syllabus Topic to Practice:</label>
+              <div className="space-y-2 p-4 border rounded-xl bg-muted/40">
+                <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider" htmlFor="domain-select">
+                  Select Focus Domain
+                </label>
                 <select
+                  id="domain-select"
                   value={selectedDomain}
                   onChange={e => setSelectedDomain(e.target.value as QuestionDomain)}
-                  className="w-full p-2 border rounded-md bg-background text-sm"
+                  className="w-full p-2.5 rounded-lg border bg-background text-base sm:text-sm font-medium"
                 >
                   {DOMAIN_OPTIONS.map(d => (
                     <option key={d} value={d}>{d}</option>
@@ -202,7 +209,7 @@ export function MockExamDialog() {
               </div>
             )}
 
-            <div className="flex items-center justify-between p-4 border rounded-xl bg-card">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-xl bg-card gap-3">
               <div>
                 <strong className="text-sm block">Timed Examination Mode</strong>
                 <span className="text-xs text-muted-foreground">
@@ -212,17 +219,18 @@ export function MockExamDialog() {
               <Button
                 variant={timed ? "default" : "outline"}
                 size="sm"
+                className="h-9 font-semibold shrink-0"
                 onClick={() => setTimed(t => !t)}
               >
                 <Clock className="w-4 h-4 mr-1.5" /> {timed ? "Timed Mode (On)" : "Untimed Mode (Off)"}
               </Button>
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" className="w-full sm:w-auto h-10" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button className="primary-action" onClick={handleStartExam}>
+              <Button className="primary-action w-full sm:w-auto h-10 font-bold" onClick={handleStartExam}>
                 Start examination <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             </DialogFooter>
@@ -230,33 +238,33 @@ export function MockExamDialog() {
         )}
 
         {stage === "exam" && currentQ && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b">
-              <div className="flex items-center gap-3">
-                <Badge variant="outline">Question {currentIdx + 1} of {questions.length}</Badge>
-                <span className="text-xs text-muted-foreground">{currentQ.domain}</span>
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-center justify-between pb-3 border-b gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="text-xs">Question {currentIdx + 1} of {questions.length}</Badge>
+                <span className="text-xs text-muted-foreground font-medium">{currentQ.domain}</span>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 {timed && (
-                  <div className={`flex items-center gap-1.5 font-mono text-sm font-semibold px-3 py-1 rounded-md ${secondsRemaining < 300 ? "bg-destructive/10 text-destructive animate-pulse" : "bg-muted"}`}>
-                    <Clock className="w-4 h-4" />
+                  <div className={`flex items-center gap-1 font-mono text-xs sm:text-sm font-semibold px-2.5 py-1 rounded-md ${secondsRemaining < 300 ? "bg-destructive/10 text-destructive animate-pulse" : "bg-muted"}`}>
+                    <Clock className="w-3.5 h-3.5" />
                     <span>{formatTime(secondsRemaining)}</span>
                   </div>
                 )}
-                <Button size="sm" variant="outline" onClick={handleFinishExam}>
+                <Button size="sm" variant="outline" className="h-8 text-xs font-semibold" onClick={handleFinishExam}>
                   Submit exam
                 </Button>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <h3 className="font-semibold text-base leading-relaxed">{currentQ.prompt}</h3>
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="font-semibold text-sm sm:text-base leading-relaxed">{currentQ.prompt}</h3>
                 <Button
                   size="sm"
                   variant={flagged[currentQ.id] ? "default" : "ghost"}
-                  className={flagged[currentQ.id] ? "bg-amber-500 hover:bg-amber-600 text-white shrink-0" : "shrink-0"}
+                  className={`h-8 text-xs shrink-0 ${flagged[currentQ.id] ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}`}
                   onClick={() => toggleFlag(currentQ.id)}
                 >
                   <Flag className="w-3.5 h-3.5 mr-1" />
@@ -420,11 +428,11 @@ export function MockExamDialog() {
               </div>
             </div>
 
-            <DialogFooter className="flex justify-between items-center w-full pt-2">
-              <Button variant="outline" onClick={() => setStage("setup")}>
+            <DialogFooter className="flex flex-col sm:flex-row justify-between items-center w-full gap-2 pt-2">
+              <Button variant="outline" className="w-full sm:w-auto h-10" onClick={() => setStage("setup")}>
                 <RefreshCw className="w-4 h-4 mr-1.5" /> Retake or change mode
               </Button>
-              <Button className="primary-action" onClick={() => setOpen(false)}>
+              <Button className="primary-action w-full sm:w-auto h-10 font-bold" onClick={() => setOpen(false)}>
                 Return to Learning Studio <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             </DialogFooter>

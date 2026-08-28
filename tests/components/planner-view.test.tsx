@@ -11,7 +11,7 @@ describe("CalendarView Component", () => {
       </AuthProvider>
     )
 
-    expect(screen.getByText(/12-Week Pathway Pathway Roadmap/i)).toBeInTheDocument()
+    expect(screen.getByText(/12-Week Pathway Roadmap/i)).toBeInTheDocument()
     expect(screen.getByText("Orientation & Foundations")).toBeInTheDocument()
     expect(screen.getByText("Sync week to Google")).toBeInTheDocument()
   })

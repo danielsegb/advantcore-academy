@@ -152,11 +152,11 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
             </div>
             <ChevronRight />
           </button>
-          <div className="top-actions">
+          <div className="top-actions flex items-center gap-1.5 sm:gap-2">
             {isAdmin && <AdminChangePasswordDialog />}
             <button
               type="button"
-              className="search-button cursor-pointer hover:opacity-90 transition-opacity"
+              className="search-button cursor-pointer hover:opacity-90 transition-opacity hidden sm:flex"
               onClick={() => setSearchOpen(true)}
               aria-label="Search"
               title="Search anything (Ctrl+K)"
@@ -165,18 +165,27 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
               <span>Search anything</span>
               <kbd>⌘ K</kbd>
             </button>
+            <button
+              type="button"
+              className="sm:hidden p-2 rounded-lg border bg-card text-muted-foreground hover:text-foreground transition-all"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search"
+              title="Search anything"
+            >
+              <Search className="w-4 h-4" />
+            </button>
             <NotificationCenter onNavigate={onSelectView} />
-            <Button size="sm" variant="outline" onClick={() => setTourOpen(true)}>
+            <Button size="sm" variant="outline" className="hidden sm:inline-flex text-xs h-8" onClick={() => setTourOpen(true)}>
               <Sparkles className="w-3.5 h-3.5 mr-1" /> Help
             </Button>
             {user && (
-              <Button size="sm" variant="ghost" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => signOut()}>
-                <LogOut className="w-3.5 h-3.5 mr-1" /> Sign out
+              <Button size="sm" variant="ghost" className="text-xs text-muted-foreground hover:text-foreground h-8 px-2 sm:px-3" onClick={() => signOut()}>
+                <LogOut className="w-3.5 h-3.5 sm:mr-1" /> <span className="hidden sm:inline">Sign out</span>
               </Button>
             )}
             {!user && (
-              <Button size="sm" className="primary-action" onClick={() => setLoginOpen(true)}>
-                <LogIn className="w-4 h-4 mr-1.5" /> Sign in
+              <Button size="sm" className="primary-action text-xs h-8 font-bold" onClick={() => setLoginOpen(true)}>
+                <LogIn className="w-4 h-4 sm:mr-1.5" /> <span className="hidden sm:inline">Sign in</span>
               </Button>
             )}
           </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import {
-  UserPlus, CheckCircle2, Mail, Copy, Check, Loader2, Users,
+  UserPlus, CheckCircle2, Mail, Copy, Check, Loader2, Users, Trash2,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -105,45 +105,51 @@ export function UserManagementTab() {
 
   function copyCredentials() {
     if (!createdCredentials) return
-    navigator.clipboard.writeText(`Advantcore Academy Login:\nEmail: ${createdCredentials.email}\nPassword: ${createdCredentials.pass}`)
+    navigator.clipboard.writeText(`Email: ${createdCredentials.email}\nPassword: ${createdCredentials.pass}`)
     setCopied(true)
-    setTimeout(() => setCopied(false), 2500)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  function resetDialog() {
+    setCreatedCredentials(null)
+    setFullName("")
+    setEmail("")
+    setPassword("Advantcore2026!")
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-xl border">
         <div>
-          <h2 className="text-xl font-bold">Learner accounts & onboarding</h2>
-          <p className="text-sm text-muted-foreground">
-            Onboard new candidates, assign career pathways, or manage learner access status.
+          <h2 className="font-bold text-base leading-tight">Learner Directory & Governance</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Manage provisioned accounts, suspend access, or onboard new candidates to active pathways.
           </p>
         </div>
 
-        <Dialog open={inviteOpen} onOpenChange={open => {
-          setInviteOpen(open)
-          if (!open) {
-            setCreatedCredentials(null)
-            setFullName("")
-            setEmail("")
-            setPassword("Advantcore2026!")
-          }
-        }}>
+        <Dialog
+          open={inviteOpen}
+          onOpenChange={open => {
+            setInviteOpen(open)
+            if (!open) resetDialog()
+          }}
+        >
           <DialogTrigger asChild>
-            <Button className="primary-action">
-              <UserPlus className="w-4 h-4 mr-1.5" /> Onboard learner
+            <Button className="primary-action w-full sm:w-auto h-10 font-bold shrink-0">
+              <UserPlus className="w-4 h-4 mr-2" /> Onboard learner
             </Button>
           </DialogTrigger>
+
           <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Onboard New Learner</DialogTitle>
+              <DialogDescription>
+                Provision immediate access to the BCS Business Analysis Pathway and Virtual Workplace.
+              </DialogDescription>
+            </DialogHeader>
+
             {!createdCredentials ? (
               <form onSubmit={handleInvite} className="space-y-4">
-                <DialogHeader>
-                  <DialogTitle>Onboard a new learner</DialogTitle>
-                  <DialogDescription>
-                    Create a candidate account and set their account password.
-                  </DialogDescription>
-                </DialogHeader>
-
                 <div className="space-y-3">
                   <label className="block text-sm font-medium">
                     Full name
@@ -152,7 +158,7 @@ export function UserManagementTab() {
                       required
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 border rounded-md bg-background"
+                      className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-base sm:text-sm"
                       placeholder="e.g. Lewis Grant"
                     />
                   </label>
@@ -162,9 +168,12 @@ export function UserManagementTab() {
                     <input
                       type="email"
                       required
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 border rounded-md bg-background"
+                      className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-base sm:text-sm"
                       placeholder="e.g. lewis@example.com"
                     />
                   </label>
@@ -177,16 +186,16 @@ export function UserManagementTab() {
                       minLength={5}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 border rounded-md bg-background font-mono text-sm"
+                      className="w-full mt-1 px-3 py-2 border rounded-md bg-background font-mono text-base sm:text-sm"
                     />
                   </label>
                 </div>
 
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setInviteOpen(false)}>
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setInviteOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="primary-action" disabled={loading || !fullName || !email}>
+                  <Button type="submit" className="primary-action w-full sm:w-auto" disabled={loading || !fullName || !email}>
                     {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
                     Create & activate
                   </Button>
@@ -198,7 +207,7 @@ export function UserManagementTab() {
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
                     <h3 className="font-semibold text-emerald-500 text-sm">Learner account onboarded</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       Share these credentials with the candidate. They can immediately log in to their Academy workspace.
                     </p>
                   </div>
@@ -209,7 +218,7 @@ export function UserManagementTab() {
                   <div><strong>Password:</strong> {createdCredentials.pass}</div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button variant="outline" className="w-full" onClick={copyCredentials}>
                     {copied ? <Check className="w-4 h-4 mr-2 text-emerald-500" /> : <Copy className="w-4 h-4 mr-2" />}
                     {copied ? "Copied" : "Copy credentials"}
@@ -225,7 +234,7 @@ export function UserManagementTab() {
       </div>
 
       {users.length === 0 ? (
-        <div className="p-12 text-center border rounded-2xl bg-card border-dashed space-y-3">
+        <div className="p-8 sm:p-12 text-center border rounded-2xl bg-card border-dashed space-y-3">
           <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Users className="w-6 h-6" />
           </div>
@@ -246,16 +255,19 @@ export function UserManagementTab() {
           </div>
           {users.map(u => (
             <div className="table-row" key={u.id}>
-              <span>
+              <span className="flex items-center gap-3">
                 <span className="avatar small blue">
                   {u.fullName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                 </span>
-                <div>
-                  <strong>{u.fullName}</strong>
-                  <small className="block text-xs text-muted-foreground">{u.email}</small>
+                <div className="min-w-0 flex-1">
+                  <strong className="block text-xs sm:text-sm font-semibold truncate">{u.fullName}</strong>
+                  <small className="block text-xs text-muted-foreground truncate">{u.email}</small>
                 </div>
               </span>
-              <span>{u.pathway}</span>
+              <span className="text-xs text-muted-foreground sm:text-foreground">
+                <span className="sm:hidden font-semibold text-foreground mr-1">Pathway:</span>
+                {u.pathway}
+              </span>
               <span>
                 <Badge
                   variant={u.status === "active" ? "default" : u.status === "pending" ? "outline" : "destructive"}
@@ -263,19 +275,19 @@ export function UserManagementTab() {
                   {u.status}
                 </Badge>
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-1 sm:pt-0">
                 {u.status === "active" && (
-                  <Button size="sm" variant="outline" onClick={() => handleStatusChange(u.id, "suspended")}>
+                  <Button size="sm" variant="outline" className="h-8 text-xs px-2.5" onClick={() => handleStatusChange(u.id, "suspended")}>
                     Suspend
                   </Button>
                 )}
                 {u.status === "suspended" && (
-                  <Button size="sm" variant="outline" onClick={() => handleStatusChange(u.id, "active")}>
+                  <Button size="sm" variant="outline" className="h-8 text-xs px-2.5" onClick={() => handleStatusChange(u.id, "active")}>
                     Reactivate
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" className="text-rose-600 hover:text-rose-700" onClick={() => handleDeleteUser(u.id)}>
-                  Delete
+                <Button size="sm" variant="ghost" className="h-8 text-xs text-rose-600 hover:text-rose-700 px-2" onClick={() => handleDeleteUser(u.id)}>
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
                 </Button>
               </div>
             </div>

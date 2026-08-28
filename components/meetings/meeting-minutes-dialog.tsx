@@ -48,7 +48,7 @@ export function MeetingMinutesDialog({ transcript, projectName }: MeetingMinutes
           <WandSparkles className="w-4 h-4 mr-1.5" /> Generate minutes
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <Badge variant="outline" className="text-xs">
@@ -58,8 +58,8 @@ export function MeetingMinutesDialog({ transcript, projectName }: MeetingMinutes
               <Calendar className="w-3 h-3" /> {minutes.date}
             </span>
           </div>
-          <DialogTitle>{minutes.meetingTitle}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-base sm:text-lg">{minutes.meetingTitle}</DialogTitle>
+          <DialogDescription className="text-xs">
             Automated executive meeting minutes synthesized from live conversation transcript. Grounded in BCS Foundation standards.
           </DialogDescription>
         </DialogHeader>
@@ -83,7 +83,7 @@ export function MeetingMinutesDialog({ transcript, projectName }: MeetingMinutes
           <div className="p-4 rounded-xl border bg-card space-y-2">
             <strong className="text-sm font-bold block">Agreed Action Items & Deliverables:</strong>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+              <table className="w-full text-xs text-left min-w-[380px]">
                 <thead>
                   <tr className="border-b text-muted-foreground">
                     <th className="pb-2">Action Deliverable</th>
@@ -116,16 +116,16 @@ export function MeetingMinutesDialog({ transcript, projectName }: MeetingMinutes
           </div>
         </div>
 
-        <DialogFooter className="flex justify-between items-center w-full pt-3">
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="flex flex-col sm:flex-row justify-between items-center w-full gap-2 pt-3">
+          <Button variant="outline" className="w-full sm:w-auto h-9" onClick={() => setOpen(false)}>
             Close
           </Button>
 
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={handlePrint}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button size="sm" variant="outline" className="w-full sm:w-auto h-9" onClick={handlePrint}>
               <Printer className="w-4 h-4 mr-1.5" /> Print minutes
             </Button>
-            <Button size="sm" className="primary-action" onClick={handleCopy}>
+            <Button size="sm" className="primary-action w-full sm:w-auto h-9 font-bold" onClick={handleCopy}>
               {copied ? <Check className="w-4 h-4 mr-1.5" /> : <Copy className="w-4 h-4 mr-1.5" />}
               {copied ? "Copied Markdown!" : "Copy markdown"}
             </Button>

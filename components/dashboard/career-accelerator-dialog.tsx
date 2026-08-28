@@ -38,14 +38,15 @@ export function CareerAcceleratorDialog() {
           <Briefcase className="w-4 h-4 mr-1.5" /> Career & interview accelerator
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs w-fit">
               <Award className="w-3.5 h-3.5 mr-1" /> BCS Career Transition Kit
             </Badge>
-            <div className="flex gap-1 border rounded-lg p-0.5 bg-muted/30">
+            <div className="flex gap-1 border rounded-lg p-0.5 bg-muted/30 w-fit">
               <button
+                type="button"
                 onClick={() => setActiveTab("interview")}
                 className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
                   activeTab === "interview" ? "bg-background shadow-xs text-foreground" : "text-muted-foreground"
@@ -54,6 +55,7 @@ export function CareerAcceleratorDialog() {
                 Interview Simulator
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab("linkedin")}
                 className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
                   activeTab === "linkedin" ? "bg-background shadow-xs text-foreground" : "text-muted-foreground"
@@ -63,42 +65,45 @@ export function CareerAcceleratorDialog() {
               </button>
             </div>
           </div>
-          <DialogTitle>Business Analyst Career Accelerator</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-base sm:text-lg">Business Analyst Career Accelerator</DialogTitle>
+          <DialogDescription className="text-xs">
             Master high-stakes BA interview scenarios and generate verified, evidence-backed case study bullet points for your CV and LinkedIn profile.
           </DialogDescription>
         </DialogHeader>
 
         {activeTab === "interview" ? (
-          <div className="grid grid-cols-3 gap-4 py-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
             {/* Scenarios sidebar */}
             <div className="space-y-2">
               <strong className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
                 Interview Scenarios:
               </strong>
-              {interviewScenarios.map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => setSelectedScenarioId(s.id)}
-                  className={`w-full text-left p-2.5 rounded-lg border text-xs transition-all ${
-                    s.id === selectedScenarioId
-                      ? "border-primary bg-primary/5 ring-1 ring-primary font-semibold"
-                      : "bg-card hover:bg-muted/30 text-muted-foreground"
-                  }`}
-                >
-                  <span className="text-[10px] text-primary block">{s.category}</span>
-                  <span className="line-clamp-2 text-foreground font-medium">{s.title}</span>
-                </button>
-              ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2">
+                {interviewScenarios.map(s => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setSelectedScenarioId(s.id)}
+                    className={`w-full text-left p-2.5 rounded-lg border text-xs transition-all ${
+                      s.id === selectedScenarioId
+                        ? "border-primary bg-primary/5 ring-1 ring-primary font-semibold"
+                        : "bg-card hover:bg-muted/30 text-muted-foreground"
+                    }`}
+                  >
+                    <span className="text-[10px] text-primary block">{s.category}</span>
+                    <span className="line-clamp-2 text-foreground font-medium">{s.title}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Scenario simulator detail */}
-            <div className="col-span-2 space-y-4 p-4 rounded-xl border bg-card">
+            <div className="col-span-1 md:col-span-2 space-y-4 p-4 rounded-xl border bg-card">
               <div className="space-y-1">
                 <Badge variant="outline" className="text-[11px]">
                   Interviewer: {activeScenario.interviewerRole}
                 </Badge>
-                <h3 className="text-sm font-bold text-foreground">
+                <h3 className="text-sm font-bold text-foreground leading-snug">
                   &ldquo;{activeScenario.question}&rdquo;
                 </h3>
               </div>
@@ -106,7 +111,7 @@ export function CareerAcceleratorDialog() {
               {/* Model Framework */}
               <div className="p-3 rounded-lg border bg-muted/20 space-y-1.5 text-xs">
                 <strong className="text-foreground flex items-center gap-1.5 font-semibold">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" /> Recommended Answer Framework (STAR + Advantcore Evidence):
+                  <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" /> Recommended Answer Framework (STAR + Advantcore Evidence):
                 </strong>
                 <p className="text-muted-foreground leading-relaxed">
                   {activeScenario.modelAnswerFramework}

@@ -11,13 +11,13 @@ describe("MockExamDialog Component", () => {
       </AuthProvider>
     )
 
-    const trigger = screen.getByRole("button", { name: /Mock exam simulator/i })
+    const trigger = screen.getByRole("button", { name: /BCS timed mock exam/i })
     expect(trigger).toBeInTheDocument()
     fireEvent.click(trigger)
 
     expect(screen.getByText("Full Mock Exam")).toBeInTheDocument()
     expect(screen.getByText("Topic Practice")).toBeInTheDocument()
-    expect(screen.getByText("Quick Diagnostic")).toBeInTheDocument()
+    expect(screen.getByText("Rapid Diagnostic")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /Start examination/i })).toBeInTheDocument()
   })
 })

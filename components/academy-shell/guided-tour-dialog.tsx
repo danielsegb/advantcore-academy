@@ -44,12 +44,12 @@ export function GuidedTourDialog({ open, onOpenChange, onStartLearning }: Guided
             <p>One view of certification and job readiness.</p>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex flex-col sm:flex-row justify-between items-center w-full gap-2 pt-2">
+          <Button variant="outline" className="w-full sm:w-auto h-10" onClick={() => onOpenChange(false)}>
             Skip tour
           </Button>
           <Button
-            className="primary-action"
+            className="primary-action w-full sm:w-auto h-10 font-bold"
             onClick={() => {
               onOpenChange(false)
               onStartLearning("learning")

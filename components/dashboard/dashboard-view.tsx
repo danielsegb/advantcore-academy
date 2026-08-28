@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import {
   CircleDot, Play, BriefcaseBusiness, Sparkles, GraduationCap,
   Gauge, ClipboardCheck, Clock3, ChevronRight, ArrowRight,
@@ -31,7 +31,22 @@ interface DashboardViewProps {
 
 export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) {
   const { user } = useAuth()
-  const progress = useMemo(() => getLearnerRealProgress(user?.id), [user?.id])
+  const [progressVersion, setProgressVersion] = useState(0)
+
+  useEffect(() => {
+    function handleUpdate() {
+      setProgressVersion(v => v + 1)
+    }
+    window.addEventListener("advantcore_progress_updated", handleUpdate)
+    window.addEventListener("storage", handleUpdate)
+    return () => {
+      window.removeEventListener("advantcore_progress_updated", handleUpdate)
+      window.removeEventListener("storage", handleUpdate)
+    }
+  }, [])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const progress = useMemo(() => getLearnerRealProgress(user?.id), [user?.id, progressVersion])
 
   const firstName = user?.fullName ? user.fullName.split(" ")[0] : "Amanda"
 

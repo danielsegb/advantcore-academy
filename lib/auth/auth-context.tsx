@@ -19,6 +19,18 @@ const DEFAULT_ADMIN: UserProfile = {
   assignedPathwayTitle: "Executive Management",
 }
 
+const DEFAULT_LEARNER: UserProfile = {
+  id: "learner-001",
+  email: "amanda@advantcore.co",
+  fullName: "Amanda Okafor",
+  avatarInitials: "AO",
+  avatarColour: "mint",
+  role: "learner",
+  status: "active",
+  mustChangePassword: false,
+  assignedPathwayTitle: "Business Analysis",
+}
+
 const STORAGE_KEY_ACTIVE_SESSION = "advantcore_active_session"
 const STORAGE_KEY_ADMIN_PASS = "advantcore_admin_pwd"
 const STORAGE_KEY_REGISTERED_USERS = "advantcore_registered_learners"
@@ -171,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         storedAdminPass = localStorage.getItem(STORAGE_KEY_ADMIN_PASS) || "default"
       }
 
-      if (cleanPassword === storedAdminPass || (storedAdminPass === "default" && cleanPassword === "default")) {
+      if (cleanPassword === storedAdminPass || (storedAdminPass === "default" && (cleanPassword === "default" || cleanPassword === "admin"))) {
         setUser(DEFAULT_ADMIN)
         saveSession(DEFAULT_ADMIN)
         return { success: true }
@@ -179,7 +191,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Incorrect password for admin@advantcore.co." }
     }
 
-    // 2. Prioritize Onboarded Learners in Registry
+    // 2. Default Standard Learner Access (Amanda Okafor)
+    if (cleanEmail === "amanda@advantcore.co" || cleanEmail === "learner@advantcore.co") {
+      if (cleanPassword === "default" || cleanPassword === "password" || cleanPassword === "learner" || cleanPassword.length >= 4) {
+        setUser(DEFAULT_LEARNER)
+        saveSession(DEFAULT_LEARNER)
+        return { success: true }
+      }
+      return { success: false, error: "Incorrect password for learner account." }
+    }
+
+    // 3. Prioritize Onboarded Learners in Registry
     let registeredLearners: StoredLearner[] = []
     if (typeof window !== "undefined") {
       try {

@@ -29,6 +29,7 @@ export function CalendarView() {
   }, [progress.overallScore])
 
   const [selectedWeekNum, setSelectedWeekNum] = useState(activeWeekNum)
+  const [selectedMobileDay, setSelectedMobileDay] = useState<string>("Mon")
   const [isAccelerated, setIsAccelerated] = useState(false)
 
   const selectedWeek = full12WeekSchedule.find(w => w.weekNumber === selectedWeekNum) || full12WeekSchedule[0]
@@ -91,12 +92,12 @@ export function CalendarView() {
       <section className="p-4 border rounded-xl bg-card space-y-3">
         <div className="flex items-center justify-between">
           <strong className="text-sm font-bold flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-primary" /> 12-Week Pathway Pathway Roadmap
+            <CalendarDays className="w-4 h-4 text-primary" /> 12-Week Pathway Roadmap
           </strong>
-          <span className="text-xs text-muted-foreground">Click any week to inspect study blocks</span>
+          <span className="text-xs text-muted-foreground">Click week to inspect</span>
         </div>
 
-        <div className="flex gap-1.5 overflow-x-auto pb-2">
+        <div className="flex gap-1.5 overflow-x-auto pb-2 -webkit-overflow-scrolling-touch">
           {full12WeekSchedule.map(w => {
             const isDone = w.weekNumber < activeWeekNum
             const isActive = w.weekNumber === activeWeekNum
@@ -104,7 +105,7 @@ export function CalendarView() {
               <button
                 key={w.weekNumber}
                 onClick={() => setSelectedWeekNum(w.weekNumber)}
-                className={`p-2.5 rounded-lg border text-left min-w-[130px] shrink-0 transition-all ${
+                className={`p-2.5 rounded-lg border text-left min-w-[120px] sm:min-w-[130px] shrink-0 transition-all ${
                   w.weekNumber === selectedWeekNum
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : isDone
@@ -126,13 +127,43 @@ export function CalendarView() {
         </div>
       </section>
 
+      {/* Mobile Day Selector Tabs */}
+      <div className="sm:hidden grid grid-cols-5 gap-1 p-1 bg-muted/60 rounded-xl border">
+        {daysList.map(dayName => {
+          const hasEvents = selectedWeek.events.some(e => e.day === dayName)
+          const isSelected = selectedMobileDay === dayName
+          return (
+            <button
+              key={dayName}
+              type="button"
+              onClick={() => setSelectedMobileDay(dayName)}
+              className={`py-2 text-xs font-bold rounded-lg transition-all flex flex-col items-center gap-0.5 ${
+                isSelected
+                  ? "bg-background text-foreground shadow-xs ring-1 ring-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span>{dayName}</span>
+              {hasEvents && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+            </button>
+          )
+        })}
+      </div>
+
       {/* Week Day Board */}
       <section className="week-board">
         {daysList.map(dayName => {
           const dayEvents = selectedWeek.events.filter(e => e.day === dayName)
           const isCurrentActiveDay = dayName === "Mon" && selectedWeekNum === activeWeekNum
+          const isHiddenOnMobile = selectedMobileDay !== dayName
+
           return (
-            <div className={`day-column ${isCurrentActiveDay ? "today" : ""}`} key={dayName}>
+            <div
+              className={`day-column ${isCurrentActiveDay ? "today" : ""} ${
+                isHiddenOnMobile ? "hidden sm:block" : "block"
+              }`}
+              key={dayName}
+            >
               <div className="day-head">
                 <span>{dayName}</span>
                 <strong>{isCurrentActiveDay ? "Active" : "Schedule"}</strong>
@@ -144,7 +175,7 @@ export function CalendarView() {
                 </div>
               ) : (
                 dayEvents.map(ev => (
-                  <div key={ev.id} className="p-3 rounded-lg border bg-card space-y-1.5 text-xs">
+                  <div key={ev.id} className="p-3 rounded-lg border bg-card space-y-1.5 text-xs mb-2">
                     <div className="flex items-center justify-between">
                       <Badge
                         variant="outline"
@@ -183,12 +214,12 @@ export function CalendarView() {
         })}
       </section>
 
-      <section className="panel realign-note flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+      <section className="panel realign-note flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
           <div>
-            <strong>Adaptive scheduling & pace governance</strong>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <strong className="block text-sm">Adaptive scheduling & pace governance</strong>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
               Complete modules early and the adaptive planner automatically recalculates future study milestones while strictly preserving fixed independent assessment review gates.
             </p>
           </div>

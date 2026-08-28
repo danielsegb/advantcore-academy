@@ -62,9 +62,13 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               <input
                 type="email"
                 required
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                autoComplete="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border rounded-md bg-background"
+                className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-base sm:text-sm"
                 placeholder="name@example.com"
               />
             </label>
@@ -74,9 +78,13 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               <input
                 type="password"
                 required
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                autoComplete="current-password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full mt-1 px-3 py-2 border rounded-md bg-background"
+                className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-base sm:text-sm"
                 placeholder="••••••••"
               />
             </label>

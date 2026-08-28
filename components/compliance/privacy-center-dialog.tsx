@@ -68,7 +68,7 @@ export function PrivacyCenterDialog() {
           {/* Statutory Controller Information */}
           <div className="p-3.5 rounded-xl border bg-muted/20 text-xs space-y-1.5">
             <strong className="text-foreground block font-semibold">Data Protection Controller Information:</strong>
-            <div className="grid grid-cols-2 gap-2 text-muted-foreground">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-muted-foreground">
               <div>
                 <span><strong>Legal Entity:</strong> Advantcore Ltd (UK Registered)</span>
               </div>
@@ -88,7 +88,7 @@ export function PrivacyCenterDialog() {
           <div className="p-4 rounded-xl border bg-card space-y-2">
             <strong className="text-sm font-bold block">Statutory Data Retention Schedule:</strong>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+              <table className="w-full text-xs text-left min-w-[420px]">
                 <thead>
                   <tr className="border-b text-muted-foreground">
                     <th className="pb-2">Data Category</th>
@@ -112,19 +112,19 @@ export function PrivacyCenterDialog() {
           </div>
 
           {/* Data Subject Rights (DSAR & Erasure) */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-4 rounded-xl border bg-card space-y-2 flex flex-col justify-between">
               <div>
                 <strong className="text-xs font-bold block text-foreground flex items-center gap-1.5">
-                  <Download className="w-4 h-4 text-primary" /> Right of Access (DSAR Export)
+                  <Download className="w-4 h-4 text-primary shrink-0" /> Right of Access (DSAR Export)
                 </strong>
-                <p className="text-[11px] text-muted-foreground mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
                   Download a certified JSON export of your complete profile, progress logs, quiz mastery records, and workplace deliverables.
                 </p>
               </div>
               <Button
                 size="sm"
-                className="primary-action w-full mt-2"
+                className="primary-action w-full mt-2 h-9 font-semibold"
                 onClick={handleDownloadDsar}
                 disabled={downloading}
               >
@@ -135,21 +135,21 @@ export function PrivacyCenterDialog() {
             <div className="p-4 rounded-xl border bg-card space-y-2 flex flex-col justify-between">
               <div>
                 <strong className="text-xs font-bold block text-foreground flex items-center gap-1.5">
-                  <Trash2 className="w-4 h-4 text-destructive" /> Right to Erasure (Account Deletion)
+                  <Trash2 className="w-4 h-4 text-destructive shrink-0" /> Right to Erasure (Account Deletion)
                 </strong>
-                <p className="text-[11px] text-muted-foreground mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
                   Submit a formal request to purge all personal data, subject to mandatory 5-year academic accreditation retention.
                 </p>
               </div>
               {erasureRequested ? (
                 <div className="p-2 border border-emerald-500/20 bg-emerald-500/5 rounded text-xs text-emerald-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Erasure request logged for administrator review.
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> Erasure request logged for administrator review.
                 </div>
               ) : (
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-destructive/30 text-destructive hover:bg-destructive/10 w-full mt-2"
+                  className="border-destructive/30 text-destructive hover:bg-destructive/10 w-full mt-2 h-9 font-semibold"
                   onClick={handleRequestErasure}
                 >
                   Request account erasure
