@@ -388,19 +388,41 @@ export function MockExamDialog() {
 
             {/* Domain Breakdown Progress */}
             <div className="space-y-3 p-4 border rounded-xl bg-card">
-              <h3 className="text-sm font-bold flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-primary" /> Performance by Syllabus Domain
-              </h3>
-              <div className="space-y-2.5">
-                {result.domainBreakdowns.map(dom => (
-                  <div key={dom.domain} className="space-y-1">
-                    <div className="flex justify-between text-xs font-medium">
-                      <span>{dom.domain}</span>
-                      <span>{dom.percentage}% ({dom.correctCount}/{dom.totalQuestions})</span>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-primary" /> Performance by Syllabus Domain
+                </h3>
+                <span className="text-xs text-muted-foreground">Threshold: 65% Pass · 80% Mastery</span>
+              </div>
+              <div className="space-y-3">
+                {result.domainBreakdowns.map(dom => {
+                  const isHigh = dom.percentage >= 80
+                  const isPass = dom.percentage >= 65
+                  return (
+                    <div key={dom.domain} className="space-y-1.5">
+                      <div className="flex justify-between items-center text-xs font-medium">
+                        <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                          {dom.domain}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">{dom.correctCount}/{dom.totalQuestions} ({dom.percentage}%)</span>
+                          <Badge
+                            className={`text-[10px] px-1.5 py-0 ${
+                              isHigh
+                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                                : isPass
+                                ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30"
+                                : "bg-destructive/15 text-destructive border-destructive/30"
+                            }`}
+                          >
+                            {isHigh ? "Mastered" : isPass ? "Pass" : "Focus Area"}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Progress value={dom.percentage} />
                     </div>
-                    <Progress value={dom.percentage} />
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 

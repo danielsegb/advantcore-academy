@@ -21,13 +21,15 @@ import { useAuth } from "@/lib/auth/auth-context"
 import type { Lesson } from "@/lib/learning/types"
 import type { View } from "@/components/shared/types"
 
+import { FlashcardsDeck } from "./flashcards-deck"
+
 interface LearningViewProps {
   onSelectView?: (view: View) => void
 }
 
 export function LearningView({ onSelectView }: LearningViewProps) {
   const { user } = useAuth()
-  const [activeStudioTab, setActiveStudioTab] = useState<"lessons" | "resources">("lessons")
+  const [activeStudioTab, setActiveStudioTab] = useState<"lessons" | "resources" | "flashcards">("lessons")
   
   // Flattened linear sequence of all lessons across modules
   const allLessons = useMemo(() => fullCurriculum.flatMap(m => m.lessons), [])
@@ -279,15 +281,22 @@ export function LearningView({ onSelectView }: LearningViewProps) {
         }
       />
 
-      <Tabs value={activeStudioTab} onValueChange={(v) => setActiveStudioTab(v as "lessons" | "resources")} className="w-full">
+      <Tabs value={activeStudioTab} onValueChange={(v) => setActiveStudioTab(v as "lessons" | "resources" | "flashcards")} className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="lessons" className="gap-1.5">
             <BookOpen className="w-4 h-4" /> 6 BCS Curriculum Modules
+          </TabsTrigger>
+          <TabsTrigger value="flashcards" className="gap-1.5">
+            <Sparkles className="w-4 h-4 text-primary" /> ⚡ Framework Flashcards
           </TabsTrigger>
           <TabsTrigger value="resources" className="gap-1.5">
             <Layers className="w-4 h-4" /> Programme Pack & Textbook Library
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="flashcards" className="space-y-6">
+          <FlashcardsDeck />
+        </TabsContent>
 
         <TabsContent value="resources" className="space-y-6">
           <ResourceLibrary />
