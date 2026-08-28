@@ -183,7 +183,7 @@ export function PortalAuthView() {
                       enterKeyHint="next"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      placeholder="e.g. amanda@advantcore.co"
+                      placeholder="name@example.com"
                       className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-[#dce2dc] bg-[#f7f8f6] text-[#15231f] placeholder-[#8ba49b] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#183f35] focus:bg-white transition-all"
                     />
                   </div>
@@ -206,7 +206,7 @@ export function PortalAuthView() {
                       enterKeyHint="go"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      placeholder="••••••••"
                       className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-[#dce2dc] bg-[#f7f8f6] text-[#15231f] placeholder-[#8ba49b] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#183f35] focus:bg-white transition-all"
                     />
                   </div>
