@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ConfettiCelebration } from "@/components/shared/confetti-celebration"
 import type { Lesson } from "@/lib/learning/types"
 
 interface LessonCompletionDialogProps {
@@ -55,7 +56,9 @@ export function LessonCompletionDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <ConfettiCelebration active={open} durationMs={3500} />
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden border-border/80 shadow-2xl">
         {/* Top Header Banner with Emerald Glow */}
         <div className="relative bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 p-6 text-white overflow-hidden">
@@ -184,5 +187,6 @@ export function LessonCompletionDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   )
 }

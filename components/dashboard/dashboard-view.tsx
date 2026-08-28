@@ -13,6 +13,7 @@ import { StatCard } from "@/components/shared/stat-card"
 import { buildGoogleCalendarUrl } from "@/components/shared/calendar-utils"
 import { NotificationCenter } from "./notification-center"
 import { CareerAcceleratorDialog } from "./career-accelerator-dialog"
+import { GraduationCertificateDialog } from "./graduation-certificate-dialog"
 import { getLearnerRealProgress } from "@/lib/progress/learner-progress"
 import { syncLearnerProgressFromServer } from "@/lib/progress/progress-sync"
 import { useAuth } from "@/lib/auth/auth-context"
@@ -76,7 +77,6 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
               ? "You are actively advancing your certification curriculum and workplace project delivery."
               : "Your Academy workspace is ready. Start with Lesson 1.1 and your Executive Problem Statement to begin your pathway."}
           </p>
-
           <div className="welcome-actions flex-wrap gap-2">
             <Button className="primary-action" onClick={() => onSelectView("learning")}>
               <Play className="w-4 h-4 mr-1.5" /> Continue learning
@@ -84,6 +84,7 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
             <Button variant="outline" onClick={() => onSelectView("workplace")}>
               <BriefcaseBusiness className="w-4 h-4 mr-1.5" /> Resume work
             </Button>
+            <GraduationCertificateDialog overallScore={progress.overallScore} />
             <CareerAcceleratorDialog />
             <Button variant="ghost" onClick={onOpenTour}>
               <Sparkles className="w-4 h-4 mr-1.5" /> Guided tour
