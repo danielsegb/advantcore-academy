@@ -13,6 +13,8 @@ const progressActionSchema = z.object({
   score: z.number().optional(),
 })
 
+
+
 export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID()
   const { searchParams } = new URL(request.url)
@@ -35,28 +37,31 @@ export async function GET(request: NextRequest) {
     }
 
     // Resolve user IDs to match
-    const targetUserIds: string[] = []
-    if (userId) targetUserIds.push(userId)
+    const targetUserIds = new Set<string>()
+    if (userId) targetUserIds.add(userId)
+    if (email) {
+      targetUserIds.add(email)
+      targetUserIds.add(email.toLowerCase())
+    }
 
     if (email) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("id")
         .eq("email", email.toLowerCase())
-        .single()
-      if (profile?.id && !targetUserIds.includes(profile.id)) {
-        targetUserIds.push(profile.id)
+        .maybeSingle()
+      if (profile?.id) {
+        targetUserIds.add(profile.id)
       }
     }
 
+    const idList = Array.from(targetUserIds)
+
     // 1. Fetch completed lessons from quiz_attempts
-    const query = supabase
+    const { data: quizAttempts, error: quizError } = await supabase
       .from("quiz_attempts")
       .select("lesson_id, score, mastery_achieved")
-    
-    const { data: quizAttempts, error: quizError } = targetUserIds.length === 1
-      ? await query.eq("user_id", targetUserIds[0])
-      : await query.in("user_id", targetUserIds)
+      .in("user_id", idList)
 
     if (quizError) {
       logger.error("Failed to query quiz attempts", { requestId, error: quizError.message })
@@ -71,14 +76,11 @@ export async function GET(request: NextRequest) {
     )
 
     // 2. Fetch mock exam snapshots
-    const snapQuery = supabase
+    const { data: snapshots, error: snapError } = await supabase
       .from("readiness_snapshots")
       .select("overall_score, course_progress, work_experience, exam_readiness, evidence_count, consistency_score, snapshot_date")
+      .in("user_id", idList)
       .order("created_at", { ascending: false })
-
-    const { data: snapshots, error: snapError } = targetUserIds.length === 1
-      ? await snapQuery.eq("user_id", targetUserIds[0])
-      : await snapQuery.in("user_id", targetUserIds)
 
     if (snapError) {
       logger.error("Failed to query readiness snapshots", { requestId, error: snapError.message })
@@ -164,13 +166,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabaseAdminClient()
     if (supabase && userId) {
-      await supabase.from("quiz_attempts").insert({
+      const { error: insertError } = await supabase.from("quiz_attempts").insert({
         user_id: userId,
         lesson_id: lessonId,
         score: finalScore,
         mastery_achieved: masteryAchieved,
         answers_json: answers || {},
       })
+
+      if (insertError) {
+        logger.error("Failed to insert quiz attempt", { requestId, error: insertError.message, userId, lessonId })
+      }
     }
 
     logger.info("Lesson progress updated", {

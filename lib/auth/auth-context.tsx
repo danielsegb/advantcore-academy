@@ -2,13 +2,14 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { syncLearnerProgressFromServer } from "@/lib/progress/progress-sync"
 import type { UserProfile, AuthContextType } from "./types"
 import type { UserRole } from "@/lib/supabase/types"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const DEFAULT_ADMIN: UserProfile = {
-  id: "admin-001",
+  id: "00000000-0000-0000-0000-000000000011",
   email: "admin@advantcore.co",
   fullName: "Platform Administrator",
   avatarInitials: "AD",
@@ -20,7 +21,7 @@ const DEFAULT_ADMIN: UserProfile = {
 }
 
 const DEFAULT_LEARNER: UserProfile = {
-  id: "learner-001",
+  id: "00000000-0000-0000-0000-000000000010",
   email: "amanda@advantcore.co",
   fullName: "Amanda Okafor",
   avatarInitials: "AO",
@@ -242,19 +243,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!error && data?.user) {
           const profile = await fetchProfile(data.user.id)
+          const userName =
+            (data.user.user_metadata?.full_name as string) ||
+            cleanEmail.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) ||
+            "Academy Learner"
+          const initials = userName
+            .split(" ")
+            .map((w: string) => w[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase() || "US"
+
           const resolvedProfile: UserProfile = profile || {
             id: data.user.id,
             email: data.user.email || cleanEmail,
-            fullName: (data.user.user_metadata?.full_name as string) || (data.user.user_metadata?.role === "admin" ? "Platform Administrator" : "Amanda Okafor"),
-            avatarInitials: ((data.user.email?.slice(0, 2)) || "AD").toUpperCase(),
-            avatarColour: data.user.user_metadata?.role === "admin" ? "blue" : "mint",
+            fullName: userName,
+            avatarInitials: initials,
+            avatarColour: "blue",
             role: ((data.user.user_metadata?.role as UserRole) || (cleanEmail.startsWith("admin") ? "admin" : "learner")),
             status: "active",
             mustChangePassword: false,
-            assignedPathwayTitle: data.user.user_metadata?.role === "admin" ? "Executive Management" : "Business Analysis",
+            assignedPathwayTitle: "Business Analysis",
           }
           setUser(resolvedProfile)
           saveSession(resolvedProfile)
+          syncLearnerProgressFromServer(resolvedProfile.id, resolvedProfile.email)
           return { success: true }
         }
 

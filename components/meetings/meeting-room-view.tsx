@@ -143,12 +143,12 @@ export function MeetingRoomView() {
   function toggleMeetingLive() {
     if (!live) {
       setLive(true)
-      // Welcome speech from Sarah
+      const learnerFirstName = user?.fullName ? user.fullName.split(" ")[0] : user?.email?.split("@")[0] || "Learner"
       const welcomeLine: TranscriptLine = {
         speaker: "Sarah",
         role: "Project Sponsor",
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        text: `Welcome ${user?.fullName ? user.fullName.split(" ")[0] : "Amanda"}. The floor is yours. Feel free to speak via your microphone, present a document, or ask questions to any stakeholder.`,
+        text: `Welcome ${learnerFirstName}. The floor is yours. Feel free to speak via your microphone, present a document, or ask questions to any stakeholder.`,
       }
       setTranscriptLines(prev => [...prev, welcomeLine])
       speakText(welcomeLine.text, "Sarah Mitchell")
@@ -297,7 +297,7 @@ export function MeetingRoomView() {
   // Document sharing handler
   function handleShareDocument(doc: SharedDocumentData) {
     setSharedDocument(doc)
-    const learnerName = user?.fullName ? user.fullName.split(" ")[0] : "Amanda"
+    const learnerName = user?.fullName ? user.fullName.split(" ")[0] : user?.email?.split("@")[0] || "Learner"
     const announceLine: TranscriptLine = {
       speaker: "System",
       role: "Workspace",
@@ -384,7 +384,7 @@ export function MeetingRoomView() {
       isListeningRef.current = false
     }
 
-    const learnerName = user?.fullName ? user.fullName.split(" ")[0] : "Amanda"
+    const learnerName = user?.fullName ? user.fullName.split(" ")[0] : user?.email?.split("@")[0] || "Learner"
     const userLine: TranscriptLine = {
       speaker: learnerName,
       role: "Business Analyst",
@@ -584,8 +584,8 @@ export function MeetingRoomView() {
                 </button>
               ))}
               <div className={`video-tile self ${isListening ? "ring-2 ring-red-500 bg-red-950/20" : ""}`}>
-                <span className="avatar video-avatar user">{user?.fullName ? user.fullName[0] : "A"}</span>
-                <span className="video-name">{user?.fullName || "Amanda Okafor"}<small>You · Business Analyst</small></span>
+                <span className="avatar video-avatar user">{user?.avatarInitials || user?.fullName?.[0] || user?.email?.[0]?.toUpperCase() || "U"}</span>
+                <span className="video-name">{user?.fullName || user?.email || "You"}<small>You · Business Analyst</small></span>
                 {isListening ? (
                   <span className="absolute top-2 right-2 flex items-center gap-1 bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded text-[9px] font-bold animate-pulse">
                     <Mic className="w-3 h-3 text-red-400" /> Speaking...

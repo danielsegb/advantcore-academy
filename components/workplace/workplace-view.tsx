@@ -45,7 +45,7 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
 
     function handleEvidenceUpdate() {
       if (typeof window === "undefined") return
-      const keys = Array.from(new Set([user?.id, user?.email, "guest", "learner-001"].filter(Boolean))) as string[]
+      const keys = Array.from(new Set([user?.id, user?.email, "guest"].filter(Boolean))) as string[]
       const evidenceMap = new Map<string, EvidenceItem>()
       for (const k of keys) {
         try {

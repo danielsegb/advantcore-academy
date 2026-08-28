@@ -17,28 +17,57 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
     if (email) params.set("email", email)
 
     const targetKey = userId || email || "guest"
+    const keysToSync = Array.from(new Set([userId, email, targetKey].filter(Boolean))) as string[]
 
     // 1. Fetch Learning & Exam Progress
     const progressRes = await fetch(`${basePath}/api/learning/progress?${params.toString()}`)
     if (progressRes.ok) {
       const progressData = await progressRes.json()
       if (progressData.success) {
-        // Merge completed lessons
-        if (Array.isArray(progressData.completedLessonIds) && progressData.completedLessonIds.length > 0) {
-          const localCompleted: string[] = JSON.parse(
-            localStorage.getItem(`advantcore_completed_lessons_${targetKey}`) || "[]"
-          )
-          const merged = Array.from(new Set([...localCompleted, ...progressData.completedLessonIds]))
-          localStorage.setItem(`advantcore_completed_lessons_${targetKey}`, JSON.stringify(merged))
+        // Collect all local completed lessons across ANY stored key on this device
+        const localCompletedSet = new Set<string>()
+        for (let i = 0; i < localStorage.length; i++) {
+          const keyName = localStorage.key(i)
+          if (keyName && keyName.startsWith("advantcore_completed_lessons_")) {
+            try {
+              const arr: string[] = JSON.parse(localStorage.getItem(keyName) || "[]")
+              for (const id of arr) localCompletedSet.add(id)
+            } catch {}
+          }
+        }
+
+        const serverLessons: string[] = Array.isArray(progressData.completedLessonIds) ? progressData.completedLessonIds : []
+        const mergedCompleted = Array.from(new Set([...Array.from(localCompletedSet), ...serverLessons]))
+
+        for (const k of keysToSync) {
+          localStorage.setItem(`advantcore_completed_lessons_${k}`, JSON.stringify(mergedCompleted))
+        }
+
+        // Upload any lessons that were completed on this browser to the server
+        const missingOnServer = Array.from(localCompletedSet).filter(id => !serverLessons.includes(id))
+        for (const id of missingOnServer) {
+          await fetch(`${basePath}/api/learning/progress`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "complete", lessonId: id, userId: targetKey, score: 100 }),
+          }).catch(() => {})
         }
 
         // Merge mock scores
-        if (Array.isArray(progressData.mockScores) && progressData.mockScores.length > 0) {
-          const localScores: number[] = JSON.parse(
-            localStorage.getItem(`advantcore_mock_scores_${targetKey}`) || "[]"
-          )
-          const mergedScores = Array.from(new Set([...localScores, ...progressData.mockScores]))
-          localStorage.setItem(`advantcore_mock_scores_${targetKey}`, JSON.stringify(mergedScores))
+        const localMockSet = new Set<number>()
+        for (let i = 0; i < localStorage.length; i++) {
+          const keyName = localStorage.key(i)
+          if (keyName && keyName.startsWith("advantcore_mock_scores_")) {
+            try {
+              const arr: number[] = JSON.parse(localStorage.getItem(keyName) || "[]")
+              for (const s of arr) localMockSet.add(s)
+            } catch {}
+          }
+        }
+        const serverScores: number[] = Array.isArray(progressData.mockScores) ? progressData.mockScores : []
+        const mergedScores = Array.from(new Set([...Array.from(localMockSet), ...serverScores]))
+        for (const k of keysToSync) {
+          localStorage.setItem(`advantcore_mock_scores_${k}`, JSON.stringify(mergedScores))
         }
       }
     }
@@ -47,19 +76,45 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
     const evidenceRes = await fetch(`${basePath}/api/workplace/evidence?${params.toString()}`)
     if (evidenceRes.ok) {
       const evidenceData = await evidenceRes.json()
-      if (evidenceData.success && Array.isArray(evidenceData.evidenceItems) && evidenceData.evidenceItems.length > 0) {
-        const localEvidence: EvidenceItem[] = JSON.parse(
-          localStorage.getItem(`advantcore_evidence_${targetKey}`) || "[]"
-        )
+      if (evidenceData.success && Array.isArray(evidenceData.evidenceItems)) {
         const evidenceMap = new Map<string, EvidenceItem>()
-        for (const item of localEvidence) {
-          evidenceMap.set(item.id || item.taskId, item)
+        for (let i = 0; i < localStorage.length; i++) {
+          const keyName = localStorage.key(i)
+          if (keyName && keyName.startsWith("advantcore_evidence_")) {
+            try {
+              const localEvidence: EvidenceItem[] = JSON.parse(localStorage.getItem(keyName) || "[]")
+              for (const item of localEvidence) {
+                evidenceMap.set(item.id || item.taskId, item)
+              }
+            } catch {}
+          }
         }
         for (const item of evidenceData.evidenceItems) {
           evidenceMap.set(item.id || item.taskId, item)
         }
         const mergedEvidence = Array.from(evidenceMap.values())
-        localStorage.setItem(`advantcore_evidence_${targetKey}`, JSON.stringify(mergedEvidence))
+        for (const k of keysToSync) {
+          localStorage.setItem(`advantcore_evidence_${k}`, JSON.stringify(mergedEvidence))
+        }
+
+        // Upload any local evidence items missing on the server
+        for (const item of mergedEvidence) {
+          if (!evidenceData.evidenceItems.some((e: EvidenceItem) => (e.id || e.taskId) === (item.id || item.taskId))) {
+            fetch(`${basePath}/api/workplace/evidence`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "saveDraft",
+                taskId: item.taskId,
+                evidenceId: item.id,
+                userId: targetKey,
+                title: item.title || item.taskTitle,
+                content: item.content || "",
+                version: item.version || 1,
+              }),
+            }).catch(() => {})
+          }
+        }
       }
     }
 

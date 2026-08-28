@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabaseAdminClient()
     if (supabase && userId) {
-      await supabase.from("readiness_snapshots").insert({
+      const { error: snapError } = await supabase.from("readiness_snapshots").insert({
         user_id: userId,
         exam_readiness: result.score,
         overall_score: Math.round((result.score + 67 + 58) / 3),
@@ -43,6 +43,10 @@ export async function POST(request: NextRequest) {
         evidence_count: 8,
         consistency_score: 82,
       })
+
+      if (snapError) {
+        logger.error("Failed to insert readiness snapshot", { requestId, error: snapError.message, userId })
+      }
     }
 
     logger.info("Mock exam evaluated", {

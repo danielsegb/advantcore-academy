@@ -42,7 +42,7 @@ export function getLearnerRealProgress(userId = "guest", userEmail?: string): Le
   }
 
   try {
-    const keysToCheck = Array.from(new Set([userId, userEmail, "guest", "learner-001"].filter(Boolean))) as string[]
+    const keysToCheck = Array.from(new Set([userId, userEmail, "guest"].filter(Boolean))) as string[]
 
     // 1. Knowledge Mastery from completed lessons / quizzes
     const completedSet = new Set<string>()

@@ -115,12 +115,13 @@ export async function POST(request: NextRequest) {
     }
 
     const evidenceId = payload.evidenceId || `ev-${Date.now()}`
+    const targetUserId = payload.userId
 
-    if (supabase) {
+    if (supabase && targetUserId) {
       // 1. Upsert evidence item
-      await supabase.from("evidence_items").upsert({
+      const { error: evidenceError } = await supabase.from("evidence_items").upsert({
         id: evidenceId,
-        user_id: payload.userId || crypto.randomUUID(),
+        user_id: targetUserId,
         task_id: payload.taskId,
         title: payload.title,
         content: payload.content,
@@ -129,6 +130,10 @@ export async function POST(request: NextRequest) {
         reviewer_decision_json: payload.reviewerDecision || null,
         updated_at: new Date().toISOString(),
       })
+
+      if (evidenceError) {
+        logger.error("Failed to upsert evidence item", { requestId, error: evidenceError.message, userId: targetUserId })
+      }
 
       // 2. Log audit event
       await supabase.from("audit_events").insert({

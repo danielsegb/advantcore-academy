@@ -53,7 +53,11 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const progress = useMemo(() => getLearnerRealProgress(user?.id, user?.email), [user?.id, user?.email, progressVersion])
 
-  const firstName = user?.fullName ? user.fullName.split(" ")[0] : "Amanda"
+  const firstName = user?.fullName
+    ? user.fullName.split(" ")[0]
+    : user?.email
+    ? user.email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    : "Learner"
 
   return (
     <div className="page-stack">

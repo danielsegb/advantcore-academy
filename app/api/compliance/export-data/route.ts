@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("userId") || "usr-current"
-    const fullName = searchParams.get("name") || "Amanda Okafor"
-    const email = searchParams.get("email") || "amanda@advantcore.co"
+    const fullName = searchParams.get("name") || "Academy Learner"
+    const email = searchParams.get("email") || "learner@advantcore.co"
 
     const dsarBundle = buildDsarExportPackage(userId, fullName, email)
 
