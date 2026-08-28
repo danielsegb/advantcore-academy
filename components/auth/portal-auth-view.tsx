@@ -229,26 +229,6 @@ export function PortalAuthView() {
                   )}
                 </Button>
               </form>
-
-              {/* Verified Credentials Helper Guidance */}
-              <div className="p-3 bg-muted/50 rounded-xl border border-border/60 text-xs space-y-1.5 text-muted-foreground mt-2">
-                <div className="flex items-center gap-1.5 font-bold text-foreground text-[11px]">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" /> Evaluation Access Accounts
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 font-mono text-[11px] pt-0.5">
-                  <div className="p-1.5 bg-background/80 rounded border">
-                    <span className="text-muted-foreground block text-[9px] font-sans font-semibold">Learner Workspace:</span>
-                    <strong className="text-foreground">amanda@advantcore.co</strong>
-                  </div>
-                  <div className="p-1.5 bg-background/80 rounded border">
-                    <span className="text-muted-foreground block text-[9px] font-sans font-semibold">Admin Studio:</span>
-                    <strong className="text-foreground">admin@advantcore.co</strong>
-                  </div>
-                </div>
-                <p className="text-[10px] text-muted-foreground pt-0.5 leading-snug">
-                  Any password (e.g. <code className="bg-background px-1 py-0.2 rounded font-mono">default</code> or <code className="bg-background px-1 py-0.2 rounded font-mono">Advantcore2026!</code>) is accepted. You may also sign in with any valid email address.
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>

@@ -188,44 +188,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Please enter your password." }
     }
 
-    // 1. Platform Administrator Access
-    if (cleanEmail === "admin@advantcore.co" || cleanEmail.startsWith("admin@")) {
-      let storedAdminPass = "default"
-      if (typeof window !== "undefined") {
-        try {
-          storedAdminPass = localStorage.getItem(STORAGE_KEY_ADMIN_PASS) || "default"
-        } catch {
-          storedAdminPass = "default"
+    // 1. PRIMARY: Authenticate against live Supabase authentication backend
+    const supabase = getSupabaseBrowserClient()
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: cleanPassword,
+        })
+
+        if (!error && data?.user) {
+          const profile = await fetchProfile(data.user.id)
+          const resolvedProfile: UserProfile = profile || {
+            id: data.user.id,
+            email: data.user.email || cleanEmail,
+            fullName: (data.user.user_metadata?.full_name as string) || (data.user.user_metadata?.role === "admin" ? "Platform Administrator" : "Amanda Okafor"),
+            avatarInitials: ((data.user.email?.slice(0, 2)) || "AD").toUpperCase(),
+            avatarColour: data.user.user_metadata?.role === "admin" ? "blue" : "mint",
+            role: ((data.user.user_metadata?.role as UserRole) || (cleanEmail.startsWith("admin") ? "admin" : "learner")),
+            status: "active",
+            mustChangePassword: false,
+            assignedPathwayTitle: data.user.user_metadata?.role === "admin" ? "Executive Management" : "Business Analysis",
+          }
+          setUser(resolvedProfile)
+          saveSession(resolvedProfile)
+          return { success: true }
         }
-      }
 
-      const isValidAdminPass =
-        storedAdminPass !== "default"
-          ? cleanPassword === storedAdminPass
-          : cleanPassword === "default" ||
-            cleanPassword === "admin" ||
-            cleanPassword === "Advantcore2026!" ||
-            cleanPassword === "admin123" ||
-            cleanPassword === "password" ||
-            cleanPassword.length >= 3
-
-      if (isValidAdminPass) {
-        const adminProfile = { ...DEFAULT_ADMIN, email: cleanEmail }
-        setUser(adminProfile)
-        saveSession(adminProfile)
-        return { success: true }
+        if (error) {
+          // If Supabase returned an explicit authentication error, report it directly
+          if (error.message) {
+            return { success: false, error: error.message }
+          }
+        }
+      } catch {
+        // Fallback to local session check if network or client failure
       }
-      return { success: false, error: "Incorrect password for administrator account." }
     }
 
-    // 2. Default Standard Learner Access (Amanda Okafor)
-    if (cleanEmail === "amanda@advantcore.co" || cleanEmail === "learner@advantcore.co") {
-      setUser(DEFAULT_LEARNER)
-      saveSession(DEFAULT_LEARNER)
-      return { success: true }
-    }
-
-    // 3. Prioritize Onboarded Learners in Registry
+    // 2. Offline / Local fallback: Registered users in local storage
     let registeredLearners: StoredLearner[] = []
     if (typeof window !== "undefined") {
       try {
@@ -237,7 +238,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const matchedLearner = registeredLearners.find(l => l.email.toLowerCase() === cleanEmail)
     if (matchedLearner) {
-      if (!matchedLearner.passwordHash || matchedLearner.passwordHash === cleanPassword || cleanPassword.length >= 3) {
+      if (matchedLearner.passwordHash === cleanPassword) {
         const learnerProfile: UserProfile = {
           id: matchedLearner.id,
           email: matchedLearner.email,
@@ -253,59 +254,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         saveSession(learnerProfile)
         return { success: true }
       }
-      return { success: false, error: "Incorrect password for learner account." }
+      return { success: false, error: "Invalid login credentials." }
     }
 
-    // 4. Supabase Auth Fallback if configured
-    const supabase = getSupabaseBrowserClient()
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword })
-        if (!error && data.user) {
-          const profile = await fetchProfile(data.user.id)
-          const resolvedProfile = profile || {
-            id: data.user.id,
-            email: data.user.email || cleanEmail,
-            fullName: data.user.user_metadata?.full_name || "Learner",
-            avatarInitials: (data.user.email?.slice(0, 2) || "LE").toUpperCase(),
-            avatarColour: "mint",
-            role: "learner",
-            status: "active",
-            mustChangePassword: false,
-            assignedPathwayTitle: "Business Analysis",
-          }
-          setUser(resolvedProfile)
-          saveSession(resolvedProfile)
-          return { success: true }
+    // 3. Offline / Local Admin fallback
+    if (cleanEmail === "admin@advantcore.co") {
+      let storedAdminPass = "Advantcore2026!"
+      if (typeof window !== "undefined") {
+        try {
+          storedAdminPass = localStorage.getItem(STORAGE_KEY_ADMIN_PASS) || "Advantcore2026!"
+        } catch {
+          storedAdminPass = "Advantcore2026!"
         }
-      } catch {
-        // Fallback to local session creation
       }
+
+      if (cleanPassword === storedAdminPass || cleanPassword === "Advantcore2026!") {
+        setUser(DEFAULT_ADMIN)
+        saveSession(DEFAULT_ADMIN)
+        return { success: true }
+      }
+      return { success: false, error: "Invalid login credentials." }
     }
 
-    // 5. Automatic Learner Provisioning & Authentication for Any Valid Email
-    // Ensures any candidate or mobile evaluator is never locked out of the Academy
-    const namePart = cleanEmail.split("@")[0].replace(/[._-]/g, " ")
-    const formattedName = namePart
-      .split(" ")
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ") || "Learner"
-
-    const autoLearner: UserProfile = {
-      id: `usr-${Date.now()}`,
-      email: cleanEmail,
-      fullName: formattedName,
-      avatarInitials: formattedName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "LE",
-      avatarColour: "mint",
-      role: "learner",
-      status: "active",
-      mustChangePassword: false,
-      assignedPathwayTitle: "Business Analysis",
+    // 4. Offline / Local Learner fallback
+    if (cleanEmail === "amanda@advantcore.co" || cleanEmail === "learner@advantcore.co") {
+      if (cleanPassword === "Advantcore2026!" || cleanPassword === "password") {
+        setUser(DEFAULT_LEARNER)
+        saveSession(DEFAULT_LEARNER)
+        return { success: true }
+      }
+      return { success: false, error: "Invalid login credentials." }
     }
 
-    setUser(autoLearner)
-    saveSession(autoLearner)
-    return { success: true }
+    return {
+      success: false,
+      error: "Invalid email or password. Please verify your credentials.",
+    }
   }, [fetchProfile, saveSession])
 
   const signOut = useCallback(async () => {
