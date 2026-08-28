@@ -7,7 +7,7 @@ export interface SystemHealthReport {
   uptimeSeconds: number
   environment: string
   subsystems: {
-    database: { connected: boolean; latencyMs: number }
+    database: { connected: boolean; latencyMs: number; details?: string }
     aiEngine: { primaryProvider: string; fallbackReady: boolean }
     securityQuarantine: { active: boolean }
     memory: { rssMb: number; heapUsedMb: number }
@@ -20,16 +20,26 @@ export async function checkSystemHealth(): Promise<SystemHealthReport> {
   const startDb = Date.now()
   let dbConnected = false
   let dbLatencyMs = 0
+  let dbDetails = ""
 
   try {
     const supabase = getSupabaseAdminClient()
-    if (supabase) {
+    if (!supabase) {
+      dbDetails = "Supabase client not initialized (missing SUPABASE_URL / keys in environment)"
+    } else {
       const { error } = await supabase.from("profiles").select("id").limit(1)
-      dbConnected = !error
+      if (error) {
+        dbConnected = false
+        dbDetails = error.message
+      } else {
+        dbConnected = true
+        dbDetails = "Connected"
+      }
       dbLatencyMs = Date.now() - startDb
     }
-  } catch {
+  } catch (err: unknown) {
     dbConnected = false
+    dbDetails = err instanceof Error ? err.message : "Unknown error"
     dbLatencyMs = Date.now() - startDb
   }
 
@@ -49,6 +59,7 @@ export async function checkSystemHealth(): Promise<SystemHealthReport> {
       database: {
         connected: dbConnected,
         latencyMs: dbLatencyMs,
+        details: dbDetails,
       },
       aiEngine: {
         primaryProvider,
