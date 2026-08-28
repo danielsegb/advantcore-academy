@@ -1,6 +1,7 @@
 "use client"
 
 import type { EvidenceItem } from "@/lib/workplace/types"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "/academy"
 
@@ -19,23 +20,40 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
     const targetKey = userId || email || "guest"
     const keysToSync = Array.from(new Set([userId, email, targetKey].filter(Boolean))) as string[]
 
-    // 1. Fetch Learning & Exam Progress
+    // Collect all local completed lessons across ANY stored key on this device
+    const localCompletedSet = new Set<string>()
+    for (let i = 0; i < localStorage.length; i++) {
+      const keyName = localStorage.key(i)
+      if (keyName && keyName.startsWith("advantcore_completed_lessons_")) {
+        try {
+          const arr: string[] = JSON.parse(localStorage.getItem(keyName) || "[]")
+          for (const id of arr) localCompletedSet.add(id)
+        } catch {}
+      }
+    }
+
+    // Direct Supabase Client Query
+    const supabase = getSupabaseBrowserClient()
+    if (supabase) {
+      try {
+        const idList = Array.from(new Set([userId, email, email?.toLowerCase()].filter(Boolean))) as string[]
+        const { data: directAttempts } = await supabase
+          .from("quiz_attempts")
+          .select("lesson_id")
+          .in("user_id", idList)
+        if (directAttempts) {
+          for (const row of directAttempts) {
+            if (row.lesson_id) localCompletedSet.add(row.lesson_id)
+          }
+        }
+      } catch {}
+    }
+
+    // 1. Fetch Learning & Exam Progress from Server Route
     const progressRes = await fetch(`${basePath}/api/learning/progress?${params.toString()}`)
     if (progressRes.ok) {
       const progressData = await progressRes.json()
       if (progressData.success) {
-        // Collect all local completed lessons across ANY stored key on this device
-        const localCompletedSet = new Set<string>()
-        for (let i = 0; i < localStorage.length; i++) {
-          const keyName = localStorage.key(i)
-          if (keyName && keyName.startsWith("advantcore_completed_lessons_")) {
-            try {
-              const arr: string[] = JSON.parse(localStorage.getItem(keyName) || "[]")
-              for (const id of arr) localCompletedSet.add(id)
-            } catch {}
-          }
-        }
-
         const serverLessons: string[] = Array.isArray(progressData.completedLessonIds) ? progressData.completedLessonIds : []
         const mergedCompleted = Array.from(new Set([...Array.from(localCompletedSet), ...serverLessons]))
 
@@ -151,6 +169,17 @@ export async function recordLessonCompletionCrossDevice(
   }
 
   if (userId) {
+    const supabase = getSupabaseBrowserClient()
+    if (supabase) {
+      void supabase.from("quiz_attempts").insert({
+        user_id: userId,
+        lesson_id: lessonId,
+        score,
+        mastery_achieved: score >= 80,
+        answers_json: {},
+      })
+    }
+
     try {
       await fetch(`${basePath}/api/learning/progress`, {
         method: "POST",
