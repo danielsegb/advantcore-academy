@@ -16,9 +16,24 @@ import { AccountStatusGate } from "@/components/auth/account-status-gate"
 import { PortalAuthView } from "@/components/auth/portal-auth-view"
 import type { View } from "@/components/shared/types"
 
+import { Sparkles } from "lucide-react"
+
 function AcademyMainContent() {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth()
   const [activeView, setActiveView] = useState<View | null>(null)
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f4f6f2] flex items-center justify-center p-4">
+        <div className="flex items-center gap-3 text-sm font-semibold text-[#153e33]">
+          <div className="w-8 h-8 rounded-lg bg-[#c5efd9] text-[#153e33] flex items-center justify-center animate-pulse">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <span>Loading Advantcore Academy...</span>
+        </div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated || !user) {
     return <PortalAuthView />

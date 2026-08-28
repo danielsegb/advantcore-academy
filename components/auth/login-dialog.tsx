@@ -94,7 +94,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="primary-action" disabled={loading || !email || !password}>
+            <Button type="submit" className="primary-action" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Signing in...
