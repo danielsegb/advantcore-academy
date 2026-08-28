@@ -14,6 +14,7 @@ import { buildGoogleCalendarUrl } from "@/components/shared/calendar-utils"
 import { NotificationCenter } from "./notification-center"
 import { CareerAcceleratorDialog } from "./career-accelerator-dialog"
 import { getLearnerRealProgress } from "@/lib/progress/learner-progress"
+import { syncLearnerProgressFromServer } from "@/lib/progress/progress-sync"
 import { useAuth } from "@/lib/auth/auth-context"
 import type { View, PathwayStaff } from "@/components/shared/types"
 
@@ -34,6 +35,10 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
   const [progressVersion, setProgressVersion] = useState(0)
 
   useEffect(() => {
+    if (user?.id) {
+      syncLearnerProgressFromServer(user.id)
+    }
+
     function handleUpdate() {
       setProgressVersion(v => v + 1)
     }
@@ -43,7 +48,7 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
       window.removeEventListener("advantcore_progress_updated", handleUpdate)
       window.removeEventListener("storage", handleUpdate)
     }
-  }, [])
+  }, [user?.id])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const progress = useMemo(() => getLearnerRealProgress(user?.id), [user?.id, progressVersion])

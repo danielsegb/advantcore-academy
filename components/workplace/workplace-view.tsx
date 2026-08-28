@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import {
   Activity, Video, CalendarDays, Users, FileText, Check,
   Sparkles, MessageSquareText, ShieldAlert,
@@ -17,6 +17,7 @@ import type { EvidenceItem } from "@/lib/workplace/types"
 import type { View } from "@/components/shared/types"
 
 import { useAuth } from "@/lib/auth/auth-context"
+import { syncLearnerProgressFromServer } from "@/lib/progress/progress-sync"
 
 interface WorkplaceViewProps {
   onSelectView: (view: View) => void
@@ -37,6 +38,32 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
     }
   })
 
+  useEffect(() => {
+    if (user?.id) {
+      syncLearnerProgressFromServer(user.id)
+    }
+
+    function handleEvidenceUpdate() {
+      if (typeof window === "undefined") return
+      const sKey = `advantcore_evidence_${user?.id || "guest"}`
+      try {
+        const saved = localStorage.getItem(sKey)
+        if (saved) {
+          setEvidenceList(JSON.parse(saved))
+        }
+      } catch {
+        // storage fallback
+      }
+    }
+
+    window.addEventListener("advantcore_progress_updated", handleEvidenceUpdate)
+    window.addEventListener("storage", handleEvidenceUpdate)
+    return () => {
+      window.removeEventListener("advantcore_progress_updated", handleEvidenceUpdate)
+      window.removeEventListener("storage", handleEvidenceUpdate)
+    }
+  }, [user?.id])
+
   const currentStage = advantcoreProjectStages.find(s => s.id === activeStageId) || advantcoreProjectStages[0]
 
   const totalTasks = advantcoreProjectStages.reduce((acc, s) => acc + s.tasks.length, 0)
@@ -51,6 +78,7 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
         : [...prev, saved]
       try {
         localStorage.setItem(storageKey, JSON.stringify(updated))
+        window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { evidenceId: saved.id } }))
       } catch {
         // storage fallback
       }

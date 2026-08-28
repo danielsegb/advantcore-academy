@@ -16,6 +16,7 @@ import { MockExamDialog } from "./mock-exam-dialog"
 import { ResourceLibrary } from "./resource-library"
 import { LessonCompletionDialog } from "./lesson-completion-dialog"
 import { fullCurriculum } from "@/lib/learning/curriculum-data"
+import { syncLearnerProgressFromServer, recordLessonCompletionCrossDevice } from "@/lib/progress/progress-sync"
 import { useAuth } from "@/lib/auth/auth-context"
 import type { Lesson } from "@/lib/learning/types"
 import type { View } from "@/components/shared/types"
@@ -53,6 +54,10 @@ export function LearningView({ onSelectView }: LearningViewProps) {
   const [completionScore, setCompletionScore] = useState<number | undefined>(undefined)
 
   useEffect(() => {
+    if (user?.id) {
+      syncLearnerProgressFromServer(user.id)
+    }
+
     function handleProgressUpdate() {
       if (typeof window === "undefined") return
       const uId = user?.id || "guest"
@@ -114,31 +119,16 @@ export function LearningView({ onSelectView }: LearningViewProps) {
 
   // Manual Lesson Completion Trigger
   function handleMarkLessonComplete() {
-    if (typeof window !== "undefined") {
-      const uId = user?.id || "guest"
-      const currentCompleted: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
-      if (!currentCompleted.includes(currentLesson.id)) {
-        currentCompleted.push(currentLesson.id)
-        localStorage.setItem(`advantcore_completed_lessons_${uId}`, JSON.stringify(currentCompleted))
-      }
-      setCompletedLessonIds([...currentCompleted])
-      window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { lessonId: currentLesson.id } }))
-    }
+    recordLessonCompletionCrossDevice(user?.id, currentLesson.id, 100)
+    setCompletedLessonIds(prev => Array.from(new Set([...prev, currentLesson.id])))
     setCompletionScore(undefined)
     setCompletionCelebrationOpen(true)
   }
 
   // Quiz Pass Handler
   function handleQuizPass(score?: number) {
-    if (typeof window !== "undefined") {
-      const uId = user?.id || "guest"
-      try {
-        const stored: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
-        setCompletedLessonIds(stored)
-      } catch {
-        // ignore
-      }
-    }
+    recordLessonCompletionCrossDevice(user?.id, currentLesson.id, score ?? 100)
+    setCompletedLessonIds(prev => Array.from(new Set([...prev, currentLesson.id])))
     setCompletionScore(score)
     setCompletionCelebrationOpen(true)
   }

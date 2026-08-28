@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import type { Lesson, QuizSubmissionResult } from "@/lib/learning/types"
 import { useAuth } from "@/lib/auth/auth-context"
+import { recordLessonCompletionCrossDevice } from "@/lib/progress/progress-sync"
 
 interface QuizDialogProps {
   lesson: Lesson
@@ -44,15 +45,7 @@ export function QuizDialog({ lesson, onPass, nextLesson, onNavigateToNextLesson 
   }
 
   function recordLessonCompletion(score: number) {
-    if (typeof window !== "undefined") {
-      const uId = user?.id || "guest"
-      const currentCompleted: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
-      if (!currentCompleted.includes(lesson.id)) {
-        currentCompleted.push(lesson.id)
-        localStorage.setItem(`advantcore_completed_lessons_${uId}`, JSON.stringify(currentCompleted))
-      }
-      window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { lessonId: lesson.id } }))
-    }
+    recordLessonCompletionCrossDevice(user?.id, lesson.id, score)
     if (onPass) onPass(score)
   }
 

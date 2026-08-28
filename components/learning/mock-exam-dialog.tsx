@@ -53,6 +53,7 @@ export function MockExamDialog() {
       const currentScores: number[] = JSON.parse(localStorage.getItem(`advantcore_mock_scores_${uId}`) || "[]")
       currentScores.push(evalResult.score)
       localStorage.setItem(`advantcore_mock_scores_${uId}`, JSON.stringify(currentScores))
+      window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { mockScore: evalResult.score } }))
     }
 
     // Optionally post to server

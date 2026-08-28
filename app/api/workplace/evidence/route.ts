@@ -19,6 +19,58 @@ const evidenceActionSchema = z.object({
   }).optional(),
 })
 
+export async function GET(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+  const { searchParams } = new URL(request.url)
+  const userId = searchParams.get("userId")
+
+  if (!userId) {
+    return NextResponse.json({ error: "userId parameter is required." }, { status: 400 })
+  }
+
+  try {
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      return NextResponse.json({ success: true, evidenceItems: [] })
+    }
+
+    const { data: evidenceRows, error } = await supabase
+      .from("evidence_items")
+      .select("*")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+
+    if (error) {
+      logger.error("Failed to query evidence items", { requestId, error: error.message })
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    const evidenceItems = (evidenceRows || []).map(row => ({
+      id: row.id,
+      taskId: row.task_id || "tsk-01",
+      taskTitle: row.title,
+      stageNumber: 1,
+      title: row.title,
+      content: row.content || "",
+      version: row.version,
+      status: row.status,
+      reviewerDecision: row.reviewer_decision_json,
+      updatedAt: row.updated_at,
+    }))
+
+    return NextResponse.json({
+      success: true,
+      evidenceItems,
+    }, { headers: { "X-Request-ID": requestId } })
+  } catch (error) {
+    logger.error("Failed to fetch evidence items", {
+      requestId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    })
+    return NextResponse.json({ error: "Internal server error fetching evidence." }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID()
 

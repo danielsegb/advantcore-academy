@@ -17,10 +17,17 @@ import { PortalAuthView } from "@/components/auth/portal-auth-view"
 import type { View } from "@/components/shared/types"
 
 import { Sparkles } from "lucide-react"
+import { syncLearnerProgressFromServer } from "@/lib/progress/progress-sync"
 
 function AcademyMainContent() {
   const { user, isAuthenticated, isLoading } = useAuth()
   const [activeView, setActiveView] = useState<View | null>(null)
+
+  React.useEffect(() => {
+    if (user?.id) {
+      syncLearnerProgressFromServer(user.id)
+    }
+  }, [user?.id])
 
   if (isLoading) {
     return (
