@@ -84,7 +84,15 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
             <Button variant="outline" onClick={() => onSelectView("workplace")}>
               <BriefcaseBusiness className="w-4 h-4 mr-1.5" /> Resume work
             </Button>
-            <GraduationCertificateDialog overallScore={progress.overallScore} />
+            <GraduationCertificateDialog
+              overallScore={progress.overallScore}
+              knowledgeCount={progress.knowledgeMastery.completedCount}
+              totalLessons={progress.knowledgeMastery.totalLessons}
+              mockScore={progress.examReadiness.highestScore}
+              deliverablesCount={progress.workplaceEvidence.approvedCount}
+              interviewCount={progress.interviewReadiness.completedScenarios}
+              onNavigate={onSelectView}
+            />
             <CareerAcceleratorDialog />
             <Button variant="ghost" onClick={onOpenTour}>
               <Sparkles className="w-4 h-4 mr-1.5" /> Guided tour
