@@ -45,21 +45,73 @@ interface StoredLearner {
   mustChangePassword: boolean
 }
 
+function getStoredSession(): UserProfile | null {
+  if (typeof window === "undefined") return null
+  try {
+    const local = localStorage.getItem(STORAGE_KEY_ACTIVE_SESSION)
+    if (local) {
+      const parsed = JSON.parse(local)
+      if (parsed && parsed.email) return parsed
+    }
+  } catch {
+    // fallback
+  }
+
+  try {
+    const session = sessionStorage.getItem(STORAGE_KEY_ACTIVE_SESSION)
+    if (session) {
+      const parsed = JSON.parse(session)
+      if (parsed && parsed.email) return parsed
+    }
+  } catch {
+    // fallback
+  }
+
+  try {
+    const match = document.cookie.match(new RegExp("(^| )" + STORAGE_KEY_ACTIVE_SESSION + "=([^;]+)"))
+    if (match && match[2]) {
+      const parsed = JSON.parse(decodeURIComponent(match[2]))
+      if (parsed && parsed.email) return parsed
+    }
+  } catch {
+    // fallback
+  }
+
+  return null
+}
+
+function persistSessionMultiTier(profile: UserProfile | null) {
+  if (typeof window === "undefined") return
+  if (profile) {
+    const json = JSON.stringify(profile)
+    try {
+      localStorage.setItem(STORAGE_KEY_ACTIVE_SESSION, json)
+    } catch {}
+    try {
+      sessionStorage.setItem(STORAGE_KEY_ACTIVE_SESSION, json)
+    } catch {}
+    try {
+      document.cookie = `${STORAGE_KEY_ACTIVE_SESSION}=${encodeURIComponent(json)}; path=/; max-age=2592000; SameSite=Lax`
+    } catch {}
+  } else {
+    try {
+      localStorage.removeItem(STORAGE_KEY_ACTIVE_SESSION)
+    } catch {}
+    try {
+      sessionStorage.removeItem(STORAGE_KEY_ACTIVE_SESSION)
+    } catch {}
+    try {
+      document.cookie = `${STORAGE_KEY_ACTIVE_SESSION}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+    } catch {}
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<UserProfile | null>(() => getStoredSession())
+  const [isLoading, setIsLoading] = useState(false)
 
   const saveSession = useCallback((profile: UserProfile | null) => {
-    if (typeof window === "undefined") return
-    try {
-      if (profile) {
-        localStorage.setItem(STORAGE_KEY_ACTIVE_SESSION, JSON.stringify(profile))
-      } else {
-        localStorage.removeItem(STORAGE_KEY_ACTIVE_SESSION)
-      }
-    } catch {
-      // Ignore private browsing or storage quota errors
-    }
+    persistSessionMultiTier(profile)
   }, [])
 
   const fetchProfile = useCallback(async (userId: string) => {
@@ -98,21 +150,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let isMounted = true
 
     async function initAuth() {
-      setIsLoading(true)
-
-      // 1. First restore from persistent local session
-      if (typeof window !== "undefined") {
-        try {
-          const rawLocalSession = localStorage.getItem(STORAGE_KEY_ACTIVE_SESSION)
-          if (rawLocalSession && isMounted) {
-            const parsedSession: UserProfile = JSON.parse(rawLocalSession)
-            if (parsedSession && parsedSession.email) {
-              setUser(parsedSession)
-            }
-          }
-        } catch {
-          // Ignore corrupted local session
-        }
+      // 1. First restore from multi-tier persistent session
+      const existingSession = getStoredSession()
+      if (existingSession && isMounted) {
+        setUser(existingSession)
       }
 
       // 2. Sync with Supabase session if connected
@@ -141,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } catch {
-          // Keep restored local session
+          // Keep restored persistent session
         }
       }
 
@@ -154,12 +195,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const supabase = getSupabaseBrowserClient()
     if (supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user && isMounted) {
           const profile = await fetchProfile(session.user.id)
-          setUser(profile)
-          saveSession(profile)
-        } else if (isMounted && !localStorage.getItem(STORAGE_KEY_ACTIVE_SESSION)) {
+          if (profile) {
+            setUser(profile)
+            saveSession(profile)
+          }
+        } else if (event === "SIGNED_OUT" && isMounted) {
           setUser(null)
           saveSession(null)
         }
