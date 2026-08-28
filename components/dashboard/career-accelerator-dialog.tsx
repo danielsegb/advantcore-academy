@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import {
-  Briefcase, Copy, Check, Sparkles,
+  Briefcase, Copy, Check,
   ShieldCheck, Award,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,8 @@ import {
 } from "@/lib/readiness/readiness-calculator"
 import { useAuth } from "@/lib/auth/auth-context"
 
+import { InteractiveInterviewSimulator } from "./interactive-interview-simulator"
+
 export function CareerAcceleratorDialog() {
   const { user } = useAuth()
   const [open, setOpen] = useState(false)
@@ -23,7 +25,7 @@ export function CareerAcceleratorDialog() {
   const [copied, setCopied] = useState(false)
 
   const activeScenario = interviewScenarios.find(s => s.id === selectedScenarioId) || interviewScenarios[0]
-  const linkedInBullets = generateLinkedInCaseStudyBullets(user?.fullName || "Amanda Okafor")
+  const linkedInBullets = generateLinkedInCaseStudyBullets(user?.fullName || "Daniel Emmanuel")
 
   function handleCopy() {
     navigator.clipboard.writeText(linkedInBullets)
@@ -52,7 +54,7 @@ export function CareerAcceleratorDialog() {
                   activeTab === "interview" ? "bg-background shadow-xs text-foreground" : "text-muted-foreground"
                 }`}
               >
-                Interview Simulator
+                AI Interview Simulator
               </button>
               <button
                 type="button"
@@ -67,7 +69,7 @@ export function CareerAcceleratorDialog() {
           </div>
           <DialogTitle className="text-base sm:text-lg">Business Analyst Career Accelerator</DialogTitle>
           <DialogDescription className="text-xs">
-            Master high-stakes BA interview scenarios and generate verified, evidence-backed case study bullet points for your CV and LinkedIn profile.
+            Practice live voice/text competency questions with instant AI rubric evaluation, or export evidence-backed case study bullet points.
           </DialogDescription>
         </DialogHeader>
 
@@ -97,39 +99,9 @@ export function CareerAcceleratorDialog() {
               </div>
             </div>
 
-            {/* Scenario simulator detail */}
-            <div className="col-span-1 md:col-span-2 space-y-4 p-4 rounded-xl border bg-card">
-              <div className="space-y-1">
-                <Badge variant="outline" className="text-[11px]">
-                  Interviewer: {activeScenario.interviewerRole}
-                </Badge>
-                <h3 className="text-sm font-bold text-foreground leading-snug">
-                  &ldquo;{activeScenario.question}&rdquo;
-                </h3>
-              </div>
-
-              {/* Model Framework */}
-              <div className="p-3 rounded-lg border bg-muted/20 space-y-1.5 text-xs">
-                <strong className="text-foreground flex items-center gap-1.5 font-semibold">
-                  <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" /> Recommended Answer Framework (STAR + Advantcore Evidence):
-                </strong>
-                <p className="text-muted-foreground leading-relaxed">
-                  {activeScenario.modelAnswerFramework}
-                </p>
-              </div>
-
-              {/* Key Evaluation Criteria */}
-              <div className="space-y-1.5 text-xs">
-                <strong className="text-foreground block font-semibold">Key Criteria Hiring Managers Expect:</strong>
-                <ul className="space-y-1 text-muted-foreground">
-                  {activeScenario.keyCriteria.map((c, i) => (
-                    <li key={i} className="flex items-start gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>{c}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {/* Interactive Simulator Component */}
+            <div className="col-span-1 md:col-span-2">
+              <InteractiveInterviewSimulator scenario={activeScenario} />
             </div>
           </div>
         ) : (
