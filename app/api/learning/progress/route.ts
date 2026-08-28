@@ -17,9 +17,10 @@ export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID()
   const { searchParams } = new URL(request.url)
   const userId = searchParams.get("userId")
+  const email = searchParams.get("email")
 
-  if (!userId) {
-    return NextResponse.json({ error: "userId parameter is required." }, { status: 400 })
+  if (!userId && !email) {
+    return NextResponse.json({ error: "userId or email parameter is required." }, { status: 400 })
   }
 
   try {
@@ -33,11 +34,29 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Resolve user IDs to match
+    const targetUserIds: string[] = []
+    if (userId) targetUserIds.push(userId)
+
+    if (email) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .single()
+      if (profile?.id && !targetUserIds.includes(profile.id)) {
+        targetUserIds.push(profile.id)
+      }
+    }
+
     // 1. Fetch completed lessons from quiz_attempts
-    const { data: quizAttempts, error: quizError } = await supabase
+    const query = supabase
       .from("quiz_attempts")
       .select("lesson_id, score, mastery_achieved")
-      .eq("user_id", userId)
+    
+    const { data: quizAttempts, error: quizError } = targetUserIds.length === 1
+      ? await query.eq("user_id", targetUserIds[0])
+      : await query.in("user_id", targetUserIds)
 
     if (quizError) {
       logger.error("Failed to query quiz attempts", { requestId, error: quizError.message })
@@ -52,11 +71,14 @@ export async function GET(request: NextRequest) {
     )
 
     // 2. Fetch mock exam snapshots
-    const { data: snapshots, error: snapError } = await supabase
+    const snapQuery = supabase
       .from("readiness_snapshots")
       .select("overall_score, course_progress, work_experience, exam_readiness, evidence_count, consistency_score, snapshot_date")
-      .eq("user_id", userId)
       .order("created_at", { ascending: false })
+
+    const { data: snapshots, error: snapError } = targetUserIds.length === 1
+      ? await snapQuery.eq("user_id", targetUserIds[0])
+      : await snapQuery.in("user_id", targetUserIds)
 
     if (snapError) {
       logger.error("Failed to query readiness snapshots", { requestId, error: snapError.message })

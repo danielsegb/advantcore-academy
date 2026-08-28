@@ -39,30 +39,37 @@ export function WorkplaceView({ onSelectView }: WorkplaceViewProps) {
   })
 
   useEffect(() => {
-    if (user?.id) {
-      syncLearnerProgressFromServer(user.id)
+    if (user?.id || user?.email) {
+      syncLearnerProgressFromServer(user?.id, user?.email)
     }
 
     function handleEvidenceUpdate() {
       if (typeof window === "undefined") return
-      const sKey = `advantcore_evidence_${user?.id || "guest"}`
-      try {
-        const saved = localStorage.getItem(sKey)
-        if (saved) {
-          setEvidenceList(JSON.parse(saved))
-        }
-      } catch {
-        // storage fallback
+      const keys = Array.from(new Set([user?.id, user?.email, "guest", "learner-001"].filter(Boolean))) as string[]
+      const evidenceMap = new Map<string, EvidenceItem>()
+      for (const k of keys) {
+        try {
+          const stored: EvidenceItem[] = JSON.parse(localStorage.getItem(`advantcore_evidence_${k}`) || "[]")
+          for (const item of stored) {
+            if (!evidenceMap.has(item.id || item.taskId)) {
+              evidenceMap.set(item.id || item.taskId, item)
+            }
+          }
+        } catch {}
+      }
+      if (evidenceMap.size > 0) {
+        setEvidenceList(Array.from(evidenceMap.values()))
       }
     }
 
+    handleEvidenceUpdate()
     window.addEventListener("advantcore_progress_updated", handleEvidenceUpdate)
     window.addEventListener("storage", handleEvidenceUpdate)
     return () => {
       window.removeEventListener("advantcore_progress_updated", handleEvidenceUpdate)
       window.removeEventListener("storage", handleEvidenceUpdate)
     }
-  }, [user?.id])
+  }, [user?.id, user?.email])
 
   const currentStage = advantcoreProjectStages.find(s => s.id === activeStageId) || advantcoreProjectStages[0]
 

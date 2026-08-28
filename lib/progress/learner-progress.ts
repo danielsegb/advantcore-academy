@@ -36,39 +36,63 @@ export interface LearnerProgressSummary {
   }>
 }
 
-export function getLearnerRealProgress(userId = "guest"): LearnerProgressSummary {
+export function getLearnerRealProgress(userId = "guest", userEmail?: string): LearnerProgressSummary {
   if (typeof window === "undefined") {
     return getZeroStateProgress()
   }
 
   try {
+    const keysToCheck = Array.from(new Set([userId, userEmail, "guest", "learner-001"].filter(Boolean))) as string[]
+
     // 1. Knowledge Mastery from completed lessons / quizzes
-    const completedLessonIds: string[] = JSON.parse(
-      localStorage.getItem(`advantcore_completed_lessons_${userId}`) || "[]"
-    )
+    const completedSet = new Set<string>()
+    for (const k of keysToCheck) {
+      try {
+        const stored: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${k}`) || "[]")
+        for (const id of stored) completedSet.add(id)
+      } catch {}
+    }
+    const completedLessonIds = Array.from(completedSet)
     const totalLessons = fullCurriculum.reduce((acc, m) => acc + m.lessons.length, 0) || 6
     const completedCount = completedLessonIds.length
     const knowledgeScore = Math.round((completedCount / totalLessons) * 100)
 
     // 2. Exam Readiness from mock exam scores
-    const mockScores: number[] = JSON.parse(
-      localStorage.getItem(`advantcore_mock_scores_${userId}`) || "[]"
-    )
-    const highestMock = mockScores.length > 0 ? Math.max(...mockScores) : 0
+    const allMockScores: number[] = []
+    for (const k of keysToCheck) {
+      try {
+        const stored: number[] = JSON.parse(localStorage.getItem(`advantcore_mock_scores_${k}`) || "[]")
+        allMockScores.push(...stored)
+      } catch {}
+    }
+    const highestMock = allMockScores.length > 0 ? Math.max(...allMockScores) : 0
 
     // 3. Workplace Evidence from stored deliverables
-    const evidenceItems: EvidenceItem[] = JSON.parse(
-      localStorage.getItem(`advantcore_evidence_${userId}`) || "[]"
-    )
+    const evidenceMap = new Map<string, EvidenceItem>()
+    for (const k of keysToCheck) {
+      try {
+        const stored: EvidenceItem[] = JSON.parse(localStorage.getItem(`advantcore_evidence_${k}`) || "[]")
+        for (const item of stored) {
+          if (!evidenceMap.has(item.id || item.taskId)) {
+            evidenceMap.set(item.id || item.taskId, item)
+          }
+        }
+      } catch {}
+    }
+    const evidenceItems = Array.from(evidenceMap.values())
     const approvedCount = evidenceItems.filter(e => e.status === "approved").length
     const totalDeliverables = 10
     const evidenceScore = Math.round((approvedCount / totalDeliverables) * 100)
 
     // 4. Interview Readiness
-    const interviewScenarios: string[] = JSON.parse(
-      localStorage.getItem(`advantcore_interview_scenarios_${userId}`) || "[]"
-    )
-    const interviewCount = interviewScenarios.length
+    const scenarioSet = new Set<string>()
+    for (const k of keysToCheck) {
+      try {
+        const stored: string[] = JSON.parse(localStorage.getItem(`advantcore_interview_scenarios_${k}`) || "[]")
+        for (const id of stored) scenarioSet.add(id)
+      } catch {}
+    }
+    const interviewCount = scenarioSet.size
     const interviewScore = Math.min(Math.round((interviewCount / 4) * 100), 100)
 
     // 5. Composite Readiness Score (35% Knowledge, 25% Exam, 25% Workplace, 15% Interview)

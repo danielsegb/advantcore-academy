@@ -54,28 +54,31 @@ export function LearningView({ onSelectView }: LearningViewProps) {
   const [completionScore, setCompletionScore] = useState<number | undefined>(undefined)
 
   useEffect(() => {
-    if (user?.id) {
-      syncLearnerProgressFromServer(user.id)
+    if (user?.id || user?.email) {
+      syncLearnerProgressFromServer(user?.id, user?.email)
     }
 
     function handleProgressUpdate() {
       if (typeof window === "undefined") return
-      const uId = user?.id || "guest"
-      try {
-        const stored: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${uId}`) || "[]")
-        setCompletedLessonIds(stored)
-      } catch {
-        setCompletedLessonIds([])
+      const keys = Array.from(new Set([user?.id, user?.email, "guest", "learner-001"].filter(Boolean))) as string[]
+      const mergedSet = new Set<string>()
+      for (const k of keys) {
+        try {
+          const stored: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${k}`) || "[]")
+          for (const id of stored) mergedSet.add(id)
+        } catch {}
       }
+      setCompletedLessonIds(Array.from(mergedSet))
     }
 
+    handleProgressUpdate()
     window.addEventListener("advantcore_progress_updated", handleProgressUpdate)
     window.addEventListener("storage", handleProgressUpdate)
     return () => {
       window.removeEventListener("advantcore_progress_updated", handleProgressUpdate)
       window.removeEventListener("storage", handleProgressUpdate)
     }
-  }, [user?.id])
+  }, [user?.id, user?.email])
 
   // Audio Reader state
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)

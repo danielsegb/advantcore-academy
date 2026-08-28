@@ -23,9 +23,10 @@ export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID()
   const { searchParams } = new URL(request.url)
   const userId = searchParams.get("userId")
+  const email = searchParams.get("email")
 
-  if (!userId) {
-    return NextResponse.json({ error: "userId parameter is required." }, { status: 400 })
+  if (!userId && !email) {
+    return NextResponse.json({ error: "userId or email parameter is required." }, { status: 400 })
   }
 
   try {
@@ -34,11 +35,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, evidenceItems: [] })
     }
 
-    const { data: evidenceRows, error } = await supabase
+    // Resolve user IDs to match
+    const targetUserIds: string[] = []
+    if (userId) targetUserIds.push(userId)
+
+    if (email) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .single()
+      if (profile?.id && !targetUserIds.includes(profile.id)) {
+        targetUserIds.push(profile.id)
+      }
+    }
+
+    const query = supabase
       .from("evidence_items")
       .select("*")
-      .eq("user_id", userId)
       .order("updated_at", { ascending: false })
+
+    const { data: evidenceRows, error } = targetUserIds.length === 1
+      ? await query.eq("user_id", targetUserIds[0])
+      : await query.in("user_id", targetUserIds)
 
     if (error) {
       logger.error("Failed to query evidence items", { requestId, error: error.message })

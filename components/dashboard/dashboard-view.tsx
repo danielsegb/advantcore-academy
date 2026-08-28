@@ -35,8 +35,8 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
   const [progressVersion, setProgressVersion] = useState(0)
 
   useEffect(() => {
-    if (user?.id) {
-      syncLearnerProgressFromServer(user.id)
+    if (user?.id || user?.email) {
+      syncLearnerProgressFromServer(user?.id, user?.email)
     }
 
     function handleUpdate() {
@@ -48,10 +48,10 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
       window.removeEventListener("advantcore_progress_updated", handleUpdate)
       window.removeEventListener("storage", handleUpdate)
     }
-  }, [user?.id])
+  }, [user?.id, user?.email])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const progress = useMemo(() => getLearnerRealProgress(user?.id), [user?.id, progressVersion])
+  const progress = useMemo(() => getLearnerRealProgress(user?.id, user?.email), [user?.id, user?.email, progressVersion])
 
   const firstName = user?.fullName ? user.fullName.split(" ")[0] : "Amanda"
 
