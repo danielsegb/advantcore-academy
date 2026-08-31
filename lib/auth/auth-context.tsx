@@ -232,74 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Please enter your password." }
     }
 
-    // 1. LOCAL ADMIN FALLBACK (runs first to bypass any Supabase backend issues)
-    if (cleanEmail === "admin@advantcore.co") {
-      let storedAdminPass = "Advantcore2026!"
-      if (typeof window !== "undefined") {
-        try {
-          storedAdminPass = localStorage.getItem(STORAGE_KEY_ADMIN_PASS) || "Advantcore2026!"
-        } catch {
-          storedAdminPass = "Advantcore2026!"
-        }
-      }
-      if (cleanPassword === storedAdminPass || cleanPassword === "Advantcore2026!") {
-        // Also attempt Supabase sign-in in background to sync session if backend is healthy
-        const supabase = getSupabaseBrowserClient()
-        if (supabase) {
-          supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword })
-            .then(({ data }) => {
-              if (data?.user) syncLearnerProgressFromServer(data.user.id, cleanEmail)
-            })
-            .catch(() => { /* ignore background sync failure */ })
-        }
-        setUser(DEFAULT_ADMIN)
-        saveSession(DEFAULT_ADMIN)
-        return { success: true }
-      }
-      return { success: false, error: "Invalid login credentials." }
-    }
-
-    // 2. LOCAL DEMO LEARNER FALLBACK
-    if (cleanEmail === "amanda@advantcore.co" || cleanEmail === "learner@advantcore.co") {
-      if (cleanPassword === "Advantcore2026!" || cleanPassword === "password") {
-        setUser(DEFAULT_LEARNER)
-        saveSession(DEFAULT_LEARNER)
-        return { success: true }
-      }
-      return { success: false, error: "Invalid login credentials." }
-    }
-
-    // 3. LOCAL STORAGE: Registered learners added by Admin panel
-    let registeredLearners: StoredLearner[] = []
-    if (typeof window !== "undefined") {
-      try {
-        registeredLearners = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTERED_USERS) || "[]")
-      } catch {
-        registeredLearners = []
-      }
-    }
-    const matchedLearner = registeredLearners.find(l => l.email.toLowerCase() === cleanEmail)
-    if (matchedLearner) {
-      if (matchedLearner.passwordHash === cleanPassword) {
-        const learnerProfile: UserProfile = {
-          id: matchedLearner.id,
-          email: matchedLearner.email,
-          fullName: matchedLearner.fullName,
-          avatarInitials: matchedLearner.fullName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
-          avatarColour: "mint",
-          role: "learner",
-          status: matchedLearner.status,
-          mustChangePassword: false,
-          assignedPathwayTitle: matchedLearner.pathway,
-        }
-        setUser(learnerProfile)
-        saveSession(learnerProfile)
-        return { success: true }
-      }
-      return { success: false, error: "Invalid login credentials." }
-    }
-
-    // 4. PRIMARY: Authenticate unknown users against live Supabase backend
+    // 1. PRIMARY: Authenticate against live Supabase authentication backend
     const supabase = getSupabaseBrowserClient()
     if (supabase) {
       try {
@@ -327,7 +260,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             fullName: userName,
             avatarInitials: initials,
             avatarColour: "blue",
-            role: ((data.user.user_metadata?.role as UserRole) || "learner"),
+            role: ((data.user.user_metadata?.role as UserRole) || (cleanEmail.startsWith("admin") ? "admin" : "learner")),
             status: "active",
             mustChangePassword: false,
             assignedPathwayTitle: "Business Analysis",
@@ -342,8 +275,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return { success: false, error: error.message }
         }
       } catch {
-        // Network/client failure
+        // Network/client failure — fall through to local fallback
       }
+    }
+
+    // 2. LOCAL FALLBACK: Registered learners stored by Admin panel
+    let registeredLearners: StoredLearner[] = []
+    if (typeof window !== "undefined") {
+      try {
+        registeredLearners = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTERED_USERS) || "[]")
+      } catch {
+        registeredLearners = []
+      }
+    }
+
+    const matchedLearner = registeredLearners.find(l => l.email.toLowerCase() === cleanEmail)
+    if (matchedLearner) {
+      if (matchedLearner.passwordHash === cleanPassword) {
+        const learnerProfile: UserProfile = {
+          id: matchedLearner.id,
+          email: matchedLearner.email,
+          fullName: matchedLearner.fullName,
+          avatarInitials: matchedLearner.fullName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+          avatarColour: "mint",
+          role: "learner",
+          status: matchedLearner.status,
+          mustChangePassword: false,
+          assignedPathwayTitle: matchedLearner.pathway,
+        }
+        setUser(learnerProfile)
+        saveSession(learnerProfile)
+        return { success: true }
+      }
+      return { success: false, error: "Invalid login credentials." }
     }
 
     return {
