@@ -45,19 +45,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Email and Full Name are required." }, { status: 400 })
       }
 
-      const tempPass = temporaryPassword || crypto.randomBytes(6).toString("hex") + "Aa1!"
-
-      // Create Supabase Auth user
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password: tempPass,
-        email_confirm: true,
-        user_metadata: { full_name: fullName, role: "learner" },
+      // Send official Supabase Auth invitation email
+      const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(email, {
+        data: { full_name: fullName, role: "learner" },
       })
 
       if (authError || !authData.user) {
-        logger.error("Failed to create auth user", { requestId, error: authError?.message })
-        return NextResponse.json({ error: authError?.message || "Failed to create user." }, { status: 500 })
+        logger.error("Failed to invite user via email", { requestId, error: authError?.message })
+        return NextResponse.json({ error: authError?.message || "Failed to send invitation email." }, { status: 500 })
       }
 
       // Create Profile record
@@ -77,15 +72,15 @@ export async function POST(request: NextRequest) {
         action: "USER_INVITED",
         resource_type: "profile",
         resource_id: authData.user.id,
-        details_json: { email, fullName },
+        details_json: { email, fullName, method: "email_invite" },
       })
 
-      logger.info("Learner invited successfully", { requestId, userId: authData.user.id, email })
+      logger.info("Learner invited via email successfully", { requestId, userId: authData.user.id, email })
 
       return NextResponse.json({
         success: true,
         userId: authData.user.id,
-        temporaryPassword: tempPass,
+        email,
       })
     }
 
