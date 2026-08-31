@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
+import { sendLearnerWelcomeEmail } from "@/lib/email/send-welcome-email"
 import { logger } from "@/lib/logging/logger"
 import crypto from "node:crypto"
 import { z } from "zod"
@@ -45,14 +46,19 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Email and Full Name are required." }, { status: 400 })
       }
 
-      // Send official Supabase Auth invitation email
-      const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(email, {
-        data: { full_name: fullName, role: "learner" },
+      const tempPass = temporaryPassword || "Advantcore2026!"
+
+      // Create Supabase Auth user with confirmed email and assigned password
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password: tempPass,
+        email_confirm: true,
+        user_metadata: { full_name: fullName, role: "learner" },
       })
 
       if (authError || !authData.user) {
-        logger.error("Failed to invite user via email", { requestId, error: authError?.message })
-        return NextResponse.json({ error: authError?.message || "Failed to send invitation email." }, { status: 500 })
+        logger.error("Failed to create auth user", { requestId, error: authError?.message })
+        return NextResponse.json({ error: authError?.message || "Failed to create user." }, { status: 500 })
       }
 
       // Create Profile record
@@ -67,20 +73,28 @@ export async function POST(request: NextRequest) {
         must_change_password: true,
       })
 
+      // Send branded welcome email with credentials directly to the learner
+      await sendLearnerWelcomeEmail({
+        toEmail: email,
+        fullName,
+        temporaryPassword: tempPass,
+      })
+
       // Log audit event
       await supabase.from("audit_events").insert({
         action: "USER_INVITED",
         resource_type: "profile",
         resource_id: authData.user.id,
-        details_json: { email, fullName, method: "email_invite" },
+        details_json: { email, fullName, method: "credentials_email" },
       })
 
-      logger.info("Learner invited via email successfully", { requestId, userId: authData.user.id, email })
+      logger.info("Learner created and welcome email dispatched", { requestId, userId: authData.user.id, email })
 
       return NextResponse.json({
         success: true,
         userId: authData.user.id,
         email,
+        temporaryPassword: tempPass,
       })
     }
 

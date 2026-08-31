@@ -41,8 +41,10 @@ export function UserManagementTab() {
   const [inviteOpen, setInviteOpen] = useState(false)
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("Advantcore2026!")
   const [loading, setLoading] = useState(false)
-  const [inviteSuccessEmail, setInviteSuccessEmail] = useState<string | null>(null)
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; pass: string } | null>(null)
+  const [copied, setCopied] = useState(false)
 
   // Sync users to storage whenever updated
   function persistUsers(updatedList: ManagedUser[]) {
@@ -66,6 +68,7 @@ export function UserManagementTab() {
       email: email.trim().toLowerCase(),
       pathway: "Business Analysis",
       status: "active",
+      passwordHash: password,
       mustChangePassword: true,
     }
 
@@ -77,6 +80,7 @@ export function UserManagementTab() {
           action: "invite",
           fullName,
           email: newLearner.email,
+          temporaryPassword: password,
         }),
       })
       const data = await res.json()
@@ -88,7 +92,7 @@ export function UserManagementTab() {
     } finally {
       const updated = [...users, newLearner]
       persistUsers(updated)
-      setInviteSuccessEmail(newLearner.email)
+      setCreatedCredentials({ email: newLearner.email, pass: password })
       setLoading(false)
     }
   }
@@ -103,10 +107,18 @@ export function UserManagementTab() {
     persistUsers(updated)
   }
 
+  function copyCredentials() {
+    if (!createdCredentials) return
+    navigator.clipboard.writeText(`Email: ${createdCredentials.email}\nPassword: ${createdCredentials.pass}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   function resetDialog() {
-    setInviteSuccessEmail(null)
+    setCreatedCredentials(null)
     setFullName("")
     setEmail("")
+    setPassword("Advantcore2026!")
   }
 
   return (
@@ -136,11 +148,11 @@ export function UserManagementTab() {
             <DialogHeader>
               <DialogTitle>Onboard New Learner</DialogTitle>
               <DialogDescription>
-                Send an official invitation link to the candidate to activate their workspace and set their password.
+                Provision immediate access to the BCS Business Analysis Pathway and send a welcome email with credentials.
               </DialogDescription>
             </DialogHeader>
 
-            {!inviteSuccessEmail ? (
+            {!createdCredentials ? (
               <form onSubmit={handleInvite} className="space-y-4">
                 <div className="space-y-3">
                   <label className="block text-sm font-medium">
@@ -170,10 +182,22 @@ export function UserManagementTab() {
                     />
                   </label>
 
+                  <label className="block text-sm font-medium">
+                    Temporary Password
+                    <input
+                      type="text"
+                      required
+                      minLength={5}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="w-full mt-1 px-3 py-2 border rounded-md bg-background font-mono text-base sm:text-sm"
+                    />
+                  </label>
+
                   <div className="p-3 rounded-lg bg-muted/60 border text-xs text-muted-foreground flex items-start gap-2">
                     <Mail className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                     <span>
-                      An automated invitation link will be delivered directly to the candidate&apos;s email inbox.
+                      A welcome email with login credentials and pathway access will be dispatched to the candidate.
                     </span>
                   </div>
                 </div>
@@ -184,7 +208,7 @@ export function UserManagementTab() {
                   </Button>
                   <Button type="submit" className="primary-action w-full sm:w-auto" disabled={loading || !fullName || !email}>
                     {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
-                    Send Invitation
+                    Create & Email Credentials
                   </Button>
                 </DialogFooter>
               </form>
@@ -193,16 +217,27 @@ export function UserManagementTab() {
                 <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold text-emerald-500 text-sm">Invitation Email Sent</h3>
+                    <h3 className="font-semibold text-emerald-500 text-sm">Learner Onboarded & Email Sent</h3>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                      An activation invite has been emailed to <strong>{inviteSuccessEmail}</strong>. They can click the link in their inbox to set up their password and access their workspace.
+                      Account provisioned for <strong>{createdCredentials.email}</strong> and welcome email dispatched.
                     </p>
                   </div>
                 </div>
 
-                <Button className="primary-action w-full" onClick={() => setInviteOpen(false)}>
-                  Done
-                </Button>
+                <div className="p-3 bg-muted rounded-lg font-mono text-xs space-y-1">
+                  <div><strong>Email:</strong> {createdCredentials.email}</div>
+                  <div><strong>Temporary Password:</strong> {createdCredentials.pass}</div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button variant="outline" className="w-full" onClick={copyCredentials}>
+                    {copied ? <Check className="w-4 h-4 mr-2 text-emerald-500" /> : <Copy className="w-4 h-4 mr-2" />}
+                    {copied ? "Copied" : "Copy credentials"}
+                  </Button>
+                  <Button className="primary-action w-full" onClick={() => setInviteOpen(false)}>
+                    Done
+                  </Button>
+                </div>
               </div>
             )}
           </DialogContent>

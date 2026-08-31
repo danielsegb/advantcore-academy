@@ -20,12 +20,14 @@ Configure the following variables in Vercel Project Settings under **Settings > 
 | `NEXT_PUBLIC_BASE_PATH` | All | No | Base path prefix | `/academy` |
 | `NEXT_PUBLIC_SUPABASE_URL` | All | No | Supabase Project URL | `https://[project-ref].supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All | Yes | Supabase public anonymous key | `eyJhbGciOi...` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server Only | Critical | Admin bypass service-role key | `eyJhbGciOi...` |
 | `GROQ_API_KEY` | Server Only | Critical | Primary AI provider key (`llama-3.3-70b-versatile`) | `gsk_...` |
 | `GEMINI_API_KEY` | Server Only | Critical | Secondary AI fallback key (`gemini-2.5-flash`) | `AIzaSy...` |
+| `RESEND_API_KEY` | Server Only | Yes | Transactional email provider for welcome credentials | `re_...` |
+| `EMAIL_FROM` | Server Only | No | Sender address for onboarding emails | `Advantcore Academy <onboarding@advantcore.co>` |
+| `NEXT_PUBLIC_APP_URL` | All | No | Production domain for email login links | `https://advantcore-academy.vercel.app` |
 
 > [!CAUTION]
-> `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, and `GEMINI_API_KEY` must **never** be prefixed with `NEXT_PUBLIC_` or imported into client components.
+> `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY`, and `RESEND_API_KEY` must **never** be prefixed with `NEXT_PUBLIC_` or imported into client components.
 
 ---
 

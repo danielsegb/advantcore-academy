@@ -20,18 +20,6 @@ const DEFAULT_ADMIN: UserProfile = {
   assignedPathwayTitle: "Executive Management",
 }
 
-const DEFAULT_LEARNER: UserProfile = {
-  id: "00000000-0000-0000-0000-000000000010",
-  email: "amanda@advantcore.co",
-  fullName: "Amanda Okafor",
-  avatarInitials: "AO",
-  avatarColour: "mint",
-  role: "learner",
-  status: "active",
-  mustChangePassword: false,
-  assignedPathwayTitle: "Business Analysis",
-}
-
 const STORAGE_KEY_ACTIVE_SESSION = "advantcore_active_session"
 const STORAGE_KEY_ADMIN_PASS = "advantcore_admin_pwd"
 const STORAGE_KEY_REGISTERED_USERS = "advantcore_registered_learners"
