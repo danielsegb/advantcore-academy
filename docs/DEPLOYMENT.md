@@ -24,7 +24,7 @@ Configure the following variables in Vercel Project Settings under **Settings > 
 | `GEMINI_API_KEY` | Server Only | Critical | Secondary AI fallback key (`gemini-2.5-flash`) | `AIzaSy...` |
 | `RESEND_API_KEY` | Server Only | Yes | Transactional email provider for welcome credentials | `re_...` |
 | `EMAIL_FROM` | Server Only | No | Sender address for onboarding emails | `Advantcore Academy <onboarding@advantcore.co>` |
-| `NEXT_PUBLIC_APP_URL` | All | No | Production domain for email login links | `https://advantcore-academy.vercel.app` |
+| `APP_URL` | Server Only | No | Production domain for email login links | `https://advantcore-academy.vercel.app` |
 
 > [!CAUTION]
 > `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY`, and `RESEND_API_KEY` must **never** be prefixed with `NEXT_PUBLIC_` or imported into client components.

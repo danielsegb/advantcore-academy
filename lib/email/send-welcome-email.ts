@@ -13,8 +13,16 @@ export async function sendLearnerWelcomeEmail({
 }: WelcomeEmailParams): Promise<{ success: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY
   const fromEmail = process.env.EMAIL_FROM || "Advantcore Academy <onboarding@advantcore.co>"
-  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://advantcore-academy.vercel.app"
-  const loginUrl = `${appBaseUrl}${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}`
+  
+  // Resolve base URL: supports APP_URL (secret), NEXT_PUBLIC_APP_URL (plain), Vercel auto-url, or default fallback
+  const appBaseUrl = 
+    process.env.APP_URL || 
+    process.env.NEXT_PUBLIC_APP_URL || 
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "https://advantcore-academy.vercel.app"
+
+  const loginUrl = `${appBaseUrl.replace(/\/$/, "")}${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}`
 
   const htmlContent = `
 <!DOCTYPE html>
