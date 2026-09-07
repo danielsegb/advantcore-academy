@@ -98,16 +98,32 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    if (action === "updateStatus" && userId && status) {
-      await supabase
-        .from("profiles")
-        .update({ status })
-        .eq("id", userId)
+    if (action === "updateStatus" && (userId || email) && status) {
+      if (userId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+        await supabase.from("profiles").update({ status }).eq("id", userId)
+        if (status === "suspended") {
+          await supabase.auth.admin.updateUserById(userId, { ban_duration: "876000h" })
+        } else if (status === "active") {
+          await supabase.auth.admin.updateUserById(userId, { ban_duration: "none" })
+        }
+      } else if (email) {
+        const { data: profile } = await supabase.from("profiles").select("id").eq("email", email.toLowerCase()).maybeSingle()
+        await supabase.from("profiles").update({ status }).eq("email", email.toLowerCase())
+        if (profile?.id) {
+          if (status === "suspended") {
+            await supabase.auth.admin.updateUserById(profile.id, { ban_duration: "876000h" })
+          } else if (status === "active") {
+            await supabase.auth.admin.updateUserById(profile.id, { ban_duration: "none" })
+          }
+        }
+      } else if (userId) {
+        await supabase.from("profiles").update({ status }).eq("id", userId)
+      }
 
       await supabase.from("audit_events").insert({
         action: `USER_STATUS_${status.toUpperCase()}`,
         resource_type: "profile",
-        resource_id: userId,
+        resource_id: userId || email || "unknown",
         details_json: { newStatus: status },
       })
 

@@ -151,9 +151,25 @@ export function UserManagementTab({ users: propUsers, onUsersChange }: UserManag
 
   const [resetSuccessId, setResetSuccessId] = useState<string | null>(null)
 
-  function handleStatusChange(userId: string, newStatus: AccountStatus) {
+  async function handleStatusChange(userId: string, newStatus: AccountStatus) {
     const updated = users.map(u => (u.id === userId ? { ...u, status: newStatus } : u))
     persistUsers(updated)
+
+    const targetUser = users.find(u => u.id === userId)
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/api/admin/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "updateStatus",
+          userId,
+          email: targetUser?.email,
+          status: newStatus,
+        }),
+      })
+    } catch {
+      // Local status updated
+    }
   }
 
   async function handleDeleteUser(userId: string) {

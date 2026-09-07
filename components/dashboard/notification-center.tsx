@@ -1,6 +1,6 @@
-"use client"
+﻿"use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { Bell, Check, CheckCheck, FileText, Calendar, Award } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,24 +9,75 @@ import {
 } from "@/components/ui/dialog"
 import { initialNotifications, type NotificationItem } from "@/lib/notifications/types"
 import type { View } from "@/components/shared/types"
+import { useAuth } from "@/lib/auth/auth-context"
 
 interface NotificationCenterProps {
   onNavigate?: (view: View) => void
 }
 
+function getStorageKey(userId?: string | null, email?: string | null): string {
+  const key = userId || email || "guest"
+  return `advantcore_notifications_read_${key}`
+}
+
+function loadReadIds(storageKey: string): Set<string> {
+  if (typeof window === "undefined") return new Set()
+  try {
+    const raw = localStorage.getItem(storageKey)
+    if (!raw) return new Set()
+    const parsed: unknown = JSON.parse(raw)
+    if (Array.isArray(parsed)) return new Set(parsed as string[])
+  } catch {
+    // ignore parse errors
+  }
+  return new Set()
+}
+
+function saveReadIds(storageKey: string, ids: Set<string>) {
+  if (typeof window === "undefined") return
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(Array.from(ids)))
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export function NotificationCenter({ onNavigate }: NotificationCenterProps) {
-  const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications)
+  const { user } = useAuth()
+  const storageKey = getStorageKey(user?.id, user?.email)
+
+  const [readIds, setReadIds] = useState<Set<string>>(() => loadReadIds(storageKey))
   const [open, setOpen] = useState(false)
+
+  // Re-hydrate when user changes (e.g. different account logs in)
+  useEffect(() => {
+    setReadIds(loadReadIds(storageKey))
+  }, [storageKey])
+
+  const notifications: NotificationItem[] = initialNotifications.map(n => ({
+    ...n,
+    read: readIds.has(n.id),
+  }))
 
   const unreadCount = notifications.filter(n => !n.read).length
 
-  function markAsRead(id: string) {
-    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)))
-  }
+  const markAsRead = useCallback((id: string) => {
+    setReadIds(prev => {
+      const next = new Set(prev)
+      next.add(id)
+      saveReadIds(storageKey, next)
+      return next
+    })
+  }, [storageKey])
 
-  function markAllAsRead() {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-  }
+  const markAllAsRead = useCallback(() => {
+    setReadIds(prev => {
+      const next = new Set(prev)
+      initialNotifications.forEach(n => next.add(n.id))
+      saveReadIds(storageKey, next)
+      return next
+    })
+  }, [storageKey])
 
   function handleAction(n: NotificationItem) {
     markAsRead(n.id)
