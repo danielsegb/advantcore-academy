@@ -267,7 +267,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // 2. LOCAL FALLBACK: Registered learners stored by Admin panel
+    // 2. LOCAL FALLBACK: Platform Administrator
+    if (cleanEmail === "admin@advantcore.co" || cleanEmail.startsWith("admin@")) {
+      let storedAdminPass: string | null = null
+      if (typeof window !== "undefined") {
+        storedAdminPass = localStorage.getItem(STORAGE_KEY_ADMIN_PASS)
+      }
+      const validAdminPass = storedAdminPass || "AdvantcoreAdmin2026!"
+      if (cleanPassword === validAdminPass) {
+        setUser(DEFAULT_ADMIN)
+        saveSession(DEFAULT_ADMIN)
+        return { success: true }
+      }
+      return { success: false, error: "Invalid administrator password." }
+    }
+
+    // 3. LOCAL FALLBACK: Registered learners stored by Admin panel
     let registeredLearners: StoredLearner[] = []
     if (typeof window !== "undefined") {
       try {
@@ -288,7 +303,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           avatarColour: "mint",
           role: "learner",
           status: matchedLearner.status,
-          mustChangePassword: false,
+          mustChangePassword: Boolean(matchedLearner.mustChangePassword),
           assignedPathwayTitle: matchedLearner.pathway,
         }
         setUser(learnerProfile)
@@ -315,6 +330,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     saveSession(null)
     setUser(null)
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { userId: null } }))
+    }
   }, [saveSession])
 
   const changePassword = useCallback(async (newPassword: string): Promise<{ success: boolean; error?: string }> => {

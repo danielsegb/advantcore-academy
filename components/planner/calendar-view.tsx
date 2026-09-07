@@ -19,7 +19,7 @@ import { getLearnerRealProgress } from "@/lib/progress/learner-progress"
 
 export function CalendarView() {
   const { user } = useAuth()
-  const progress = useMemo(() => getLearnerRealProgress(user?.id), [user?.id])
+  const progress = useMemo(() => getLearnerRealProgress(user?.id, user?.email), [user?.id, user?.email])
 
   // Calculate current active week based on real learner progress
   const activeWeekNum = useMemo(() => {
@@ -32,8 +32,13 @@ export function CalendarView() {
   const [selectedMobileDay, setSelectedMobileDay] = useState<string>("Mon")
   const [isAccelerated, setIsAccelerated] = useState(false)
 
+  // Re-sync selected week if active week changes on account switch
+  React.useEffect(() => {
+    setSelectedWeekNum(activeWeekNum)
+  }, [activeWeekNum])
+
   const selectedWeek = full12WeekSchedule.find(w => w.weekNumber === selectedWeekNum) || full12WeekSchedule[0]
-  const adaptivePlan = calculateAdaptiveSchedule(full12WeekSchedule, activeWeekNum, isAccelerated ? 14 : 12)
+  const adaptivePlan = calculateAdaptiveSchedule(full12WeekSchedule, activeWeekNum, isAccelerated ? 14 : 7)
 
   const daysList = ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
@@ -50,7 +55,7 @@ export function CalendarView() {
                 href={buildGoogleCalendarUrl(
                   `[Advantcore Academy] Week ${selectedWeek.weekNumber}: ${selectedWeek.title}`,
                   `Study & Project Blocks for Week ${selectedWeek.weekNumber}\nModule: ${selectedWeek.moduleTitle}\nProject: ${selectedWeek.projectStageTitle}`,
-                  72,
+                  undefined,
                   120
                 )}
                 target="_blank"
@@ -59,7 +64,11 @@ export function CalendarView() {
                 <CalendarDays className="w-4 h-4 mr-1.5" /> Sync week to Google
               </a>
             </Button>
-            <AdaptiveScheduleDialog onScheduleApplied={() => setIsAccelerated(true)} />
+            <AdaptiveScheduleDialog
+              activeWeekNum={activeWeekNum}
+              overallScore={progress.overallScore}
+              onScheduleApplied={() => setIsAccelerated(true)}
+            />
           </>
         }
       />
@@ -81,7 +90,7 @@ export function CalendarView() {
         />
         <StatCard
           icon={Target}
-          value={isAccelerated ? adaptivePlan.estimatedCompletionDate.split(" ")[0] + " " + adaptivePlan.estimatedCompletionDate.split(" ")[1] : "12 Weeks"}
+          value={isAccelerated ? adaptivePlan.estimatedCompletionDate : "12 Weeks"}
           label="Target completion"
           detail={isAccelerated ? `Graduation compressed by ${12 - adaptivePlan.acceleratedWeeks} weeks` : "Target: 12-week graduation"}
           tone="gold"
@@ -198,7 +207,7 @@ export function CalendarView() {
                     <div className="flex items-center justify-between pt-1 border-t text-[11px]">
                       <span className="text-muted-foreground">{ev.durationMinutes} min</span>
                       <a
-                        href={buildEventGoogleCalendarUrl(ev)}
+                        href={buildEventGoogleCalendarUrl(ev, activeWeekNum)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-primary hover:underline flex items-center gap-0.5"
@@ -224,7 +233,11 @@ export function CalendarView() {
             </p>
           </div>
         </div>
-        <AdaptiveScheduleDialog onScheduleApplied={() => setIsAccelerated(true)} />
+        <AdaptiveScheduleDialog
+          activeWeekNum={activeWeekNum}
+          overallScore={progress.overallScore}
+          onScheduleApplied={() => setIsAccelerated(true)}
+        />
       </section>
     </div>
   )

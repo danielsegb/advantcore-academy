@@ -14,9 +14,11 @@ function VerifyContent() {
   const searchParams = useSearchParams()
   const certId = searchParams.get("id") || "ADV-BA-2026-88492"
 
-  const candidateName = certId.includes("88492") || !searchParams.get("name")
-    ? "Daniel Emmanuel"
-    : searchParams.get("name") || "Daniel Emmanuel"
+  const candidateName = searchParams.get("name")
+    ? searchParams.get("name")!
+    : certId.includes("88492")
+      ? "Daniel Emmanuel"
+      : "Advantcore Academy Graduate"
 
   const issueDate = new Date().toLocaleDateString("en-GB", {
     day: "numeric",

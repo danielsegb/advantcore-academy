@@ -39,7 +39,7 @@ export function EvidenceEditorDialog({ task, existingEvidence, onEvidenceSaved }
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const isAdmin = user?.role === "admin"
-  const authorName = user?.fullName || user?.email?.split("@")[0] || "Daniel Emmanuel"
+  const authorName = user?.fullName || user?.email?.split("@")[0] || "Learner"
 
   // Auto-save debounce effect
   useEffect(() => {

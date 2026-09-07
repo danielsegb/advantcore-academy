@@ -1,12 +1,13 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import {
   RotateCw, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight,
   Shuffle, Sparkles, Bookmark, Lightbulb,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/lib/auth/auth-context"
 
 export interface Flashcard {
   id: string
@@ -158,17 +159,31 @@ export const bcsFlashcardsData: Flashcard[] = [
 ]
 
 export function FlashcardsDeck() {
+  const { user } = useAuth()
+  const storageKey = `advantcore_flashcards_mastered_${user?.id || "guest"}`
+
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [masteredIds, setMasteredIds] = useState<string[]>(() => {
     if (typeof window === "undefined") return []
     try {
-      return JSON.parse(localStorage.getItem("advantcore_flashcards_mastered") || "[]")
+      return JSON.parse(localStorage.getItem(storageKey) || "[]")
     } catch {
       return []
     }
   })
+
+  // Re-sync mastered IDs if user changes
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const stored = JSON.parse(localStorage.getItem(storageKey) || "[]")
+      setMasteredIds(stored)
+    } catch {
+      setMasteredIds([])
+    }
+  }, [storageKey])
 
   const filteredCards = selectedCategory === "all"
     ? bcsFlashcardsData
@@ -197,7 +212,7 @@ export function FlashcardsDeck() {
     setMasteredIds(prev => {
       const updated = prev.includes(cardId) ? prev.filter(id => id !== cardId) : [...prev, cardId]
       try {
-        localStorage.setItem("advantcore_flashcards_mastered", JSON.stringify(updated))
+        localStorage.setItem(storageKey, JSON.stringify(updated))
       } catch {}
       return updated
     })

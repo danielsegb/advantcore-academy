@@ -32,14 +32,22 @@ export const navItems = [
 interface AcademyShellProps {
   currentView: View
   onSelectView: (view: View) => void
+  /** When set to true externally, immediately opens the guided tour dialog */
+  openTour?: boolean
+  onTourClose?: () => void
   children: React.ReactNode
 }
 
-export function AcademyShell({ currentView, onSelectView, children }: AcademyShellProps) {
+export function AcademyShell({ currentView, onSelectView, openTour, onTourClose, children }: AcademyShellProps) {
   const { user, signOut } = useAuth()
   const [tourOpen, setTourOpen] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+
+  // Sync external openTour flag → open the dialog
+  React.useEffect(() => {
+    if (openTour) setTourOpen(true)
+  }, [openTour])
 
   const activeTitle = useMemo(() => {
     return navItems.find(i => i.id === currentView)?.label ?? "Admin studio"
@@ -203,7 +211,7 @@ export function AcademyShell({ currentView, onSelectView, children }: AcademyShe
 
         <GuidedTourDialog
           open={tourOpen}
-          onOpenChange={setTourOpen}
+          onOpenChange={(v) => { setTourOpen(v); if (!v) onTourClose?.() }}
           onStartLearning={onSelectView}
         />
 

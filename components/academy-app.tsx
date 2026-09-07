@@ -22,6 +22,7 @@ import { syncLearnerProgressFromServer } from "@/lib/progress/progress-sync"
 function AcademyMainContent() {
   const { user, isAuthenticated, isLoading } = useAuth()
   const [activeView, setActiveView] = useState<View | null>(null)
+  const [tourOpen, setTourOpen] = useState(false)
 
   React.useEffect(() => {
     if (user?.id) {
@@ -55,10 +56,15 @@ function AcademyMainContent() {
     <AccountStatusGate>
       <SkipToContent />
       <OfflineBanner />
-      <AcademyShell currentView={currentView} onSelectView={setActiveView}>
+      <AcademyShell
+        currentView={currentView}
+        onSelectView={setActiveView}
+        openTour={tourOpen}
+        onTourClose={() => setTourOpen(false)}
+      >
         <ErrorBoundary>
           {currentView === "dashboard" && (
-            <DashboardView onSelectView={setActiveView} onOpenTour={() => {}} />
+            <DashboardView onSelectView={setActiveView} onOpenTour={() => setTourOpen(true)} />
           )}
           {currentView === "learning" && <LearningView onSelectView={setActiveView} />}
           {currentView === "workplace" && <WorkplaceView onSelectView={setActiveView} />}

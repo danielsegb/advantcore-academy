@@ -16,15 +16,21 @@ import { useAuth } from "@/lib/auth/auth-context"
 
 interface AdaptiveScheduleDialogProps {
   onScheduleApplied?: () => void
+  activeWeekNum?: number
+  overallScore?: number
 }
 
-export function AdaptiveScheduleDialog({ onScheduleApplied }: AdaptiveScheduleDialogProps) {
+export function AdaptiveScheduleDialog({ onScheduleApplied, activeWeekNum = 1, overallScore = 0 }: AdaptiveScheduleDialogProps) {
   const { user } = useAuth()
   const [open, setOpen] = useState(false)
   const [applied, setApplied] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const plan = calculateAdaptiveSchedule(full12WeekSchedule, 5, 12)
+  // Calculate realistic schedule compression based on actual progress
+  const expectedScore = (activeWeekNum - 1) * 8.3
+  const scoreDiff = overallScore - expectedScore
+  const calculatedDaysAhead = Math.max(7, Math.min(28, Math.round((scoreDiff > 0 ? scoreDiff : 10) * 0.85)))
+  const plan = calculateAdaptiveSchedule(full12WeekSchedule, activeWeekNum, calculatedDaysAhead)
 
   async function handleApply() {
     setLoading(true)
@@ -82,7 +88,7 @@ export function AdaptiveScheduleDialog({ onScheduleApplied }: AdaptiveScheduleDi
             </div>
             <h3 className="text-xl font-bold">Adaptive Schedule Applied!</h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-              Your future milestones have been shifted forward by 2 weeks. Estimated pathway graduation is now <strong>{plan.estimatedCompletionDate}</strong> ({plan.acceleratedWeeks} weeks total).
+              Your future milestones have been shifted forward by {plan.daysSaved >= 7 ? `${Math.floor(plan.daysSaved / 7)} weeks` : `${plan.daysSaved} days`}. Estimated pathway graduation is now <strong>{plan.estimatedCompletionDate}</strong> ({plan.acceleratedWeeks} weeks total).
             </p>
             <Button className="primary-action" onClick={() => setOpen(false)}>
               Back to Planner Studio

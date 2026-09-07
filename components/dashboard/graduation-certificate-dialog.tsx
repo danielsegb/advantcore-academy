@@ -40,9 +40,13 @@ export function GraduationCertificateDialog({
   const [copied, setCopied] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
 
-  const candidateName = user?.fullName || user?.email?.split("@")[0] || "Daniel Emmanuel"
+  const candidateName = user?.fullName || (user?.email ? user.email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Academy Graduate")
   const certId = `ADV-BA-${new Date().getFullYear()}-${Math.abs((user?.id || "usr-01").split("").reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0) % 90000 + 10000)}`
   const issueDate = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+
+  const verifyUrl = typeof window !== "undefined"
+    ? `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/verify?id=${certId}&name=${encodeURIComponent(candidateName)}`
+    : `https://app.advantcore.co/academy/verify?id=${certId}&name=${encodeURIComponent(candidateName)}`
 
   // Full completion criteria
   const isKnowledgeComplete = knowledgeCount >= totalLessons || (totalLessons > 0 && knowledgeCount / totalLessons >= 0.8)
@@ -61,8 +65,7 @@ export function GraduationCertificateDialog({
   }
 
   function handleCopyVerifyLink() {
-    const link = `https://app.advantcore.co/academy/verify?id=${certId}`
-    navigator.clipboard.writeText(link)
+    navigator.clipboard.writeText(verifyUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -73,7 +76,7 @@ export function GraduationCertificateDialog({
     )}&organizationName=${encodeURIComponent(
       "Advantcore Academy"
     )}&issueYear=${new Date().getFullYear()}&issueMonth=${new Date().getMonth() + 1}&certId=${certId}&certUrl=${encodeURIComponent(
-      `https://app.advantcore.co/academy/verify?id=${certId}`
+      verifyUrl
     )}`
     window.open(url, "_blank")
   }

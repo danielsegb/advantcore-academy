@@ -17,19 +17,17 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
     if (userId) params.set("userId", userId)
     if (email) params.set("email", email)
 
-    const targetKey = userId || email || "guest"
-    const keysToSync = Array.from(new Set([userId, email, targetKey].filter(Boolean))) as string[]
+    const targetKey = userId || email
+    if (!targetKey) return
+    const keysToSync = Array.from(new Set([userId, email].filter(Boolean))) as string[]
 
-    // Collect all local completed lessons across ANY stored key on this device
+    // Collect local completed lessons ONLY for this authenticated user
     const localCompletedSet = new Set<string>()
-    for (let i = 0; i < localStorage.length; i++) {
-      const keyName = localStorage.key(i)
-      if (keyName && keyName.startsWith("advantcore_completed_lessons_")) {
-        try {
-          const arr: string[] = JSON.parse(localStorage.getItem(keyName) || "[]")
-          for (const id of arr) localCompletedSet.add(id)
-        } catch {}
-      }
+    for (const k of keysToSync) {
+      try {
+        const arr: string[] = JSON.parse(localStorage.getItem(`advantcore_completed_lessons_${k}`) || "[]")
+        for (const id of arr) localCompletedSet.add(id)
+      } catch {}
     }
 
     // Direct Supabase Client Query
@@ -61,7 +59,7 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
           localStorage.setItem(`advantcore_completed_lessons_${k}`, JSON.stringify(mergedCompleted))
         }
 
-        // Upload any lessons that were completed on this browser to the server
+        // Upload any lessons that were completed by this user on this browser to the server
         const missingOnServer = Array.from(localCompletedSet).filter(id => !serverLessons.includes(id))
         for (const id of missingOnServer) {
           await fetch(`${basePath}/api/learning/progress`, {
@@ -71,16 +69,13 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
           }).catch(() => {})
         }
 
-        // Merge mock scores
+        // Merge mock scores strictly for this user
         const localMockSet = new Set<number>()
-        for (let i = 0; i < localStorage.length; i++) {
-          const keyName = localStorage.key(i)
-          if (keyName && keyName.startsWith("advantcore_mock_scores_")) {
-            try {
-              const arr: number[] = JSON.parse(localStorage.getItem(keyName) || "[]")
-              for (const s of arr) localMockSet.add(s)
-            } catch {}
-          }
+        for (const k of keysToSync) {
+          try {
+            const arr: number[] = JSON.parse(localStorage.getItem(`advantcore_mock_scores_${k}`) || "[]")
+            for (const s of arr) localMockSet.add(s)
+          } catch {}
         }
         const serverScores: number[] = Array.isArray(progressData.mockScores) ? progressData.mockScores : []
         const mergedScores = Array.from(new Set([...Array.from(localMockSet), ...serverScores]))
@@ -96,16 +91,13 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
       const evidenceData = await evidenceRes.json()
       if (evidenceData.success && Array.isArray(evidenceData.evidenceItems)) {
         const evidenceMap = new Map<string, EvidenceItem>()
-        for (let i = 0; i < localStorage.length; i++) {
-          const keyName = localStorage.key(i)
-          if (keyName && keyName.startsWith("advantcore_evidence_")) {
-            try {
-              const localEvidence: EvidenceItem[] = JSON.parse(localStorage.getItem(keyName) || "[]")
-              for (const item of localEvidence) {
-                evidenceMap.set(item.id || item.taskId, item)
-              }
-            } catch {}
-          }
+        for (const k of keysToSync) {
+          try {
+            const localEvidence: EvidenceItem[] = JSON.parse(localStorage.getItem(`advantcore_evidence_${k}`) || "[]")
+            for (const item of localEvidence) {
+              evidenceMap.set(item.id || item.taskId, item)
+            }
+          } catch {}
         }
         for (const item of evidenceData.evidenceItems) {
           evidenceMap.set(item.id || item.taskId, item)
@@ -141,6 +133,22 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
   } catch {
     // Offline or network fallback
   }
+}
+
+/**
+ * Cleanly removes all local progress, exam scores, and workplace evidence for a specific user.
+ */
+export function resetLearnerStorage(userId: string, email?: string | null): void {
+  if (typeof window === "undefined") return
+  const keysToClean = Array.from(new Set([userId, email].filter(Boolean))) as string[]
+  for (const k of keysToClean) {
+    localStorage.removeItem(`advantcore_completed_lessons_${k}`)
+    localStorage.removeItem(`advantcore_mock_scores_${k}`)
+    localStorage.removeItem(`advantcore_evidence_${k}`)
+    localStorage.removeItem(`advantcore_interview_scenarios_${k}`)
+    localStorage.removeItem(`advantcore_flashcards_mastered_${k}`)
+  }
+  window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { userId } }))
 }
 
 /**

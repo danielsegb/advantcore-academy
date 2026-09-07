@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         .from("profiles")
         .select("id")
         .eq("email", email.toLowerCase())
-        .single()
+        .maybeSingle()
       if (profile?.id && !targetUserIds.includes(profile.id)) {
         targetUserIds.push(profile.id)
       }

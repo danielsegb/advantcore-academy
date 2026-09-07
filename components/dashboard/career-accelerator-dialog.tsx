@@ -25,7 +25,7 @@ export function CareerAcceleratorDialog() {
   const [copied, setCopied] = useState(false)
 
   const activeScenario = interviewScenarios.find(s => s.id === selectedScenarioId) || interviewScenarios[0]
-  const linkedInBullets = generateLinkedInCaseStudyBullets(user?.fullName || "Daniel Emmanuel")
+  const linkedInBullets = generateLinkedInCaseStudyBullets(user?.fullName || user?.email?.split("@")[0] || "Learner")
 
   function handleCopy() {
     navigator.clipboard.writeText(linkedInBullets)

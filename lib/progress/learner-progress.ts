@@ -36,13 +36,16 @@ export interface LearnerProgressSummary {
   }>
 }
 
-export function getLearnerRealProgress(userId = "guest", userEmail?: string): LearnerProgressSummary {
+export function getLearnerRealProgress(userId?: string | null, userEmail?: string | null): LearnerProgressSummary {
   if (typeof window === "undefined") {
     return getZeroStateProgress()
   }
 
   try {
-    const keysToCheck = Array.from(new Set([userId, userEmail, "guest"].filter(Boolean))) as string[]
+    const hasAuth = Boolean((userId && userId !== "guest") || userEmail)
+    const keysToCheck = hasAuth
+      ? (Array.from(new Set([userId, userEmail].filter(Boolean))) as string[])
+      : ["guest"]
 
     // 1. Knowledge Mastery from completed lessons / quizzes
     const completedSet = new Set<string>()

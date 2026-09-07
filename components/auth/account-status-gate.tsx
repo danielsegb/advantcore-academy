@@ -4,6 +4,7 @@ import React from "react"
 import { Clock, ShieldX, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth/auth-context"
+import { MustChangePasswordDialog } from "./must-change-password-dialog"
 
 export function AccountStatusGate({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth()
@@ -54,5 +55,10 @@ export function AccountStatusGate({ children }: { children: React.ReactNode }) {
     )
   }
 
-  return <>{children}</>
+  return (
+    <>
+      <MustChangePasswordDialog />
+      {children}
+    </>
+  )
 }

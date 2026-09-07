@@ -62,7 +62,10 @@ export function LearningView({ onSelectView }: LearningViewProps) {
 
     function handleProgressUpdate() {
       if (typeof window === "undefined") return
-      const keys = Array.from(new Set([user?.id, user?.email, "guest"].filter(Boolean))) as string[]
+      const hasAuth = Boolean((user?.id && user.id !== "guest") || user?.email)
+      const keys = hasAuth
+        ? (Array.from(new Set([user?.id, user?.email].filter(Boolean))) as string[])
+        : ["guest"]
       const mergedSet = new Set<string>()
       for (const k of keys) {
         try {

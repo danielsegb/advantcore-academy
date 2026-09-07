@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import {
-  UserPlus, CheckCircle2, Mail, Copy, Check, Loader2, Users, Trash2,
+  UserPlus, CheckCircle2, Mail, Copy, Check, Loader2, Users, Trash2, RotateCcw,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog"
 import type { AccountStatus } from "@/lib/supabase/types"
+import { resetLearnerStorage } from "@/lib/progress/progress-sync"
 
 interface ManagedUser {
   id: string
@@ -97,14 +98,24 @@ export function UserManagementTab() {
     }
   }
 
+  const [resetSuccessId, setResetSuccessId] = useState<string | null>(null)
+
   function handleStatusChange(userId: string, newStatus: AccountStatus) {
     const updated = users.map(u => (u.id === userId ? { ...u, status: newStatus } : u))
     persistUsers(updated)
   }
 
   function handleDeleteUser(userId: string) {
+    const userToDelete = users.find(u => u.id === userId)
+    resetLearnerStorage(userId, userToDelete?.email)
     const updated = users.filter(u => u.id !== userId)
     persistUsers(updated)
+  }
+
+  function handleResetProgress(userToReset: ManagedUser) {
+    resetLearnerStorage(userToReset.id, userToReset.email)
+    setResetSuccessId(userToReset.id)
+    setTimeout(() => setResetSuccessId(null), 2500)
   }
 
   function copyCredentials() {
@@ -183,11 +194,11 @@ export function UserManagementTab() {
                   </label>
 
                   <label className="block text-sm font-medium">
-                    Temporary Password
+                    Temporary Password (min 8 characters)
                     <input
                       type="text"
                       required
-                      minLength={5}
+                      minLength={8}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       className="w-full mt-1 px-3 py-2 border rounded-md bg-background font-mono text-base sm:text-sm"
@@ -286,7 +297,17 @@ export function UserManagementTab() {
                   {u.status}
                 </Badge>
               </span>
-              <div className="flex items-center gap-2 pt-1 sm:pt-0">
+              <div className="flex items-center gap-1.5 pt-1 sm:pt-0 flex-wrap">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs px-2 text-muted-foreground hover:text-foreground"
+                  title="Reset learner progress, completed lessons, and evidence back to 0%"
+                  onClick={() => handleResetProgress(u)}
+                >
+                  <RotateCcw className={`w-3.5 h-3.5 mr-1 ${resetSuccessId === u.id ? "text-emerald-500 animate-spin" : ""}`} />
+                  {resetSuccessId === u.id ? "Reset!" : "Reset"}
+                </Button>
                 {u.status === "active" && (
                   <Button size="sm" variant="outline" className="h-8 text-xs px-2.5" onClick={() => handleStatusChange(u.id, "suspended")}>
                     Suspend

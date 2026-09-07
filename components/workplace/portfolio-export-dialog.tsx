@@ -24,7 +24,7 @@ export function PortfolioExportDialog({ evidenceItems }: PortfolioExportDialogPr
   const [copied, setCopied] = useState(false)
   const [viewTab, setViewTab] = useState<"formatted" | "markdown">("formatted")
 
-  const authorName = user?.fullName || user?.email?.split("@")[0] || "Daniel Emmanuel"
+  const authorName = user?.fullName || user?.email?.split("@")[0] || "Learner"
 
   // Filter approved deliverables or all authored if none approved yet for demo
   const approvedItems = evidenceItems.filter(e => e.status === "approved")
@@ -180,6 +180,14 @@ ${item.content}
         </DialogHeader>
 
         <div className="space-y-4">
+          {itemsToExport.length === 0 ? (
+            <div className="py-12 text-center text-sm text-muted-foreground space-y-2">
+              <FileText className="w-8 h-8 mx-auto opacity-40" />
+              <p className="font-medium">No deliverables yet</p>
+              <p className="text-xs">Complete and submit workplace tasks to build your portfolio. Your approved evidence will appear here ready to export.</p>
+            </div>
+          ) : (
+            <>
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-lg border border-blue-500/20 bg-blue-500/5 text-xs flex items-center gap-2 text-blue-700 dark:text-blue-300 flex-1 mr-3">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600" />
@@ -217,6 +225,8 @@ ${item.content}
               {portfolioMarkdown}
             </div>
           )}
+            </>
+          )}
         </div>
 
         <DialogFooter className="flex flex-col sm:flex-row justify-between items-center w-full gap-2 pt-3 border-t border-border">
@@ -224,15 +234,17 @@ ${item.content}
             Close
           </Button>
 
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button size="sm" variant="outline" className="w-full sm:w-auto h-9 text-xs" onClick={handlePrint}>
-              <Printer className="w-4 h-4 mr-1.5" /> 1-Click Download PDF / Print
-            </Button>
-            <Button size="sm" className="primary-action w-full sm:w-auto h-9 font-bold text-xs" onClick={handleCopy}>
-              {copied ? <Check className="w-4 h-4 mr-1.5" /> : <Copy className="w-4 h-4 mr-1.5" />}
-              {copied ? "Copied Markdown!" : "Copy markdown"}
-            </Button>
-          </div>
+          {itemsToExport.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button size="sm" variant="outline" className="w-full sm:w-auto h-9 text-xs" onClick={handlePrint}>
+                <Printer className="w-4 h-4 mr-1.5" /> 1-Click Download PDF / Print
+              </Button>
+              <Button size="sm" className="primary-action w-full sm:w-auto h-9 font-bold text-xs" onClick={handleCopy}>
+                {copied ? <Check className="w-4 h-4 mr-1.5" /> : <Copy className="w-4 h-4 mr-1.5" />}
+                {copied ? "Copied Markdown!" : "Copy markdown"}
+              </Button>
+            </div>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
