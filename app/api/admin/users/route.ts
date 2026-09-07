@@ -192,22 +192,22 @@ export async function DELETE(request: NextRequest) {
     const idList = Array.from(targetUserIds)
 
     // Clean up dependent tables
-    await supabase.from("quiz_attempts").delete().in("user_id", idList).catch(() => {})
-    await supabase.from("readiness_snapshots").delete().in("user_id", idList).catch(() => {})
-    await supabase.from("evidence_items").delete().in("learner_id", idList).catch(() => {})
+    await supabase.from("quiz_attempts").delete().in("user_id", idList)
+    await supabase.from("readiness_snapshots").delete().in("user_id", idList)
+    await supabase.from("evidence_items").delete().in("learner_id", idList)
 
     // Delete profile
     if (userId) {
-      await supabase.from("profiles").delete().eq("id", userId).catch(() => {})
+      await supabase.from("profiles").delete().eq("id", userId)
     }
     if (email) {
-      await supabase.from("profiles").delete().eq("email", email.toLowerCase()).catch(() => {})
+      await supabase.from("profiles").delete().eq("email", email.toLowerCase())
     }
 
     // Delete auth user if valid UUID
     const authId = idList.find(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
     if (authId) {
-      await supabase.auth.admin.deleteUser(authId).catch(() => {})
+      await supabase.auth.admin.deleteUser(authId)
     }
 
     return NextResponse.json({ success: true, deletedIds: idList }, { headers: { "X-Request-ID": requestId } })
