@@ -123,3 +123,99 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error processing admin action." }, { status: 500 })
   }
 }
+
+export async function GET(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+  try {
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      return NextResponse.json({ success: true, users: [] }, { headers: { "X-Request-ID": requestId } })
+    }
+
+    const { data: profiles, error } = await supabase
+      .from("profiles")
+      .select("id, email, full_name, avatar_initials, avatar_colour, role, status, must_change_password, created_at")
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      logger.error("Failed to query profiles", { requestId, error: error.message })
+      return NextResponse.json({ success: true, users: [] }, { headers: { "X-Request-ID": requestId } })
+    }
+
+    const users = (profiles || [])
+      .filter(p => p.role !== "admin" && p.email !== "admin@advantcore.co")
+      .map(p => ({
+        id: p.id,
+        fullName: p.full_name || p.email,
+        email: p.email,
+        pathway: "Business Analysis",
+        status: p.status || "active",
+        role: p.role,
+        mustChangePassword: Boolean(p.must_change_password),
+      }))
+
+    return NextResponse.json({ success: true, users }, { headers: { "X-Request-ID": requestId } })
+  } catch (error) {
+    logger.error("Failed to fetch admin users", {
+      requestId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    })
+    return NextResponse.json({ success: true, users: [] }, { headers: { "X-Request-ID": requestId } })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+  const { searchParams } = new URL(request.url)
+  const userId = searchParams.get("userId")
+  const email = searchParams.get("email")
+
+  if (!userId && !email) {
+    return NextResponse.json({ error: "userId or email is required." }, { status: 400 })
+  }
+
+  try {
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      return NextResponse.json({ success: true, message: "User deleted (local mode)." })
+    }
+
+    const targetUserIds = new Set<string>()
+    if (userId) targetUserIds.add(userId)
+    if (email) {
+      targetUserIds.add(email)
+      targetUserIds.add(email.toLowerCase())
+      const { data: profile } = await supabase.from("profiles").select("id").eq("email", email.toLowerCase()).maybeSingle()
+      if (profile?.id) targetUserIds.add(profile.id)
+    }
+
+    const idList = Array.from(targetUserIds)
+
+    // Clean up dependent tables
+    await supabase.from("quiz_attempts").delete().in("user_id", idList).catch(() => {})
+    await supabase.from("readiness_snapshots").delete().in("user_id", idList).catch(() => {})
+    await supabase.from("evidence_items").delete().in("learner_id", idList).catch(() => {})
+
+    // Delete profile
+    if (userId) {
+      await supabase.from("profiles").delete().eq("id", userId).catch(() => {})
+    }
+    if (email) {
+      await supabase.from("profiles").delete().eq("email", email.toLowerCase()).catch(() => {})
+    }
+
+    // Delete auth user if valid UUID
+    const authId = idList.find(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+    if (authId) {
+      await supabase.auth.admin.deleteUser(authId).catch(() => {})
+    }
+
+    return NextResponse.json({ success: true, deletedIds: idList }, { headers: { "X-Request-ID": requestId } })
+  } catch (error) {
+    logger.error("Failed to delete user", {
+      requestId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    })
+    return NextResponse.json({ error: "Failed to delete user." }, { status: 500 })
+  }
+}

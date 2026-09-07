@@ -12,20 +12,26 @@ import {
 import type { AccountStatus } from "@/lib/supabase/types"
 import { resetLearnerStorage } from "@/lib/progress/progress-sync"
 
-interface ManagedUser {
+export interface ManagedUser {
   id: string
   fullName: string
   email: string
   pathway: string
   status: AccountStatus
+  role?: string
   passwordHash?: string
   mustChangePassword?: boolean
 }
 
-const STORAGE_KEY_REGISTERED_USERS = "advantcore_registered_learners"
+export const STORAGE_KEY_REGISTERED_USERS = "advantcore_registered_learners"
 
-export function UserManagementTab() {
-  const [users, setUsers] = useState<ManagedUser[]>(() => {
+export interface UserManagementTabProps {
+  users?: ManagedUser[]
+  onUsersChange?: (users: ManagedUser[]) => void
+}
+
+export function UserManagementTab({ users: propUsers, onUsersChange }: UserManagementTabProps) {
+  const [localUsers, setLocalUsers] = useState<ManagedUser[]>(() => {
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem(STORAGE_KEY_REGISTERED_USERS)
@@ -39,6 +45,10 @@ export function UserManagementTab() {
     return []
   })
 
+  const users = propUsers ?? localUsers
+  const [loadingUsers, setLoadingUsers] = useState(true)
+  const [adminResetSuccess, setAdminResetSuccess] = useState(false)
+
   const [inviteOpen, setInviteOpen] = useState(false)
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
@@ -49,7 +59,8 @@ export function UserManagementTab() {
 
   // Sync users to storage whenever updated
   function persistUsers(updatedList: ManagedUser[]) {
-    setUsers(updatedList)
+    setLocalUsers(updatedList)
+    onUsersChange?.(updatedList)
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(updatedList))
@@ -58,6 +69,46 @@ export function UserManagementTab() {
       }
     }
   }
+
+  // Fetch real users from Supabase API on mount
+  React.useEffect(() => {
+    async function loadServerUsers() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/api/admin/users`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && Array.isArray(data.users)) {
+            const serverUsers: ManagedUser[] = data.users
+            const map = new Map<string, ManagedUser>()
+            for (const u of serverUsers) {
+              map.set(u.email.toLowerCase(), u)
+            }
+            // Merge with local users (preserve passwordHash if available for local-mode login)
+            const currentList = propUsers ?? localUsers
+            for (const u of currentList) {
+              const existing = map.get(u.email.toLowerCase())
+              if (existing) {
+                map.set(u.email.toLowerCase(), {
+                  ...existing,
+                  passwordHash: u.passwordHash || existing.passwordHash,
+                })
+              } else {
+                map.set(u.email.toLowerCase(), u)
+              }
+            }
+            const merged = Array.from(map.values())
+            persistUsers(merged)
+          }
+        }
+      } catch {
+        // Local fallback
+      } finally {
+        setLoadingUsers(false)
+      }
+    }
+    loadServerUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault()
@@ -105,17 +156,50 @@ export function UserManagementTab() {
     persistUsers(updated)
   }
 
-  function handleDeleteUser(userId: string) {
+  async function handleDeleteUser(userId: string) {
     const userToDelete = users.find(u => u.id === userId)
     resetLearnerStorage(userId, userToDelete?.email)
     const updated = users.filter(u => u.id !== userId)
     persistUsers(updated)
+
+    try {
+      const params = new URLSearchParams()
+      if (userId) params.set("userId", userId)
+      if (userToDelete?.email) params.set("email", userToDelete.email)
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/api/admin/users?${params.toString()}`, {
+        method: "DELETE",
+      })
+    } catch {
+      // Local deleted
+    }
   }
 
-  function handleResetProgress(userToReset: ManagedUser) {
+  async function handleResetProgress(userToReset: ManagedUser) {
     resetLearnerStorage(userToReset.id, userToReset.email)
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/api/learning/progress?userId=${encodeURIComponent(userToReset.id)}&email=${encodeURIComponent(userToReset.email)}`,
+        { method: "DELETE" }
+      )
+    } catch {
+      // ignore
+    }
     setResetSuccessId(userToReset.id)
     setTimeout(() => setResetSuccessId(null), 2500)
+  }
+
+  async function handleResetAdminProgress() {
+    resetLearnerStorage("00000000-0000-0000-0000-000000000011", "admin@advantcore.co")
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/api/learning/progress?userId=00000000-0000-0000-0000-000000000011&email=admin@advantcore.co`,
+        { method: "DELETE" }
+      )
+    } catch {
+      // ignore
+    }
+    setAdminResetSuccess(true)
+    setTimeout(() => setAdminResetSuccess(false), 2500)
   }
 
   function copyCredentials() {
@@ -255,7 +339,38 @@ export function UserManagementTab() {
         </Dialog>
       </div>
 
-      {users.length === 0 ? (
+      {/* Platform Administrator Governance Card */}
+      <div className="bg-card p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center border border-blue-500/20 shrink-0">
+            AD
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <strong className="text-xs sm:text-sm font-semibold">Platform Administrator</strong>
+              <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-blue-600 border-blue-500/30">System Admin</Badge>
+            </div>
+            <small className="text-xs text-muted-foreground">admin@advantcore.co · System Governance</small>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 text-xs text-muted-foreground hover:text-foreground shrink-0"
+          onClick={handleResetAdminProgress}
+          title="Reset administrator account progress to 0%"
+        >
+          <RotateCcw className={`w-3.5 h-3.5 mr-1 ${adminResetSuccess ? "text-emerald-500 animate-spin" : ""}`} />
+          {adminResetSuccess ? "Admin Reset!" : "Reset Admin Progress (0%)"}
+        </Button>
+      </div>
+
+      {loadingUsers ? (
+        <div className="p-8 sm:p-12 text-center border rounded-2xl bg-card border-dashed space-y-3">
+          <Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" />
+          <p className="text-xs text-muted-foreground">Loading onboarded learners...</p>
+        </div>
+      ) : users.length === 0 ? (
         <div className="p-8 sm:p-12 text-center border rounded-2xl bg-card border-dashed space-y-3">
           <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Users className="w-6 h-6" />

@@ -204,3 +204,51 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error updating progress." }, { status: 500 })
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+  const { searchParams } = new URL(request.url)
+  const userId = searchParams.get("userId")
+  const email = searchParams.get("email")
+
+  if (!userId && !email) {
+    return NextResponse.json({ error: "userId or email parameter is required." }, { status: 400 })
+  }
+
+  try {
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      return NextResponse.json({ success: true, message: "Progress reset (local mode)." })
+    }
+
+    const targetUserIds = new Set<string>()
+    if (userId) targetUserIds.add(userId)
+    if (email) {
+      targetUserIds.add(email)
+      targetUserIds.add(email.toLowerCase())
+      const { data: profile } = await supabase.from("profiles").select("id").eq("email", email.toLowerCase()).maybeSingle()
+      if (profile?.id) targetUserIds.add(profile.id)
+    }
+
+    const idList = Array.from(targetUserIds)
+
+    const { error: quizError } = await supabase.from("quiz_attempts").delete().in("user_id", idList)
+    if (quizError) {
+      logger.error("Failed to delete quiz attempts", { requestId, error: quizError.message })
+    }
+
+    const { error: snapError } = await supabase.from("readiness_snapshots").delete().in("user_id", idList)
+    if (snapError) {
+      logger.error("Failed to delete readiness snapshots", { requestId, error: snapError.message })
+    }
+
+    logger.info("User progress reset successfully", { requestId, idList })
+    return NextResponse.json({ success: true, resetUserIds: idList }, { headers: { "X-Request-ID": requestId } })
+  } catch (error) {
+    logger.error("Failed to reset progress", {
+      requestId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    })
+    return NextResponse.json({ error: "Failed to reset progress." }, { status: 500 })
+  }
+}

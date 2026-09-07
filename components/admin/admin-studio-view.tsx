@@ -9,12 +9,56 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SectionTitle } from "@/components/shared/section-title"
 import { StatCard } from "@/components/shared/stat-card"
-import { UserManagementTab } from "./user-management-tab"
+import { UserManagementTab, type ManagedUser, STORAGE_KEY_REGISTERED_USERS } from "./user-management-tab"
 import { GuidedBuilder } from "./guided-builder"
 import { KnowledgeSourcesTab } from "./knowledge-sources-tab"
 
 export function AdminStudioView() {
   const [activeTab, setActiveTab] = useState("builder")
+  const [users, setUsers] = useState<ManagedUser[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY_REGISTERED_USERS)
+        if (stored) return JSON.parse(stored)
+      } catch {}
+    }
+    return []
+  })
+
+  // Sync users from server
+  React.useEffect(() => {
+    async function loadServerUsers() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/api/admin/users`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && Array.isArray(data.users)) {
+            setUsers(prev => {
+              const map = new Map<string, ManagedUser>()
+              for (const u of data.users) map.set(u.email.toLowerCase(), u)
+              for (const u of prev) {
+                const existing = map.get(u.email.toLowerCase())
+                if (existing) {
+                  map.set(u.email.toLowerCase(), { ...existing, passwordHash: u.passwordHash || existing.passwordHash })
+                } else {
+                  map.set(u.email.toLowerCase(), u)
+                }
+              }
+              return Array.from(map.values())
+            })
+          }
+        }
+      } catch {}
+    }
+    loadServerUsers()
+  }, [])
+
+  const activeCount = users.filter(u => u.status === "active").length
+  const pendingCount = users.filter(u => u.status === "pending").length
+  const suspendedCount = users.filter(u => u.status === "suspended").length
+  const userDetail = users.length > 0
+    ? `${activeCount} active, ${pendingCount} pending${suspendedCount > 0 ? `, ${suspendedCount} suspended` : ""}`
+    : "No learners onboarded yet"
 
   const integrations = [
     ["Browser speech", "Read AI responses aloud", "Free · Built in", "ready"],
@@ -45,7 +89,7 @@ export function AdminStudioView() {
         <StatCard icon={GraduationCap} value="1" label="Live pathway" detail="Business Analysis" tone="mint" />
         <StatCard icon={BriefcaseBusiness} value="1" label="Active project" detail="Advantcore Ltd" tone="navy" />
         <StatCard icon={UserCheck} value="4" label="Project roles" detail="All approved" tone="gold" />
-        <StatCard icon={ShieldCheck} value="3" label="Managed users" detail="1 pending, 1 active, 1 suspended" tone="coral" />
+        <StatCard icon={ShieldCheck} value={users.length.toString()} label="Managed users" detail={userDetail} tone="coral" />
       </section>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="admin-tabs">
@@ -65,7 +109,7 @@ export function AdminStudioView() {
         </TabsContent>
 
         <TabsContent value="users">
-          <UserManagementTab />
+          <UserManagementTab users={users} onUsersChange={setUsers} />
         </TabsContent>
 
         <TabsContent value="integrations">

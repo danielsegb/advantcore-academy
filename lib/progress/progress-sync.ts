@@ -19,6 +19,16 @@ export async function syncLearnerProgressFromServer(userId?: string | null, emai
 
     const targetKey = userId || email
     if (!targetKey) return
+
+    // Auto-clean contaminated progress on admin account if not already cleansed
+    const isAdminAccount = email?.toLowerCase() === "admin@advantcore.co" || userId === "00000000-0000-0000-0000-000000000011"
+    if (isAdminAccount && !localStorage.getItem("advantcore_admin_progress_cleansed_v2")) {
+      resetLearnerStorage("00000000-0000-0000-0000-000000000011", "admin@advantcore.co")
+      localStorage.setItem("advantcore_admin_progress_cleansed_v2", "true")
+      window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { userId: "00000000-0000-0000-0000-000000000011" } }))
+      return
+    }
+
     const keysToSync = Array.from(new Set([userId, email].filter(Boolean))) as string[]
 
     // Collect local completed lessons ONLY for this authenticated user
@@ -148,6 +158,13 @@ export function resetLearnerStorage(userId: string, email?: string | null): void
     localStorage.removeItem(`advantcore_interview_scenarios_${k}`)
     localStorage.removeItem(`advantcore_flashcards_mastered_${k}`)
   }
+
+  // Also reset server-side database records in Supabase
+  const params = new URLSearchParams()
+  if (userId) params.set("userId", userId)
+  if (email) params.set("email", email)
+  fetch(`${basePath}/api/learning/progress?${params.toString()}`, { method: "DELETE" }).catch(() => {})
+
   window.dispatchEvent(new CustomEvent("advantcore_progress_updated", { detail: { userId } }))
 }
 

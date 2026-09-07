@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react"
 import {
   CircleDot, Play, BriefcaseBusiness, Sparkles, GraduationCap,
   Gauge, ClipboardCheck, Clock3, ChevronRight, ArrowRight,
-  Radio, Video, CalendarDays, MoreHorizontal, BookOpen,
+  Radio, Video, CalendarDays, MoreHorizontal, BookOpen, RotateCcw,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,7 @@ import { NotificationCenter } from "./notification-center"
 import { CareerAcceleratorDialog } from "./career-accelerator-dialog"
 import { GraduationCertificateDialog } from "./graduation-certificate-dialog"
 import { getLearnerRealProgress } from "@/lib/progress/learner-progress"
-import { syncLearnerProgressFromServer } from "@/lib/progress/progress-sync"
+import { syncLearnerProgressFromServer, resetLearnerStorage } from "@/lib/progress/progress-sync"
 import { useAuth } from "@/lib/auth/auth-context"
 import type { View, PathwayStaff } from "@/components/shared/types"
 
@@ -59,6 +59,17 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
     : user?.email
     ? user.email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
     : "Learner"
+
+  async function handleResetAdminProgress() {
+    resetLearnerStorage(user?.id || "00000000-0000-0000-0000-000000000011", user?.email || "admin@advantcore.co")
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_PATH || "/academy"}/api/learning/progress?userId=${user?.id || "00000000-0000-0000-0000-000000000011"}&email=${encodeURIComponent(user?.email || "admin@advantcore.co")}`,
+        { method: "DELETE" }
+      )
+    } catch {}
+    setProgressVersion(v => v + 1)
+  }
 
   return (
     <div className="page-stack">
@@ -109,6 +120,26 @@ export function DashboardView({ onSelectView, onOpenTour }: DashboardViewProps) 
           </div>
         </div>
       </section>
+
+      {/* Admin Notice & Quick Reset if Admin has learner progress */}
+      {user?.role === "admin" && progress.overallScore > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-xs">
+          <div className="flex items-center gap-2">
+            <RotateCcw className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>
+              <strong>Platform Administrator Notice:</strong> Pathway progress ({progress.knowledgeMastery.completedCount} lesson(s) completed) is currently recorded on this administrator account.
+            </span>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs border-amber-500/40 hover:bg-amber-500/20 font-semibold shrink-0"
+            onClick={handleResetAdminProgress}
+          >
+            Reset Admin Progress to 0%
+          </Button>
+        </div>
+      )}
 
       {/* Multi-Dimensional Readiness Metric Cards */}
       <section className="stat-grid">
